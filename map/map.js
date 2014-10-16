@@ -1,5 +1,5 @@
 
-var Datamaps = require('../lib/datamaps');
+var Datamaps = require('datamaps-all-browserify');
 var _ = require('lodash');
 var templateHTML = require('./map.jade');
 
