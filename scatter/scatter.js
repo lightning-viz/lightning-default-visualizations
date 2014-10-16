@@ -57,7 +57,7 @@ var ScatterPlot = function(selector, data, images, opts) {
 
     var svg = d3.select(selector)
         .append('svg')
-        .attr('class', 'line-plot')
+        .attr('class', 'scatter-plot')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
