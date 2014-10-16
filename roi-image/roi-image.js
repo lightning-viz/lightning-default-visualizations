@@ -1,7 +1,7 @@
 var d3 = require('d3');
 
 var inherits = require('inherits');
-var templateHTML = require('../../templates/viz/roi-image.jade');
+var templateHTML = require('./roi-image.jade');
 var request = require('superagent');
 var _ = require('lodash');
 var utils = require('../utils');

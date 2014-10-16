@@ -1,6 +1,6 @@
 var d3 = require('d3');
 var _ = require('lodash');
-var templateHTML = require('../../templates/viz/volume.jade');
+var templateHTML = require('./volume.jade');
 
 var margin = {
     top: 20,

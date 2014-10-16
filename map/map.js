@@ -1,7 +1,7 @@
 
 var Datamaps = require('../lib/datamaps');
 var _ = require('lodash');
-var templateHTML = require('../../templates/viz/map.jade');
+var templateHTML = require('./map.jade');
 
 
 var MapViz = function(selector, data, images, opts) {
