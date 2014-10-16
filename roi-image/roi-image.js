@@ -4,7 +4,7 @@ var inherits = require('inherits');
 var templateHTML = require('./roi-image.jade');
 var request = require('superagent');
 var _ = require('lodash');
-var utils = require('../utils');
+var utils = require('lightning-client-utils');
 
 
 var ROIPlot = function(selector, data, images, opts) {
