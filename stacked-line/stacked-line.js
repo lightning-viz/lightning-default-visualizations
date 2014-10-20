@@ -63,6 +63,8 @@ var StackedLineGraph = function(selector, data, images, opts) {
         });
     });
 
+    
+    var chartYHeight = Math.min((chartLineHeight+chartLinePadding) * data.length, maxHeight);
 
     var chartX = d3.scale.linear()
                     .domain([-1, data[0].length + 1])
@@ -74,7 +76,7 @@ var StackedLineGraph = function(selector, data, images, opts) {
 
     var chartY = d3.scale.linear()
                     .domain([yDomain[0] - 1, max + 1])
-                    .range([data.length * (chartLineHeight + chartLinePadding), 0]);
+                    .range([chartYHeight, 0]);
 
     var chartLine = d3.svg.line()
                         .x(function(d, i) {
@@ -95,7 +97,7 @@ var StackedLineGraph = function(selector, data, images, opts) {
     var chartSvg = d3.select(selector).append('svg')
         .attr('class', 'stacked-line-plot')
         .attr('width', chartWidth)
-        .attr('height', Math.min((chartLineHeight+chartLinePadding) * data.length, maxHeight))
+        .attr('height', chartYHeight)
         .call(zoom);
 
     var minimapSvg = d3.select(selector).append('svg')
