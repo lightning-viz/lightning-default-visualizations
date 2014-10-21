@@ -1,0 +1,4 @@
+[{
+    "name": "simple matrix data",
+    "data": {"nodes":[{"group":0},{"group":0},{"group":0},{"group":0}],"links":[{"source":0,"target":0,"value":22},{"source":0,"target":1,"value":2},{"source":0,"target":2,"value":3},{"source":0,"target":3,"value":4},{"source":1,"target":0,"value":5},{"source":1,"target":1,"value":6},{"source":1,"target":2,"value":7},{"source":1,"target":3,"value":8},{"source":2,"target":0,"value":9},{"source":2,"target":1,"value":10},{"source":2,"target":2,"value":11},{"source":2,"target":3,"value":12},{"source":3,"target":0,"value":13},{"source":3,"target":1,"value":14},{"source":3,"target":2,"value":15},{"source":3,"target":3,"value":16}]}
+}]
