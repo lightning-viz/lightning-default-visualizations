@@ -9,5 +9,7 @@
     }
     .gallery-thumbnail {
         cursor: pointer;
+        display: inline-block;
+        max-width: 10%;
     }
 }
