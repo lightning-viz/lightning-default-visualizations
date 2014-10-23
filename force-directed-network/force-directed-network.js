@@ -8,14 +8,11 @@ var margin = {
     left: 45
 };
 
-
 var height = 500 - margin.top - margin.bottom;
 
 var ForceDirectedNetworkViz = function(selector, data, images, opts) {
 
 	var color = d3.scale.category10();
-
-
 
     var width = $(selector).width() - margin.left - margin.right;
 
