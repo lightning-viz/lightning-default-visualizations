@@ -1,5 +1,6 @@
 var d3 = require('d3');
 var _ = require('lodash');
+var utils = require('lightning-client-utils');
 
 d3.ForceEdgeBundling = function(){
         var data_nodes = {},        // {'nodeid':{'x':,'y':},..}
@@ -418,168 +419,94 @@ var margin = {
     left: 45
 };
 
-var width = 600 - margin.left - margin.right;
-var height = 300 - margin.top - margin.bottom;
-
 
 module.exports = function(selector, data, images, opts) {
+    
+    var width = $(selector).width() - margin.left - margin.right;
+    var height = width / Math.sqrt(2);
+    
     var nodes = data.points || data.nodes;
+    
+    var colors = utils.getColors(2);
+
+   var xDomain = d3.extent(nodes, function(d) {
+        return d.x;
+    });
+
+   var yDomain = d3.extent(nodes, function(d) {
+        return d.y;
+    });
+
+    var x = d3.scale.linear()
+        .domain(xDomain)
+        .range([width, 0]);
+
+    var y = d3.scale.linear()
+        .domain(yDomain)
+        .range([height, 0]);
+
+    _.each(nodes, function(n) {
+        n.x = x(n.x);
+        n.y = y(n.y);
+    });
+
+
     nodes = _.object(_.range(nodes.length), nodes);
 
-   // var xDomain = d3.extent(nodes, function(d) {
-   //      return d.x;
-   //  });
 
-   // var yDomain = d3.extent(nodes, function(d) {
-   //      return d.y;
-   //  });
-
-    // this.x = d3.scale.linear()
-    //     .domain([xDomain[0]-1, xDomain[0] + 1])
-    //     .range([0, width]);
-
-    // this.y = d3.scale.linear()
-    //     .domain([yDomain[0] - 1, yDomain[1] + 1])
-    //     .range([height, 0]);
-
-    // this.line = d3.svg.line()
-    //     .x(function (d, i) {
-    //         return self.x(i);
-    //     })
-    //     .y(function (d) {
-    //         return self.y(d);
-    //     });
-
-    // this.zoom = d3.behavior.zoom()
-    //     .x(this.x)
-    //     .y(this.y)
-    //     .on('zoom', zoomed);
-
+    var zoom = d3.behavior.zoom()
+        .x(x)
+        .y(y)
+        .on('zoom', zoomed);
 
     var svg = d3.select(selector)
         .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .call(zoom);
 
 
-    var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(data.links);
-    var results   = fbundling();    
-
-    var d3line = d3.svg.line()
-                    .x(function(d){return d.x;})
-                    .y(function(d){return d.y;})
-                    .interpolate('linear');
-
-    // results.forEach(function(edgeSubpointData){   
-    // // for each of the arrays in the results 
-    // // draw a line between the subdivions points for that edge
-
-    //     svg.append('path').attr('d', d3line(edgeSubpointData))
-    //         .style('stroke-width', 1)
-    //         .style('stroke', '#ff2222')
-    //         .style('fill', 'none')
-    //         .style('stroke-opacity',0.35); //use opacity as blending
-    // });
+    function zoomed() {
+        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
+    }
 
 
+    setTimeout(function() {
 
-    // var makeXAxis = function () {
-    //     return d3.svg.axis()
-    //         .scale(self.x)
-    //         .orient('bottom')
-    //         .ticks(5);
-    // };
+        var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(data.links);
+        var results   = fbundling();    
 
-    // var makeYAxis = function () {
-    //     return d3.svg.axis()
-    //         .scale(self.y)
-    //         .orient('left')
-    //         .ticks(5);
-    // };
-
-    // this.xAxis = d3.svg.axis()
-    //     .scale(this.x)
-    //     .orient('bottom')
-    //     .ticks(5);
-
-    // svg.append('svg:g')
-    //     .attr('class', 'x axis')
-    //     .attr('transform', 'translate(0, ' + height + ')')
-    //     .call(this.xAxis);
-
-    // this.yAxis = d3.svg.axis()
-    //     .scale(this.y)
-    //     .orient('left')
-    //     .ticks(5);
-
-    // svg.append('g')
-    //     .attr('class', 'y axis')
-    //     .call(this.yAxis);
-
-    // svg.append('g')
-    //     .attr('class', 'x grid')
-    //     .attr('transform', 'translate(0,' + height + ')')
-    //     .call(makeXAxis()
-    //             .tickSize(-height, 0, 0)
-    //             .tickFormat(''));
-
-    // svg.append('g')
-    //     .attr('class', 'y grid')
-    //     .call(makeYAxis()
-    //             .tickSize(-width, 0, 0)
-    //             .tickFormat(''));
-
-    // var clip = svg.append('svg:clipPath')
-    //     .attr('id', 'clip')
-    //     .append('svg:rect')
-    //     .attr('x', 0)
-    //     .attr('y', 0)
-    //     .attr('width', width)
-    //     .attr('height', height);
-
-    // var chartBody = svg.append('g')
-    //     .attr('clip-path', 'url(#clip)');
-
-    // // chartBody.append('path')
-    //     .datum(data)
-    //     .attr('class', 'line')
-    //     .attr('d', this.line);
+        var d3line = d3.svg.line()
+                        .x(function(d){return d.x;})
+                        .y(function(d){return d.y;})
+                        .interpolate('linear');
 
 
-    results.forEach(function(edgeSubpointData){   
-    // for each of the arrays in the results 
-    // draw a line between the subdivions points for that edge
+        results.forEach(function(edgeSubpointData){   
+        // for each of the arrays in the results 
+        // draw a line between the subdivions points for that edge
 
-        svg.append('path').attr('d', d3line(edgeSubpointData))
-            .style('stroke-width', 1)
-            .style('stroke', '#ff2222')
-            .style('fill', 'none')
-            .style('stroke-opacity',0.05); //use opacity as blending
-    });
+            svg.append('path').attr('d', d3line(edgeSubpointData))
+                .style('stroke-width', 1)
+                .style('stroke', colors[0])
+                .style('fill', 'none')
+                .style('stroke-opacity',0.05); //use opacity as blending
+        });
 
 
-
-    // function zoomed() {
-    //     self.svg.select('.x.axis').call(self.xAxis);
-    //     self.svg.select('.y.axis').call(self.yAxis);
-    //     self.svg.select('.x.grid')
-    //         .call(makeXAxis()
-    //             .tickSize(-height, 0, 0)
-    //             .tickFormat(''));
-    //     self.svg.select('.y.grid')
-    //         .call(makeYAxis()
-    //                 .tickSize(-width, 0, 0)
-    //                 .tickFormat(''));
-    //     // self.svg.select('.line')
-    //     //     .attr('class', 'line')
-    //     //     .attr('d', self.line);
-    // }
+        //draw nodes
+        svg.selectAll('.node')
+           .data(d3.entries(nodes))
+           .enter()
+           .append('circle')
+           .classed('node', true)
+           .attr({'r': 2, 'fill': colors[1]})
+           .attr('cx', function(d){ return d.value.x;})
+           .attr('cy', function(d){ return d.value.y;});
+    }, 10);
 
 
 };
-
-
-
 
