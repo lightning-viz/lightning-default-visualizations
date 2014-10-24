@@ -34,7 +34,7 @@ var Matrix = function(selector, data, images, opts) {
     });
 
     data.links.forEach(function(link) {
-        matrix[link.source][link.target].z = link.value;
+        matrix[link.source][link.target].z += link.value;
     });
 
 

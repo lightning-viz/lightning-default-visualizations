@@ -1,6 +1,7 @@
 var d3 = require('d3');
 
 var inherits = require('inherits');
+var utils = require('lightning-client-utils');
 
 var margin = {
     top: 20,
@@ -21,23 +22,57 @@ var ScatterPlot = function(selector, data, images, opts) {
 
     var self = this;
 
-    if (data.hasOwnProperty('colors')) {
-        fillcolors = data.colors.map(function(d) {return d3.rgb(d.r, d.g, d.b)})
-        strokecolors = fillcolors.map(function(d) {return d.darker(0.5)})
-    } else {
-        fillcolors = []
-        strokecolors = []
-    }
-
     if (data.hasOwnProperty('points')) {
-        data = data.points
+        points = data.points
+
+        if (data.hasOwnProperty('labels')) {
+            var mn = d3.min(data.labels, function(d) {
+                return d.k;
+            });
+            var mx = d3.max(data.labels, function(d) {
+                return d.k;
+            });
+            var n = mx - mn + 1
+            console.log(n)
+            var colors = utils.getColors(n);
+            points.map(function(d, i) {
+                rgb = d3.rgb(colors[data.labels[i].k - mn])
+                d.r = rgb.r
+                d.g = rgb.g
+                d.b = rgb.b
+                return d})
+        } else if (data.hasOwnProperty('colors')) {
+            points.map(function(d, i) {
+                d.r = data.colors[i].r
+                d.g = data.colors[i].g
+                d.b = data.colors[i].b
+            })
+        } else {
+            points.map(function(d) {
+                rgb = d3.rgb('#deebfa')
+                d.r = rgb.r
+                d.g = rgb.g
+                d.b = rgb.b
+            })
+        }
+
+    } else {
+
+        points = data
+        points.map(function(d) {
+                rgb = d3.rgb('#deebfa')
+                d.r = rgb.r
+                d.g = rgb.g
+                d.b = rgb.b
+            })
+    
     }
 
-    var xDomain = d3.extent(data, function(d) {
+    var xDomain = d3.extent(points, function(d) {
             return d.x;
         });
 
-    var yDomain = d3.extent(data, function(d) {
+    var yDomain = d3.extent(points, function(d) {
             return d.y;
         });
 
@@ -134,12 +169,12 @@ var ScatterPlot = function(selector, data, images, opts) {
 
     // draw dots
     svg.selectAll('.dot')
-        .data(data)
+        .data(points)
         .enter().append('circle')
         //.attr('class', 'dot')
         .attr('r', 6)
-        .attr('fill',function(d, i) { return (fillcolors[i] || '#deebfa');})
-        .attr('stroke',function(d, i) { return (strokecolors[i] || '#68a1e5');})
+        .attr('fill',function(d) { return (d3.rgb(d.r, d.g, d.b));})
+        .attr('stroke',function(d) { return (d3.rgb(d.r, d.g, d.b).darker(0.5));})
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })

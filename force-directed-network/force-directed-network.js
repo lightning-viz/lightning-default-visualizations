@@ -8,14 +8,11 @@ var margin = {
     left: 45
 };
 
-
 var height = 500 - margin.top - margin.bottom;
 
 var ForceDirectedNetworkViz = function(selector, data, images, opts) {
 
 	var color = d3.scale.category10();
-
-
 
     var width = $(selector).width() - margin.left - margin.right;
 
@@ -41,9 +38,8 @@ var ForceDirectedNetworkViz = function(selector, data, images, opts) {
 
     var force = d3.layout.force()
         .size([width, height])
-        .linkDistance(function (d) { return 100*Math.sqrt(d.value)})
-        .charge(-100)
-        .gravity(0)
+        .charge(-120)
+        .linkDistance(30)    
         .nodes(data.nodes)
         .links(data.links)
         .start();
