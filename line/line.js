@@ -23,11 +23,13 @@ var LineGraph = function(selector, data, images, opts) {
         });
 
     this.x = d3.scale.linear()
-        .domain([-1, data.length + 1])
+        .domain([-1, data.length])
         .range([0, width]);
+    
+    spread = Math.abs(yDomain[1]-yDomain[0])
 
     this.y = d3.scale.linear()
-        .domain([yDomain[0] - 1, yDomain[1] + 1])
+        .domain([yDomain[0] - 0.1*spread, yDomain[1] + 0.1*spread])
         .range([height, 0]);
 
     this.line = d3.svg.line()
@@ -149,4 +151,12 @@ LineGraph.prototype.updateData = function(data) {
         .datum(data)
         .transition()
         .attr('d', this.line);
+    
+    this.x.domain([-1, data.length + 1])
+    
+    var yDomain = d3.extent(data, function(d) {
+            return d;
+        });
+    spread = Math.abs(yDomain[1]-yDomain[0])
+    this.y.domain([yDomain[0] - 0.1*spread, yDomain[1] + 0.1*spread])
 };
