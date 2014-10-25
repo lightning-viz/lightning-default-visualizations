@@ -445,9 +445,11 @@ module.exports = function(selector, data, images, opts) {
         .domain(yDomain)
         .range([height, 0]);
 
-    _.each(nodes, function(n) {
-        n.x = x(n.x);
-        n.y = y(n.y);
+    nodes = _.map(nodes, function(n) {
+        return {
+            x: x(n.x),
+            y: y(n.y)
+        }
     });
 
 
@@ -464,7 +466,6 @@ module.exports = function(selector, data, images, opts) {
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
         .call(zoom);
 
 
@@ -478,7 +479,7 @@ module.exports = function(selector, data, images, opts) {
         var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(data.links);
         var results   = fbundling();    
 
-        var d3line = d3.svg.line()
+        var line = d3.svg.line()
                         .x(function(d){return d.x;})
                         .y(function(d){return d.y;})
                         .interpolate('linear');
@@ -488,7 +489,7 @@ module.exports = function(selector, data, images, opts) {
         // for each of the arrays in the results 
         // draw a line between the subdivions points for that edge
 
-            svg.append('path').attr('d', d3line(edgeSubpointData))
+            svg.append('path').attr('d', line(edgeSubpointData))
                 .style('stroke-width', 1)
                 .style('stroke', colors[0])
                 .style('fill', 'none')
