@@ -21,15 +21,19 @@ var LineGraph = function(selector, data, images, opts) {
     var yDomain = d3.extent(data, function(d) {
             return d;
         });
+    
+    var ySpread = Math.abs(yDomain[1]-yDomain[0])
+    ySpread = ((ySpread == 0) ? 0.1 : ySpread);
+    
+    var xSpread = Math.abs(data.length)
+    xSpread = ((xSpread == 0) ? 0.1 : xSpread)
 
     this.x = d3.scale.linear()
-        .domain([-1, data.length])
+        .domain([0-0.05*xSpread, data.length-1 + 0.05*xSpread])
         .range([0, width]);
-    
-    spread = Math.abs(yDomain[1]-yDomain[0])
 
     this.y = d3.scale.linear()
-        .domain([yDomain[0] - 0.1*spread, yDomain[1] + 0.1*spread])
+        .domain([yDomain[0] - 0.1*ySpread, yDomain[1] + 0.1*ySpread])
         .range([height, 0]);
 
     this.line = d3.svg.line()
@@ -151,12 +155,17 @@ LineGraph.prototype.updateData = function(data) {
         .datum(data)
         .transition()
         .attr('d', this.line);
-    
-    this.x.domain([-1, data.length + 1])
-    
+   
     var yDomain = d3.extent(data, function(d) {
             return d;
         });
-    spread = Math.abs(yDomain[1]-yDomain[0])
-    this.y.domain([yDomain[0] - 0.1*spread, yDomain[1] + 0.1*spread])
+    
+    var ySpread = Math.abs(yDomain[1]-yDomain[0])
+    ySpread = ((ySpread == 0) ? 0.1 : ySpread);
+    
+    var xSpread = Math.abs(data.length)
+    xSpread = ((xSpread == 0) ? 0.1 : xSpread)
+    
+    this.x.domain([0 - 0.05*xSpread, data.length-1 + 0.05*xSpread])
+    this.y.domain([yDomain[0] - 0.1*ySpread, yDomain[1] + 0.1*ySpread])
 };
