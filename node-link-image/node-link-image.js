@@ -30,25 +30,28 @@ module.exports = function(selector, data, images, opts) {
         return d.y;
     });
 
-   // get image width and heigth based on passed options
-   // otherwise, use dimensions of points
-    var imgHeight = (1250 || yDomain[1]);
-    var imgWidth = (1650 || xDomain[1]);
+    // load an image to get dimensions
+    var img = new Image();
+    img.src = utils.getThumbnail(this.images);
+    imwidth = img.width;
+    imheight = img.height;
+    img.load
 
-    utils.preloadImages(_.map(images, utils.getThumbnail));
-
+    // preloading (combine with previous step?)
+    utils.preloadImage(_.map(images, utils.getThumbnail));
+    
     // set ratio based on dimensions so image and points match
-    ratio = imgWidth / imgHeight;
+    ratio = imwidth / imheight;
 
     var width = $(selector).width() - margin.left - margin.right;
     var height = width / ratio;
 
     var x = d3.scale.linear()
-        .domain([0, imgWidth])
+        .domain([0, imwidth])
         .range([width, 0]);
 
     var y = d3.scale.linear()
-        .domain([0, imgHeight])
+        .domain([0, imheight])
         .range([height, 0]);
 
     nodes = _.map(nodes, function(n) {
