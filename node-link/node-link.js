@@ -12,22 +12,39 @@ var margin = {
 
 
 module.exports = function(selector, data, images, opts) {
-    
-    var width = $(selector).width() - margin.left - margin.right;
-    var height = width / Math.sqrt(2);
+
+    if(!opts) {
+        opts = {};
+    }
     
     var nodes = data.points || data.nodes;
-    
-    var colors = utils.getColors(2);
 
-   var xDomain = d3.extent(nodes, function(d) {
+    var xDomain = d3.extent(nodes, function(d) {
         return d.x;
     });
 
-   var yDomain = d3.extent(nodes, function(d) {
+    var yDomain = d3.extent(nodes, function(d) {
         return d.y;
     });
 
+    this.images = images || [];
+    imageCount = this.images.length;
+
+    if (imageCount > 0) {
+        var colors = ['white','white'];
+        var imwidth = (opts.imwidth || xDomain[1]);
+        var imheight = (opts.imheight || yDomain[1]);
+        var ratio = imwidth / imheight;
+        xDomain = [0, imwidth];
+        yDomain = [0, imheight];
+    } else {
+        var colors = utils.getColors(2);
+        var ratio = Math.sqrt(2);
+    }
+
+    var width = $(selector).width() - margin.left - margin.right;
+    var height = width / ratio;
+    
     var x = d3.scale.linear()
         .domain(xDomain)
         .range([width, 0]);
@@ -64,6 +81,14 @@ module.exports = function(selector, data, images, opts) {
         svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
     }
 
+    if (imageCount > 0) {
+        svg.append('svg:image')
+            .attr('width', width)
+            .attr('height', height);
+        
+        svg.select('image')
+            .attr('xlink:href', utils.getThumbnail(this.images));
+    }
 
     var line = d3.svg.line()
                     .x(function(d){return d.x;})
