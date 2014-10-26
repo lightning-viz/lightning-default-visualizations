@@ -110,7 +110,9 @@ module.exports = function(selector, data, images, opts) {
        .enter()
        .append('circle')
        .classed('node', true)
-       .attr({'r': 2, 'fill': colors[1]})
+       .attr({'r': 3.5, 'fill': colors[1]})
+       .attr('fill-opacity',0.5)
+       .attr('stroke','white')
        .attr('cx', function(d){ return d.value.x;})
        .attr('cy', function(d){ return d.value.y;});
 
