@@ -44,10 +44,10 @@ var LineGraph = function(selector, data, images, opts) {
 
     if(opts.zoomAxes) {
         this.zoom = d3.behavior.zoom();
-        if(zoomAxes.indexOf('x') > -1) {
+        if(opts.zoomAxes.indexOf('x') > -1) {
             this.zoom.x(this.x);
         } 
-        if(zoomAxes.indexOf('y') > -1) {
+        if(opts.zoomAxes.indexOf('y') > -1) {
             this.zoom.y(this.y);
         }
 
