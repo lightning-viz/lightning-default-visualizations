@@ -4,7 +4,7 @@ var margin = {
     top: 30,
     right: 20,
     bottom: 20,
-    left: 20
+    left: 45
 };
 
 var LineGraph = function(selector, data, images, opts) {
@@ -22,18 +22,15 @@ var LineGraph = function(selector, data, images, opts) {
             return d;
         });
     
-    var ySpread = Math.abs(yDomain[1]-yDomain[0])
-    ySpread = ((ySpread == 0) ? 0.1 : ySpread);
-    
-    var xSpread = Math.abs(data.length)
-    xSpread = ((xSpread == 0) ? 0.1 : xSpread)
+    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+    var xSpread = Math.abs(data.length) || 0.1;
 
     this.x = d3.scale.linear()
-        .domain([0-0.05*xSpread, data.length-1 + 0.05*xSpread])
+        .domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread])
         .range([0, width]);
 
     this.y = d3.scale.linear()
-        .domain([yDomain[0] - 0.1*ySpread, yDomain[1] + 0.1*ySpread])
+        .domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread])
         .range([height, 0]);
 
     this.line = d3.svg.line()
@@ -125,7 +122,9 @@ var LineGraph = function(selector, data, images, opts) {
         .attr('class', 'line')
         .attr('d', this.line);
 
-    function zoomed() {
+
+    function updateAxis() {
+
         self.svg.select('.x.axis').call(self.xAxis);
         self.svg.select('.y.axis').call(self.yAxis);
         self.svg.select('.x.grid')
@@ -136,6 +135,12 @@ var LineGraph = function(selector, data, images, opts) {
             .call(makeYAxis()
                     .tickSize(-width, 0, 0)
                     .tickFormat(''));
+    }
+
+
+    function zoomed() {
+
+        updateAxis();
         self.svg.select('.line')
             .attr('class', 'line')
             .attr('d', self.line);
@@ -144,6 +149,7 @@ var LineGraph = function(selector, data, images, opts) {
 
     this.svg = svg;
     this.zoomed = zoomed;
+    this.updateAxis = updateAxis;
 };
 
 
@@ -151,21 +157,21 @@ module.exports = LineGraph;
 
 
 LineGraph.prototype.updateData = function(data) {
-    this.svg.select('.line')
-        .datum(data)
-        .transition()
-        .attr('d', this.line);
    
     var yDomain = d3.extent(data, function(d) {
             return d;
         });
     
-    var ySpread = Math.abs(yDomain[1]-yDomain[0])
-    ySpread = ((ySpread == 0) ? 0.1 : ySpread);
+    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+    var xSpread = Math.abs(data.length) || 0.1;
     
-    var xSpread = Math.abs(data.length)
-    xSpread = ((xSpread == 0) ? 0.1 : xSpread)
-    
-    this.x.domain([0 - 0.05*xSpread, data.length-1 + 0.05*xSpread])
-    this.y.domain([yDomain[0] - 0.1*ySpread, yDomain[1] + 0.1*ySpread])
+    this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
+    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+
+    this.updateAxis();
+
+    this.svg.select('.line')
+        .datum(data)
+        .transition()
+        .attr('d', this.line);
 };
