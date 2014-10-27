@@ -41,10 +41,24 @@ var LineGraph = function(selector, data, images, opts) {
             return self.y(d);
         });
 
-    this.zoom = d3.behavior.zoom()
-        .x(this.x)
-        .y(this.y)
-        .on('zoom', zoomed);
+
+    if(opts.zoomAxes) {
+        this.zoom = d3.behavior.zoom();
+        if(zoomAxes.indexOf('x') > -1) {
+            this.zoom.x(this.x);
+        } 
+        if(zoomAxes.indexOf('y') > -1) {
+            this.zoom.y(this.y);
+        }
+
+        this.zoom.on('zoom', zoomed);
+
+    } else {
+        this.zoom = d3.behavior.zoom()
+            .x(this.x)
+            .y(this.y)
+            .on('zoom', zoomed);
+    }
 
     var svg = d3.select(selector)
         .append('svg:svg')
