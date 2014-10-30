@@ -164,6 +164,7 @@ var LineGraph = function(selector, data, images, opts) {
     this.svg = svg;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
+    this.data = data;
 };
 
 
@@ -171,6 +172,30 @@ module.exports = LineGraph;
 
 
 LineGraph.prototype.updateData = function(data) {
+   
+    var yDomain = d3.extent(data, function(d) {
+            return d;
+        });
+    
+    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+    var xSpread = Math.abs(data.length) || 0.1;
+    
+    this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
+    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+
+    this.updateAxis();
+
+    this.svg.select('.line')
+        .datum(data)
+        .transition()
+        .attr('d', this.line);
+};
+
+
+LineGraph.prototype.appendData = function(data) {
+    
+    this.data = this.data.concat(data);
+    data = this.data;
    
     var yDomain = d3.extent(data, function(d) {
             return d;
