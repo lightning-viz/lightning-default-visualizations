@@ -1,6 +1,7 @@
 var d3 = require('d3');
 var _ = require('lodash');
 var templateHTML = require('./gallery.jade');
+var ImageViz = require('../viz/image');
 
 var margin = {
     top: 20,
@@ -17,7 +18,7 @@ var GalleryViz = function(selector, data, images, opts) {
 
 
     this.$el = $(selector).first();
-
+    this.selector = selector;
     
     this.currentImage = 0;
     this.images = images || [];
@@ -31,8 +32,9 @@ var GalleryViz = function(selector, data, images, opts) {
     this.$el.find('.gallery-thumbnail').click(function() {
         console.log(self.$el.find('.gallery-thumbnail').index(this));
         self.setImage(self.$el.find('.gallery-thumbnail').index(this));
-
     });
+
+    this.imageViz = new ImageViz(selector + ' .image-container', [], [this.images[0]]);
 
 };
 
@@ -48,11 +50,8 @@ GalleryViz.prototype.addImage = function(imageData) {
 
 
 GalleryViz.prototype.setImage = function(index) {
-    // this.$el.find('input.image-slider').val(index);
-    console.log(index);
-
-    this.$el.find('.gallery-full img').attr('src', this.images[index] + '_small');
-    this.$el.find('.gallery-full a').attr('href', this.images[index]);
+    this.$el.find('.image-container').html();
+    this.imageViz = new ImageViz(this.selector + ' .image-container', [], [this.images[index]]);
 };
 
 
