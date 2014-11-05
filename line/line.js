@@ -1,4 +1,7 @@
+'use strict';
 var d3 = require('d3');
+var _ = require('lodash');
+var utils = require('lightning-client-utils');
 
 var margin = {
     top: 30,
@@ -18,15 +21,74 @@ var LineGraph = function(selector, data, images, opts) {
     var width = (opts.width || $(selector).width()) - margin.left - margin.right;
     var height = (opts.height || (width * 0.6)) - margin.top - margin.bottom;
 
-    var yDomain = d3.extent(data, function(d) {
+    data = data || [];
+
+
+    // Data can be:
+    //
+    // Array of points
+    // e.g.
+    // [{x: 1, y: 2}, {x: 2, y: 3}]
+    //
+    // or an array of timeseries values
+    // e.g
+    // [1, 2, 3, 5, 6, 3]
+    //
+    //
+    // or an array of either of these
+
+    if(_.isArray(data[0])) {
+        data = _.map(data, function(d) {
+            if(_.isNumber(d[0])) {
+                return _.map(d, function(datum, i) {
+                    return {
+                        x: i,
+                        y: datum
+                    };
+                });
+            }
             return d;
         });
+    } else {
+        data = [_.map(data, function(d, i) {
+            if(_.isNumber(d)) {
+                return {
+                    x: i,
+                    y: d
+                };
+            }
+            return d;
+        })];
+    }
+
+    console.log(data);
+
+    var nestedExtent = function(arrays, map) {
+        var max = d3.max(arrays, function(arr) {
+            return d3.max(_.map(arr, map));
+        });
+        var min = d3.min(arrays, function(arr) {
+            return d3.min(_.map(arr, map));
+        });
+
+        return [min, max];
+    };
+
+    var yDomain = nestedExtent(data, function(d) {
+        return d.y;
+    });
+    var xDomain = nestedExtent(data, function(d) {
+        return d.x;
+    });
+
+    console.log(yDomain);
+    console.log(xDomain);
     
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-    var xSpread = Math.abs(data.length) || 0.1;
+    var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
     this.x = d3.scale.linear()
-        .domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread])
+        .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread])
         .range([0, width]);
 
     this.y = d3.scale.linear()
@@ -34,11 +96,11 @@ var LineGraph = function(selector, data, images, opts) {
         .range([height, 0]);
 
     this.line = d3.svg.line()
-        .x(function (d, i) {
-            return self.x(i);
+        .x(function (d) {
+            return self.x(d.x);
         })
         .y(function (d) {
-            return self.y(d);
+            return self.y(d.y);
         });
 
 
@@ -131,10 +193,16 @@ var LineGraph = function(selector, data, images, opts) {
     var chartBody = svg.append('g')
         .attr('clip-path', 'url(#clip)');
 
-    chartBody.append('path')
-        .datum(data)
-        .attr('class', 'line')
-        .attr('d', this.line);
+
+
+    var colors = utils.getColors(data.length);
+    _.each(data, function(d, i) {
+        chartBody.append('path')
+            .datum(d)
+            .attr('class', 'line')
+            .attr('stroke', colors[i])
+            .attr('d', self.line);
+    });
 
 
     function updateAxis() {
@@ -155,7 +223,7 @@ var LineGraph = function(selector, data, images, opts) {
     function zoomed() {
 
         updateAxis();
-        self.svg.select('.line')
+        self.svg.selectAll('.line')
             .attr('class', 'line')
             .attr('d', self.line);
     }
@@ -171,46 +239,46 @@ var LineGraph = function(selector, data, images, opts) {
 module.exports = LineGraph;
 
 
-LineGraph.prototype.updateData = function(data) {
+// LineGraph.prototype.updateData = function(data) {
    
-    var yDomain = d3.extent(data, function(d) {
-            return d;
-        });
+//     var yDomain = d3.extent(data, function(d) {
+//             return d;
+//         });
     
-    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-    var xSpread = Math.abs(data.length) || 0.1;
+//     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+//     var xSpread = Math.abs(data.length) || 0.1;
     
-    this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
-    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+//     this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
+//     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
 
-    this.updateAxis();
+//     this.updateAxis();
 
-    this.svg.select('.line')
-        .datum(data)
-        .transition()
-        .attr('d', this.line);
-};
+//     this.svg.select('.line')
+//         .datum(data)
+//         .transition()
+//         .attr('d', this.line);
+// };
 
 
-LineGraph.prototype.appendData = function(data) {
+// LineGraph.prototype.appendData = function(data) {
     
-    this.data = this.data.concat(data);
-    data = this.data;
+//     this.data = this.data.concat(data);
+//     data = this.data;
    
-    var yDomain = d3.extent(data, function(d) {
-            return d;
-        });
+//     var yDomain = d3.extent(data, function(d) {
+//             return d;
+//         });
     
-    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-    var xSpread = Math.abs(data.length) || 0.1;
+//     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+//     var xSpread = Math.abs(data.length) || 0.1;
     
-    this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
-    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+//     this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
+//     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
 
-    this.updateAxis();
+//     this.updateAxis();
 
-    this.svg.select('.line')
-        .datum(data)
-        .transition()
-        .attr('d', this.line);
-};
+//     this.svg.select('.line')
+//         .datum(data)
+//         .transition()
+//         .attr('d', this.line);
+// };
