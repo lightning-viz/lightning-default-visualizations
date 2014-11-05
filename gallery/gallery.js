@@ -3,16 +3,6 @@ var _ = require('lodash');
 var templateHTML = require('./gallery.jade');
 var ImageViz = require('../viz/image');
 
-var margin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 45
-};
-
-var width = 600 - margin.left - margin.right;
-var height = 300 - margin.top - margin.bottom;
-
 
 var GalleryViz = function(selector, data, images, opts) {
 

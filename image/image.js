@@ -12,6 +12,8 @@ var ImageViz = function(selector, data, images, opts) {
     this.$el = $(selector).first();
     this.$el.append(markup);
 
+    opts = opts || {};
+
     var maxWidth = this.$el.width();
 
 
@@ -45,7 +47,7 @@ var ImageViz = function(selector, data, images, opts) {
 
         if(opts.width) {
             canvas.width = opts.width;
-            canvas.height = canvas.width * (img.height / image.width);
+            canvas.height = canvas.width * (img.height / img.width);
         }
         if(opts.height) {
             canvas.height = opts.height;
