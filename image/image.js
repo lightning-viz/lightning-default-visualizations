@@ -43,6 +43,14 @@ var ImageViz = function(selector, data, images, opts) {
             canvas.height = img.height;            
         }
 
+        if(opts.width) {
+            canvas.width = opts.width;
+            canvas.height = canvas.width * (img.height / image.width);
+        }
+        if(opts.height) {
+            canvas.height = opts.height;
+        }
+
         redraw();
     };
 
