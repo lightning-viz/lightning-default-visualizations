@@ -1,68 +1,39 @@
-
-
-.stacked-line-plot {
-    
-    
-
-    .plot {
-        fill: #ffffff;
-    }
-    .grid .tick {
-        stroke: #BEC9CE;
-        opacity: 0.6;
-    }
-    .grid path {
-        stroke-width: 0;
-    }
-    .axis path, .axis line {
+ 
+svg {
+    display: block;
+ 
+    path {
         fill: none;
-        stroke: none;
-        shape-rendering: crispEdges;
-    }
-    .axis path {
-        display: none;
+        stroke-width: 1.25px;
     }
 
-
-    .line {
-        fill: none;
-        stroke: #9175f0;
-        stroke-width: 3px;
+    &.stacked-line-plot {
+        cursor: move; 
     }
-
-
-    .dot {
-        stroke: #68a1e5;
-        fill: #deebfa;
-
-        &:hover {
-            fill: darken(#deebfa, 20%);
-        }
-    }
-
-    text {
-        fill: #BEC9CE;
-        font-family: monospace;
-
-    }
-    
-
 }
-
-.stacked-line-plot-minimap {
-    
-    margin-top: 50px;
-    .line {
-        fill: none;
-        stroke: #9175f0;
-        stroke-width: 2px;
+ 
+.minimap {
+    float: left;
+    // width: 20%;
+}
+ 
+.chart {
+    float: left;
+    width: 60%;
+}
+ 
+.miniline-container {
+    width: auto;
+    padding: 1px 0;
+    cursor: pointer;
+    opacity: 0.3;
+ 
+    &:hover {
+        background-color: darken(white, 10%);
+        // opacity: 0.3;
     }
-        
-        
-    .brush .extent {
-      stroke: #fff;
-      fill-opacity: .125;
+ 
+    &.active {
+        opacity: 1.0;
     }
-
-    
 }
