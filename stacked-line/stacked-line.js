@@ -66,12 +66,8 @@ var StackedLineGraph = function(selector, data, images, opts) {
     var xSpread = Math.abs(xDomain[0] - xDomain[1]);
     var ySpread = Math.abs(yDomain[0] - yDomain[1]);
 
-    console.log('x spread: ' + xSpread);
-    console.log('y spread: ' + ySpread);
-
     var simpleData = _.map(data, function(d) {
-        
-        return simplify(d, 0.01);
+        return simplify(d, 0.1);
     });
  
     var chartWidth = $(selector).width();
@@ -191,15 +187,8 @@ var StackedLineGraph = function(selector, data, images, opts) {
 
     var zoom = d3.behavior.zoom()
         .x(chartX)
-        // .xExtent([xDomain[0], xDomain[1]])
-        // .y(chartY)
         .on('zoom', zoomed);
 
-
-    // var zoom2 = d3.behavior.zoom()
-    //     // .x(chartX)
-    //     .y(chartY)
-    //     .on('zoom', zoomed);
 
     var chartDiv = d3.select(selector).append('div').attr('class', 'chart');
  
@@ -223,33 +212,6 @@ var StackedLineGraph = function(selector, data, images, opts) {
  
     chartBody = chart.append('g')
         .attr('clip-path', 'url(#chartClip)');
-
-
-    chartBody
-
-    // var lineContainer = chartBody.selectAll('g.line-container')
-    //                         .data(chartData)
-    //                         .enter().append('g')
-    //                         .attr('class', 'city');
-
-
-    // lineContainer
-    //     .append('path')
-    //     .attr('class', 'line')
-    //     .attr('d', chartLine)
-    //     .style('stroke', function(d, i) {
-    //         console.log(i);
-    //         return colors[i];
-    //     });
-        // .style()
- 
-    // _.each(chartData, function(d, i) {
-    //     chartBody.append('path')
-    //         .datum(d)
-    //         .attr('class', 'line')
-    //         .style('stroke', colors[i])
-    //         .attr('d', chartLine);
-    // });
 
 
     var updateChart = function() {
