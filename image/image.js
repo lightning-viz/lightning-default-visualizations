@@ -82,7 +82,7 @@ var ImageViz = function(selector, data, images, opts) {
         if (!dragged) zoom(evt.shiftKey ? -1 : 1 );
     },false);
 
-    var scaleFactor = 1.1;
+    var scaleFactor = 1.025;
     var zoom = function(clicks){
         var pt = ctx.transformedPoint(lastX,lastY);
         ctx.translate(pt.x, pt.y);
