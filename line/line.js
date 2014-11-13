@@ -10,6 +10,19 @@ var margin = {
     left: 45
 };
 
+
+var nestedExtent = function(arrays, map) {
+    var max = d3.max(arrays, function(arr) {
+        return d3.max(_.map(arr, map));
+    });
+    var min = d3.min(arrays, function(arr) {
+        return d3.min(_.map(arr, map));
+    });
+
+    return [min, max];
+};
+
+
 var LineGraph = function(selector, data, images, opts) {
 
     var self = this;
@@ -21,58 +34,8 @@ var LineGraph = function(selector, data, images, opts) {
     var width = (opts.width || $(selector).width()) - margin.left - margin.right;
     var height = (opts.height || (width * 0.6)) - margin.top - margin.bottom;
 
-    data = data || [];
+    data = this._formatData(data);
 
-
-    // Data can be:
-    //
-    // Array of points
-    // e.g.
-    // [{x: 1, y: 2}, {x: 2, y: 3}]
-    //
-    // or an array of timeseries values
-    // e.g
-    // [1, 2, 3, 5, 6, 3]
-    //
-    //
-    // or an array of either of these
-
-    if(_.isArray(data[0])) {
-        data = _.map(data, function(d) {
-            if(_.isNumber(d[0])) {
-                return _.map(d, function(datum, i) {
-                    return {
-                        x: i,
-                        y: datum
-                    };
-                });
-            }
-            return d;
-        });
-    } else {
-        data = [_.map(data, function(d, i) {
-            if(_.isNumber(d)) {
-                return {
-                    x: i,
-                    y: d
-                };
-            }
-            return d;
-        })];
-    }
-
-    console.log(data);
-
-    var nestedExtent = function(arrays, map) {
-        var max = d3.max(arrays, function(arr) {
-            return d3.max(_.map(arr, map));
-        });
-        var min = d3.min(arrays, function(arr) {
-            return d3.min(_.map(arr, map));
-        });
-
-        return [min, max];
-    };
 
     var yDomain = nestedExtent(data, function(d) {
         return d.y;
@@ -81,11 +44,11 @@ var LineGraph = function(selector, data, images, opts) {
         return d.x;
     });
 
-    console.log(yDomain);
-    console.log(xDomain);
     
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
     var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
+
+    var noZoom = d3.scale.linear();
 
     this.x = d3.scale.linear()
         .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread])
@@ -104,6 +67,7 @@ var LineGraph = function(selector, data, images, opts) {
         });
 
 
+    var yToggle;
     if(opts.zoomAxes) {
         this.zoom = d3.behavior.zoom();
         if(opts.zoomAxes.indexOf('x') > -1) {
@@ -111,11 +75,15 @@ var LineGraph = function(selector, data, images, opts) {
         } 
         if(opts.zoomAxes.indexOf('y') > -1) {
             this.zoom.y(this.y);
+            yToggle = true;
+        } else {
+            yToggle = false;
         }
 
         this.zoom.on('zoom', zoomed);
 
     } else {
+        yToggle = true;
         this.zoom = d3.behavior.zoom()
             .x(this.x)
             .y(this.y)
@@ -135,6 +103,21 @@ var LineGraph = function(selector, data, images, opts) {
         .attr('width', width)
         .attr('height', height)
         .attr('class', 'plot');
+
+
+    d3.select('body').on('keydown', function() {
+        console.log('keydown');
+        if(d3.event.shiftKey) {
+            console.log('shift');
+            if(yToggle) {
+                yToggle = false;
+                self.zoom.y(noZoom);
+            } else {
+                yToggle = true;
+                self.zoom.y(self.y);
+            }
+        }
+    });
 
     var makeXAxis = function () {
         return d3.svg.axis()
@@ -236,49 +219,104 @@ var LineGraph = function(selector, data, images, opts) {
 };
 
 
+LineGraph.prototype._formatData = function(data) {
+
+    data = data || [];
+
+
+    // Data can be:
+    //
+    // Array of points
+    // e.g.
+    // [{x: 1, y: 2}, {x: 2, y: 3}]
+    //
+    // or an array of timeseries values
+    // e.g
+    // [1, 2, 3, 5, 6, 3]
+    //
+    //
+    // or an array of either of these
+
+    if(_.isArray(data[0])) {
+        data = _.map(data, function(d) {
+            if(_.isNumber(d[0])) {
+                return _.map(d, function(datum, i) {
+                    return {
+                        x: i,
+                        y: datum
+                    };
+                });
+            }
+            return d;
+        });
+    } else {
+        data = [_.map(data, function(d, i) {
+            if(_.isNumber(d)) {
+                return {
+                    x: i,
+                    y: d
+                };
+            }
+            return d;
+        })];
+    }
+
+    return data;
+}
+
+
 module.exports = LineGraph;
 
 
-// LineGraph.prototype.updateData = function(data) {
-   
-//     var yDomain = d3.extent(data, function(d) {
-//             return d;
-//         });
+LineGraph.prototype.updateData = function(data) {
+
+    this.data = this._formatData(data);
+    data = this.data;
+
+    var yDomain = nestedExtent(data, function(d) {
+        return d.y;
+    });
+    var xDomain = nestedExtent(data, function(d) {
+        return d.x;
+    });
     
-//     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-//     var xSpread = Math.abs(data.length) || 0.1;
+    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+    var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
+
+    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread]);
+    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+
+    this.updateAxis();
+
+    this.svg.select('.line')
+        .datum(data)
+        .transition()
+        .attr('d', this.line);
+};
+
+
+LineGraph.prototype.appendData = function(data) {
     
-//     this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
-//     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+    this.data = this.data.concat(this._formatData(data));
+    data = this.data;
 
-//     this.updateAxis();
-
-//     this.svg.select('.line')
-//         .datum(data)
-//         .transition()
-//         .attr('d', this.line);
-// };
-
-
-// LineGraph.prototype.appendData = function(data) {
+    var yDomain = nestedExtent(data, function(d) {
+        return d.y;
+    });
+    var xDomain = nestedExtent(data, function(d) {
+        return d.x;
+    });
     
-//     this.data = this.data.concat(data);
-//     data = this.data;
-   
-//     var yDomain = d3.extent(data, function(d) {
-//             return d;
-//         });
-    
-//     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-//     var xSpread = Math.abs(data.length) || 0.1;
-    
-//     this.x.domain([0 - 0.05 * xSpread, data.length - 1 + 0.05 * xSpread]);
-//     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+    var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
-//     this.updateAxis();
+    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread]);
+    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
 
-//     this.svg.select('.line')
-//         .datum(data)
-//         .transition()
-//         .attr('d', this.line);
-// };
+    this.updateAxis();
+
+    this.svg.select('.line')
+        .datum(data)
+        .transition()
+        .attr('d', this.line);
+};
