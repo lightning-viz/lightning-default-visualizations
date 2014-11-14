@@ -75,12 +75,6 @@ var Matrix = function(selector, data, images, opts) {
         });
 
 
-    svg.selectAll('.column')
-        .data(matrix)
-        .enter().append('g')
-        .attr('class', 'column')
-        .attr('transform', function(d, i) { return 'translate(' + x(i) + ')rotate(-90)'; });
-
     function zoomed() {
         svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
     }
