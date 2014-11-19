@@ -25,16 +25,30 @@ var nestedExtent = function(arrays, map) {
 
 var LineGraph = function(selector, data, images, opts) {
 
-    var self = this;
-
     if(!opts) {
         opts = {};
     }
 
-    var width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    var height = (opts.height || (width * 0.6)) - margin.top - margin.bottom;
+    this.opts = opts;
 
-    data = this._formatData(data);
+    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+
+    this.data = this._formatData(data);
+    this.selector = selector;
+    this._init();
+};
+
+
+LineGraph.prototype._init = function() {
+
+    var data = this.data;
+    var height = this.height;
+    var width = this.width;
+    var opts = this.opts;
+    var selector = this.selector;
+    var self = this;
+
 
 
     var yDomain = nestedExtent(data, function(d) {
@@ -106,9 +120,7 @@ var LineGraph = function(selector, data, images, opts) {
 
 
     d3.select('body').on('keydown', function() {
-        console.log('keydown');
         if(d3.event.shiftKey) {
-            console.log('shift');
             if(yToggle) {
                 yToggle = false;
                 self.zoom.y(noZoom);
@@ -215,7 +227,6 @@ var LineGraph = function(selector, data, images, opts) {
     this.svg = svg;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
-    this.data = data;
 };
 
 
