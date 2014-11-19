@@ -171,10 +171,10 @@ var ScatterPlot = function(selector, data, images, opts) {
     svg.selectAll('.dot')
         .data(points)
         .enter().append('circle')
-        //.attr('class', 'dot')
+        .attr('class', 'dot')
         .attr('r', 6)
-        .attr('fill',function(d) { return (d3.rgb(d.r, d.g, d.b));})
-        .attr('stroke',function(d) { return (d3.rgb(d.r, d.g, d.b).darker(0.5));})
+        //.style('fill',function(d) { return (d3.rgb(d.r, d.g, d.b));})
+        //.style('stroke',function(d) { return (d3.rgb(d.r, d.g, d.b).darker(0.75));})
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
