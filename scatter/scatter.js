@@ -33,7 +33,6 @@ var ScatterPlot = function(selector, data, images, opts) {
                 return d.k;
             });
             var n = mx - mn + 1
-            console.log(n)
             var colors = utils.getColors(n);
             points.map(function(d, i) {
                 rgb = d3.rgb(colors[data.labels[i].k - mn])
