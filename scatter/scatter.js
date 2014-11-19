@@ -167,6 +167,7 @@ var ScatterPlot = function(selector, data, images, opts) {
     // //     .attr('d', line);
 
     // draw dots
+    
     svg.selectAll('.dot')
         .data(points)
         .enter().append('circle')
@@ -177,23 +178,7 @@ var ScatterPlot = function(selector, data, images, opts) {
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
-        .on('mouseover', function(d, i) {
-            var point = d3.select(this)
-            var newcolor = d3.rgb(point.style('fill')).darker(0.75)
-            point.style('fill', newcolor)
-            self.emit('hover', d);
-            console.log('in: ' + i);
-
-        })
-        .on('mouseout', function(d, i) {
-            var point = d3.select(this)
-            var newcolor = d3.rgb(point.style('fill')).brighter(0.75)
-            point.style('fill', newcolor)
-            console.log('out: ' + i);
-        });
-
-
-
+        
     function zoomed() {
         svg.select('.x.axis').call(xAxis);
         svg.select('.y.axis').call(yAxis);
@@ -211,8 +196,70 @@ var ScatterPlot = function(selector, data, images, opts) {
                 return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
             });
     }
+    
+    this.svg = svg;
+    this.x = x;
+    this.y = y;
+    this.points = points;
 };
 
 inherits(ScatterPlot, require('events').EventEmitter);
 
 module.exports = ScatterPlot;
+
+ScatterPlot.prototype.updateData = function(data) {
+    
+    // update existing points, add new ones
+    // and delete old ones
+   
+    var x = this.x
+    var y = this.y
+    
+    var newdat = this.svg.selectAll('circle')
+        .data(data.points)
+        
+    newdat.transition().ease('linear')
+        .attr('class', 'dot')
+        .attr('r',6)
+        .attr('fill','black')
+        .attr('transform', function(d) {
+            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+        })
+    
+    newdat.enter()
+        .append('circle')
+        .transition().ease('linear')
+        .style('opacity', 1.0)
+        .attr('class','dot')
+        .attr('r',6)
+        .attr('transform', function(d) {
+            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+        })
+    
+    newdat.exit().transition().ease('linear')
+        .style('opacity', 0.0).remove()
+    
+}    
+
+ScatterPlot.prototype.appendData = function(data) {
+    
+    // add new points to existing points
+   
+    this.points = this.points.concat(data.points)
+    
+    var x = this.x
+    var y = this.y
+    
+    this.svg.selectAll('circle')
+        .data(this.points)
+        .enter().append('circle')
+        .transition()
+        .ease('linear')
+        .style('opacity', 1.0)
+        .attr('class', 'dot')
+        .attr('r',6)
+        .attr('fill','black')
+        .attr('transform', function(d) {
+            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+        })
+};
