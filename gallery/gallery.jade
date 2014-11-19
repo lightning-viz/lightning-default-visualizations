@@ -1,8 +1,9 @@
 .gallery-viz
     .row
-        for image in images
-            .gallery-thumbnail
-                img(src="#{image}_small")
+        .gallery-container
+            for image in images
+                .gallery-thumbnail
+                    img(src="#{image}_small")
 
     .row
         .gallery-full

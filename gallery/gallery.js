@@ -5,28 +5,28 @@ var ImageViz = require('../viz/image');
 
 
 var GalleryViz = function(selector, data, images, opts) {
-
-
     this.$el = $(selector).first();
     this.selector = selector;
-    
-    this.currentImage = 0;
     this.images = images || [];
+    this._init();
+};
 
-    this.$el.append(templateHTML({
+GalleryViz.prototype._init = function() {
+
+    this.currentImage = 0;
+
+    this.$el.html(templateHTML({
         images: this.images,
         currentImage: this.currentImage
     }));
 
     var self = this;
-    this.$el.find('.gallery-thumbnail').click(function() {
-        console.log(self.$el.find('.gallery-thumbnail').index(this));
+    this.$el.find('.gallery-thumbnail').unbind().click(function() {
         self.setImage(self.$el.find('.gallery-thumbnail').index(this));
     });
 
 
-    this.imageViz = new ImageViz(selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});
-
+    this.imageViz = new ImageViz(selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});    
 };
 
 
@@ -34,9 +34,8 @@ module.exports = GalleryViz;
 
 
 GalleryViz.prototype.addImage = function(imageData) {
-    // this.images.push(imageData);
-    // this.$el.find('input.image-slider').attr('max', this.images.length - 1);
-    // this.setImage(this.images.length - 1);
+    this.images.push(imageData);
+    this.$el.find('.gallery-container').append('<div class="gallery-thumbnail"><img src="' + imageData + '_small" /></div>');
 };
 
 
@@ -49,6 +48,11 @@ GalleryViz.prototype.setImage = function(index) {
 
 
 GalleryViz.prototype.updateData = function(data) {
+    this.images = data;
+    this._init();
+};
+
+GalleryViz.prototype.appendData = function(data) {
     // in this case data should just be an image
     this.addImage(data);
 };
