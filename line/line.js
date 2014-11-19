@@ -65,7 +65,7 @@ LineGraph.prototype._init = function() {
     var noZoom = d3.scale.linear();
 
     this.x = d3.scale.linear()
-        .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread])
+        .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread])
         .range([0, width]);
 
     this.y = d3.scale.linear()
@@ -294,7 +294,7 @@ LineGraph.prototype.updateData = function(data) {
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
     var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
-    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread]);
+    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread]);
     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
 
     this.updateAxis();
@@ -322,7 +322,7 @@ LineGraph.prototype.appendData = function(data) {
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
     var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
-    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] - 1 + 0.05 * xSpread]);
+    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread]);
     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
 
     this.updateAxis();
