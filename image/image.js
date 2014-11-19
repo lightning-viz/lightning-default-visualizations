@@ -87,10 +87,7 @@ var ImageViz = function(selector, data, images, opts) {
         var pt = ctx.transformedPoint(lastX,lastY);
         ctx.translate(pt.x, pt.y);
         var factor = Math.pow(scaleFactor,clicks);
-
-        if(factor > 1) {
-            ctx.scale(factor,factor);
-        }
+        ctx.scale(factor,factor);
         ctx.translate(-pt.x, -pt.y);
         redraw();
     };
@@ -124,8 +121,14 @@ var ImageViz = function(selector, data, images, opts) {
         };
 
         var scale = ctx.scale;
-        ctx.scale = function(sx,sy){
+        ctx.scale = function(sx,sy){            
+            var oldXForm = xform;
             xform = xform.scaleNonUniform(sx,sy);
+            if(xform.d < 1) {
+                xform = oldXForm;
+                return;
+            }
+
             return scale.call(ctx,sx,sy);
         };
         
