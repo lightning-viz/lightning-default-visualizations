@@ -87,7 +87,10 @@ var ImageViz = function(selector, data, images, opts) {
         var pt = ctx.transformedPoint(lastX,lastY);
         ctx.translate(pt.x, pt.y);
         var factor = Math.pow(scaleFactor,clicks);
-        ctx.scale(factor,factor);
+
+        if(factor > 1) {
+            ctx.scale(factor,factor);
+        }
         ctx.translate(-pt.x, -pt.y);
         redraw();
     };
