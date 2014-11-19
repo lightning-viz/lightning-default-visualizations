@@ -178,6 +178,21 @@ var ScatterPlot = function(selector, data, images, opts) {
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
+        .on('mouseover', function(d, i) {
+            //var point = d3.select(this)
+            //var newcolor = d3.rgb(point.style('fill')).darker(0.75)
+            //point.style('fill', newcolor)
+            self.emit('hover', d);
+            console.log('in: ' + i);
+
+        })
+        .on('mouseout', function(d, i) {
+            //var point = d3.select(this)
+            //var newcolor = d3.rgb(point.style('fill')).brighter(0.75)
+            //point.style('fill', newcolor)
+            console.log('out: ' + i);
+        });
+
         
     function zoomed() {
         svg.select('.x.axis').call(xAxis);
