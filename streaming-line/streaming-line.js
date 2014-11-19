@@ -79,4 +79,5 @@ StreamingLine.prototype.appendData = function(data) {
 
 
 inherits(StreamingLine, LineGraph);
+module.exports = StreamingLine;
 
