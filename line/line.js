@@ -288,10 +288,11 @@ LineGraph.prototype.updateData = function(data) {
 
     this.updateAxis();
 
-    this.svg.select('.line')
-        .datum(data)
+    this.svg.selectAll('.line')
+        .data(data)
         .transition()
         .attr('d', this.line);
+
 };
 
 
@@ -315,8 +316,8 @@ LineGraph.prototype.appendData = function(data) {
 
     this.updateAxis();
 
-    this.svg.select('.line')
-        .datum(data)
+    this.svg.selectAll('.line')
+        .data(data)
         .transition()
         .attr('d', this.line);
 };
