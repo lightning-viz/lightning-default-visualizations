@@ -26,7 +26,7 @@ GalleryViz.prototype._init = function() {
     });
 
 
-    this.imageViz = new ImageViz(selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});    
+    this.imageViz = new ImageViz(this.selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});    
 };
 
 
