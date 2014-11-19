@@ -53,6 +53,14 @@ GalleryViz.prototype.updateData = function(data) {
 };
 
 GalleryViz.prototype.appendData = function(data) {
-    // in this case data should just be an image
-    this.addImage(data);
+    // can be a single image or an array of images
+    
+    if(_.isArray(data)) {
+        _.each(data, function(image) {
+            this.addImage(image);        
+        });
+    } else {
+        this.addImage(data);
+    }
+
 };
