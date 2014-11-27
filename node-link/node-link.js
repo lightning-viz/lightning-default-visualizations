@@ -73,9 +73,16 @@ module.exports = function(selector, data, images, opts) {
         .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
-        .append('svg:g')
-        .call(zoom);
+        .append("g")
+        .call(zoom)
+        .append("g");
 
+    svg.append("rect")
+        .attr("class", "overlay")
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
 
     function zoomed() {
         svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
