@@ -253,6 +253,7 @@ ScatterPlot.prototype.updateData = function(data) {
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
       .transition().ease('linear')
+        .duration(300)
         .style('opacity', 1.0)
         
     newdat.exit().transition().ease('linear')
@@ -284,5 +285,6 @@ ScatterPlot.prototype.appendData = function(data) {
         .on('mouseout', self.brighten)
       .transition()
         .ease('linear')
+        .duration(300)
         .style('opacity', 1.0)
 };
