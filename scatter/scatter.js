@@ -123,6 +123,21 @@ ScatterPlot.prototype._init = function() {
                 .tickSize(-width, 0, 0)
                 .tickFormat(''));
 
+    function brighten(d, i) {
+        var point = d3.select(this)
+        var newcolor = d3.hsl(point.style('fill')).darker(0.5)
+        point.style('fill', d3.rgb(newcolor))
+        self.emit('hover', d);
+        console.log('in: ' + i);
+    }
+
+    function darken(d, i) {
+        var point = d3.select(this)
+        var newcolor = d3.hsl(point.style('fill')).brighter(0.5)
+        point.style('fill', d3.rgb(newcolor))
+        console.log('out: ' + i);
+    }
+
     svg.selectAll('.dot')
         .data(data)
       .enter().append('circle')
@@ -133,20 +148,8 @@ ScatterPlot.prototype._init = function() {
         })
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
-        .on('mouseover', function(d, i) {
-            var point = d3.select(this)
-            var newcolor = d3.hsl(point.style('fill')).darker(0.5)
-            point.style('fill', d3.rgb(newcolor))
-            self.emit('hover', d);
-            console.log('in: ' + i);
-
-        })
-        .on('mouseout', function(d, i) {
-            var point = d3.select(this)
-            var newcolor = d3.hsl(point.style('fill')).brighter(0.5)
-            point.style('fill', d3.rgb(newcolor))
-            console.log('out: ' + i);
-        });
+        .on('mouseover', brighten)
+        .on('mouseout', darken);
 
     function zoomed() {
         svg.select('.x.axis').call(self.xAxis);
@@ -166,7 +169,10 @@ ScatterPlot.prototype._init = function() {
             });
     }
     
+    this.brighten = brighten;
+    this.darken = darken;
     this.svg = svg;
+
 }
 
 ScatterPlot.prototype._formatData = function(data) {
@@ -235,6 +241,8 @@ ScatterPlot.prototype.updateData = function(data) {
         })
         .style('fill',function(d) { return (d.c == null ?  self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .on('mouseover', self.darken)
+        .on('mouseout', self.brighten)
 
     newdat.enter()
         .append('circle')
@@ -247,6 +255,8 @@ ScatterPlot.prototype.updateData = function(data) {
         })
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .on('mouseover', self.darken)
+        .on('mouseout', self.brighten)
     
     newdat.exit().transition().ease('linear')
         .style('opacity', 0.0).remove()
@@ -278,4 +288,6 @@ ScatterPlot.prototype.appendData = function(data) {
         })
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .on('mouseover', self.darken)
+        .on('mouseout', self.brighten)
 };
