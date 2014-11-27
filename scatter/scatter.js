@@ -241,23 +241,20 @@ ScatterPlot.prototype.updateData = function(data) {
         })
         .style('fill',function(d) { return (d.c == null ?  self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
-        .on('mouseover', self.darken)
-        .on('mouseout', self.brighten)
 
     newdat.enter()
         .append('circle')
-        .transition().ease('linear')
-        .style('opacity', 1.0)
-        .attr('class','dot')
-        .attr('r',6)
-        .attr('transform', function(d) {
-            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
-        })
-        .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
-        .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
         .on('mouseover', self.darken)
         .on('mouseout', self.brighten)
-    
+        .style('opacity', 0.0)
+        .attr('class','dot')
+        .attr('r',6)
+        .attr('transform', function(d) {return 'translate(' + x(d.x) + ',' + y(d.y) + ')';})
+        .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
+        .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+      .transition().ease('linear')
+        .style('opacity', 1.0)
+        
     newdat.exit().transition().ease('linear')
         .style('opacity', 0.0).remove()
     
@@ -277,17 +274,15 @@ ScatterPlot.prototype.appendData = function(data) {
     this.svg.selectAll('circle')
         .data(data)
       .enter().append('circle')
-        .transition()
-        .ease('linear')
-        .style('opacity', 1.0)
+        .style('opacity', 0.0)
         .attr('class', 'dot')
         .attr('r',6)
-        .attr('fill','black')
-        .attr('transform', function(d) {
-            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
-        })
+        .attr('transform', function(d) {return 'translate(' + x(d.x) + ',' + y(d.y) + ')';})
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
         .on('mouseover', self.darken)
         .on('mouseout', self.brighten)
+      .transition()
+        .ease('linear')
+        .style('opacity', 1.0)
 };
