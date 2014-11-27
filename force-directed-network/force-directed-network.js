@@ -16,8 +16,6 @@ var ForceDirectedNetworkViz = function(selector, data, images, opts) {
 
     var width = $(selector).width() - margin.left - margin.right;
 
-    console.log(data.nodes)
-
     var zoom = d3.behavior.zoom()
         .scaleExtent([0.1, 20])
         .on("zoom", zoomed)
