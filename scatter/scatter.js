@@ -167,7 +167,6 @@ ScatterPlot.prototype._init = function() {
     }
     
     this.svg = svg;
-    this.points = points;
 }
 
 ScatterPlot.prototype._formatData = function(data) {
@@ -221,6 +220,7 @@ ScatterPlot.prototype.updateData = function(data) {
     // update existing points, add new ones
     // and delete old ones
    
+    self = this
     var x = this.x
     var y = this.y
 
@@ -233,8 +233,8 @@ ScatterPlot.prototype.updateData = function(data) {
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
-        .style('fill',function(d) { return (d.c == null ?  this.defaultFill : d.c);})
-        .style('stroke',function(d) { return (d.c == null ? this.defaultStroke : d.c.darker(0.75));})
+        .style('fill',function(d) { return (d.c == null ?  self.defaultFill : d.c);})
+        .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
 
     newdat.enter()
         .append('circle')
@@ -245,8 +245,8 @@ ScatterPlot.prototype.updateData = function(data) {
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
-        .style('fill',function(d) { return (d.c == null ? this.defaultFill : d.c);})
-        .style('stroke',function(d) { return (d.c == null ? this.defaultStroke : d.c.darker(0.75));})
+        .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
+        .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
     
     newdat.exit().transition().ease('linear')
         .style('opacity', 0.0).remove()
@@ -257,9 +257,10 @@ ScatterPlot.prototype.appendData = function(data) {
     
     // add new points to existing points
    
-    this.data = this.points.concat(this._formatData(data))
+    this.data = this.data.concat(this._formatData(data))
     data = this.data
 
+    self = this
     var x = this.x
     var y = this.y
     
@@ -275,6 +276,6 @@ ScatterPlot.prototype.appendData = function(data) {
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
-        .style('fill',function(d) { return (d.c == null ? this.defaultFill : d.c);})
-        .style('stroke',function(d) { return (d.c == null ? this.defaultStroke : d.c.darker(0.75));})
+        .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
+        .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
 };
