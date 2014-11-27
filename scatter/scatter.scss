@@ -24,15 +24,6 @@
         stroke-width: 2px;
     }
 
-    .dot {
-        stroke: #68a1e5;
-        fill: #deebfa;
-
-        &:hover {
-            fill: darken(#deebfa, 20%);
-        }
-    }
-
     text {
         fill: #BEC9CE;
         font-family: monospace;
