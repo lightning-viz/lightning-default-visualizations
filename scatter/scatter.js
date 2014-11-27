@@ -123,7 +123,7 @@ ScatterPlot.prototype._init = function() {
                 .tickSize(-width, 0, 0)
                 .tickFormat(''));
 
-    function brighten(d, i) {
+    function darken(d, i) {
         var point = d3.select(this)
         var newcolor = d3.hsl(point.style('fill')).darker(0.5)
         point.style('fill', d3.rgb(newcolor))
@@ -131,7 +131,7 @@ ScatterPlot.prototype._init = function() {
         console.log('in: ' + i);
     }
 
-    function darken(d, i) {
+    function brighten(d, i) {
         var point = d3.select(this)
         var newcolor = d3.hsl(point.style('fill')).brighter(0.5)
         point.style('fill', d3.rgb(newcolor))
@@ -148,8 +148,8 @@ ScatterPlot.prototype._init = function() {
         })
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
-        .on('mouseover', brighten)
-        .on('mouseout', darken);
+        .on('mouseover', darken)
+        .on('mouseout', brighten);
 
     function zoomed() {
         svg.select('.x.axis').call(self.xAxis);
