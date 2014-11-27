@@ -10,7 +10,7 @@ var margin = {
 
 var height = 500 - margin.top - margin.bottom;
 
-var ForceDirectedNetworkViz = function(selector, data, images, opts) {
+var Force = function(selector, data, images, opts) {
 
 	var color = d3.scale.category10();
 
@@ -78,4 +78,4 @@ var ForceDirectedNetworkViz = function(selector, data, images, opts) {
 };
 
 
-module.exports = ForceDirectedNetworkViz;
+module.exports = Force;

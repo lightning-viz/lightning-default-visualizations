@@ -13,7 +13,7 @@ var margin = {
 var maxHeight = 600;
  
  
-var StackedLineGraph = function(selector, data, images, opts) {
+var LineStackedGraph = function(selector, data, images, opts) {
  
     var colors = utils.getColors(data.length);
  
@@ -306,11 +306,11 @@ var StackedLineGraph = function(selector, data, images, opts) {
     }
 };
  
-module.exports = StackedLineGraph;
+module.exports = LineStackedGraph;
  
  
  
-StackedLineGraph.prototype.updateData = function(data) {
+LineStackedGraph.prototype.updateData = function(data) {
     this.svg.select('.line')
         .datum(data)
         .transition()

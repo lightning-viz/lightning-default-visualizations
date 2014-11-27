@@ -25,7 +25,7 @@ var nestedExtent = function(arrays, map) {
 };
 
 
-var StreamingLine = function(selector, data, images, opts) {
+var LineStreaming = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {};
@@ -42,10 +42,10 @@ var StreamingLine = function(selector, data, images, opts) {
 };
 
 
-inherits(StreamingLine, LineGraph);
+inherits(LineStreaming, LineGraph);
 
 
-StreamingLine.prototype.appendData = function(data) {
+LineStreaming.prototype.appendData = function(data) {
 
     var newData = this._formatData(data);
 
@@ -86,5 +86,5 @@ StreamingLine.prototype.appendData = function(data) {
 };
 
 
-module.exports = StreamingLine;
+module.exports = LineStreaming;
 
