@@ -1,5 +1,5 @@
+'use strict';
 var d3 = require('d3');
-
 var ScatterPlot = require('../viz/scatter');
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
@@ -33,31 +33,51 @@ var ScatterStreaming = function(selector, data, images, opts) {
 inherits(ScatterStreaming, ScatterPlot);
 
 ScatterStreaming.prototype.appendData = function(data) {
-
-    newpoints = this._formatData(data)
-    this.points = this.points.concat(newpoints)
-    
+   
     var x = this.x
     var y = this.y
+    var self = this
     
-    newdat = this.svg.selectAll('circle').data(this.points)
+    var newpoints = this._formatData(data)
+
+    // use classes to handle vanishing points over multiple updates
+    // order: current -> old -> older -> oldest -> gone
+
+    // set class of existing points so they are one time step older
+    // then they were when we started
+    this.svg.selectAll('circle.oldest').classed('gone', true)
+    this.svg.selectAll('circle.older').classed('oldest', true)
+    this.svg.selectAll('circle.old').classed('older', true)
+    this.svg.selectAll('circle:not(.older):not(.oldest):not(.gone)').classed('old', true)
     
-    newdat.enter().append('circle')
-        .transition()
-        .ease('linear')
-        .style('opacity', 1.0)
+    // fade out old points based on age
+    this.svg.selectAll('circle.old').transition().style('opacity', 0.6)
+    this.svg.selectAll('circle.older').transition().style('opacity', 0.3)
+    this.svg.selectAll('circle.oldest').transition().style('opacity', 0.15)
+    
+    // add new points
+    this.svg.selectAll('circle:not(.old):not(.older):not(.oldest):not(.gone)')
+      .data(newpoints).enter()
+        .append('circle')
+        .style('opacity', 0.0)
         .attr('class', 'dot')
-        .attr('r',6)
-        .attr('fill','black')
+        .attr('r', 6)
         .attr('transform', function(d) {
-            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+           return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
-        .style('fill',function(d) { return (d.c == null ? this.defaultFill : d.c);})
-        .style('stroke',function(d) { return (d.c == null ? this.defaultStroke : d.c.darker(0.75));})
-
-    newdat.style('opacity', 0.0)
-
-    this.points = newpoints
+        .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
+        .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .on('mouseover', self.darken)
+        .on('mouseout', self.brighten)
+      .transition().ease('linear')
+        .style('opacity', 1.0)
+    
+    // transition and remove points
+    this.svg.selectAll('circle.gone')
+        .transition().ease('linear').duration(300)
+        .style('opacity', 0.0)
+        .remove()
+  
 };
 
-module.exports = ScatterPlot;
+module.exports = ScatterStreaming;
