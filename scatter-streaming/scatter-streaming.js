@@ -51,9 +51,9 @@ ScatterStreaming.prototype.appendData = function(data) {
     this.svg.selectAll('circle:not(.older):not(.oldest):not(.gone)').classed('old', true)
     
     // fade out old points based on age
-    this.svg.selectAll('circle.old').transition().style('opacity', 0.6)
-    this.svg.selectAll('circle.older').transition().style('opacity', 0.3)
-    this.svg.selectAll('circle.oldest').transition().style('opacity', 0.15)
+    this.svg.selectAll('circle.old').transition().style('opacity', 0.5)
+    this.svg.selectAll('circle.older').transition().style('opacity', 0.25)
+    this.svg.selectAll('circle.oldest').transition().style('opacity', 0.1)
     
     // add new points
     this.svg.selectAll('circle:not(.old):not(.older):not(.oldest):not(.gone)')
