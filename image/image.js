@@ -1,6 +1,7 @@
 'use strict';
 
 var markup = '<div class="image-viz"><canvas></canvas></div>';
+var utils = require('lightning-client-utils');
 
 // code adopted from http://phrogz.net/tmp/canvas_zoom_to_cursor.html
 
@@ -8,9 +9,30 @@ var markup = '<div class="image-viz"><canvas></canvas></div>';
 var ImageViz = function(selector, data, images, opts) {
 
     var image = images[0];
+    var clickCount = 0;
 
     this.$el = $(selector).first();
     this.$el.append(markup);
+
+    var self = this;
+
+
+    this.$el.click(function() {
+        clickCount++;
+        utils.updateSettings(self, {
+            clickCount: clickCount
+        }, function(err) {
+            console.log('saved user data');
+        });
+    });
+
+    utils.getSettings(this, function(err, settings) {
+
+        console.log(settings);
+        if(!err) {
+            clickCount = settings.clickCount;
+        }
+    });
 
     opts = opts || {};
 
