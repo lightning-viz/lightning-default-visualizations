@@ -1,5 +1,7 @@
 var THREE = require('three.js');
 var _ = require('lodash');
+require('three-fly-controls')(THREE);
+
 
 
 var ThreeVolume = function(selector, data, images, opts) {
@@ -13,6 +15,7 @@ var ThreeVolume = function(selector, data, images, opts) {
 
     var container, stats;
     var camera, scene, renderer, particles, geometry, materials = [], parameters, i, h, color, size;
+    var controls;
     var boxMesh, boxGeometry;
     var self = this;
 
@@ -23,7 +26,7 @@ var ThreeVolume = function(selector, data, images, opts) {
 
         $(selector)[0].appendChild( renderer.domElement );
 
-        camera = new THREE.PerspectiveCamera( 70, width / height, 1, 1000 );
+        camera = new THREE.PerspectiveCamera( 50, width / height, 1, 500 );
         camera.position.z = 175;
 
         scene = new THREE.Scene();
@@ -31,31 +34,39 @@ var ThreeVolume = function(selector, data, images, opts) {
 
         // todo - get image size, 
         //        get orientation from options
-        var numImages = 41;
-        var zFactor = 1.5;
+        var zFactor = 2;
 
         var img = new Image();
         img.src = images[0];
 
         img.onload = function() {
 
-            geometry = new THREE.PlaneGeometry( img.width / 6, img.height / 6 );
+            geometry = new THREE.PlaneGeometry( img.width / 6, img.height / 6, zFactor );
         
-            _.each(images, function(img) {
+            _.each(images, function(img, i) {
                 var texture = THREE.ImageUtils.loadTexture( img );
-
-                var material = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.10, transparent: true, depthTest: false, blending: THREE.AdditiveBlending } );
+                texture.magFilter = THREE.NearestFilter;
+                texture.minFilter = THREE.NearestFilter;
+                var material = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.05, transparent: true, blending: THREE.AdditiveBlending } );
                 material.side = THREE.DoubleSide;
-                mesh = new THREE.Mesh( geometry,  material );
-                mesh.position.y = (numImages*zFactor / 2) - i * zFactor;
-                mesh.rotation.x = Math.PI / 2;
 
-                if(opts.rotateZ) {
-                    mesh.rotation.z = Math.PI / 2;
-                }
-                scene.add( mesh );
+                _.each(_.range(zFactor), function(j) {
+                    mesh = new THREE.Mesh( geometry,  material );
+                    mesh.position.z = i * zFactor + j;
+                    if(opts.rotateZ) {
+                        mesh.rotation.z = Math.PI / 2;
+                    }
+                    scene.add( mesh );
+                })
+
             });            
         }
+
+
+        camera.lookAt(new THREE.Vector3(0,0,175));
+
+        controls = new THREE.FlyControls(camera, $(selector)[0]);
+
 
     }
     
@@ -65,18 +76,15 @@ var ThreeVolume = function(selector, data, images, opts) {
     }
 
     function render() {
-        for ( i = 0; i < scene.children.length; i ++ ) {
-            var object = scene.children[ i ];
-                // object.rotation.y += 0.005;
-                object.rotation.x -= 0.001;
-        }
-
+    
+        controls.update();
         renderer.render( scene, camera );
     }
  
 
     init();
     animate();
+    
 
 };
 
