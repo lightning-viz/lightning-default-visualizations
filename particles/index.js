@@ -56,43 +56,29 @@ var ParticleTest = function(selector, data, images, opts) {
             colors[i].setRGB(data.colors[i][0], data.colors[i][1], data.colors[i][2]);
         });
 
+
+        THREE.ImageUtils.crossOrigin = '';
+        var sprite = THREE.ImageUtils.loadTexture( "http://i.gif.fm/janelia-images/textures/particle.png" );
+
         geometry.colors = colors;
         
-        console.log(geometry.colors);
-
-//        camera.position.x = avgs[0];
         camera.position.y = 0;
         camera.position.x = -1500;
         camera.position.z = 0;
-        console.log(avgs);
         
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-
-        parameters = [
-            [ [1, 1, 0.5], 5 ],
-            [ [0.95, 1, 0.5], 4 ],
-            [ [0.90, 1, 0.5], 3 ],
-            [ [0.85, 1, 0.5], 2 ],
-            [ [0.80, 1, 0.5], 1 ]
-        ];
-
-        for ( i = 0; i < parameters.length; i ++ ) {
-
-            color = parameters[i][0];
-            size  = parameters[i][1];
-
-            materials[i] = new THREE.PointCloudMaterial({ 
-                size: size,
-                vertexColors: THREE.VertexColors,
-                transparent: true,
-                opacity: 0.3
-            });
-
-            particles = new THREE.PointCloud( geometry, materials[i] );
-            scene.add( particles );
-
-        }
+        var material = new THREE.PointCloudMaterial({ 
+            size: 30,
+            map: sprite,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            vertexColors: THREE.VertexColors,
+            opacity : 0.75 
+        });
+        
+        particles = new THREE.PointCloud( geometry, material );
+        scene.add( particles );
 
         renderer = new THREE.WebGLRenderer();        
         renderer.setSize( width, height );
