@@ -1,10 +1,12 @@
 'use strict';
 
-var markup = '<div class="image-viz"><canvas></canvas></div>';
+var markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="map"></div>';
 var utils = require('lightning-client-utils');
+var L = require('leaflet')
+var F = require('leaflet.freedraw-browserify')
+F(L)
 
-// code adopted from http://phrogz.net/tmp/canvas_zoom_to_cursor.html
-
+// code adopted from http://kempe.net/blog/2014/06/14/leaflet-pan-zoom-image.html
 
 var ImageViz = function(selector, data, images, opts) {
 
@@ -15,7 +17,6 @@ var ImageViz = function(selector, data, images, opts) {
     this.$el.append(markup);
 
     var self = this;
-
 
     this.$el.click(function() {
         clickCount++;
@@ -32,172 +33,105 @@ var ImageViz = function(selector, data, images, opts) {
         if(!err) {
             clickCount = settings.clickCount;
         }
+        
     });
 
     opts = opts || {};
 
     var maxWidth = this.$el.width();
 
-
+    // create an image so we can get aspect ratio
     var img = new Image();
-    var canvas = this.$el.find('canvas')[0];
-    var ctx = canvas.getContext('2d');
-    trackTransforms(ctx);
-
-    img.src = image;
-
-
-    var redraw = function(){
-
-        // Clear the entire canvas
-        var p1 = ctx.transformedPoint(0,0);
-        var p2 = ctx.transformedPoint(canvas.width, canvas.height);
-        
-        ctx.clearRect(p1.x,p1.y,p2.x-p1.x,p2.y-p1.y);       
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
+    var self = this
+    img.src = image
 
     img.onload = function() {
 
-        if(img.width > maxWidth) {
-            canvas.width = maxWidth;
-            canvas.height = canvas.width * (img.height / img.width);
-        } else {
-            canvas.width = img.width;
-            canvas.height = img.height;            
-        }
+        // get image dimensions
+        var imw = img.width
+        var imh = img.height
 
-        if(opts.width) {
-            canvas.width = opts.width;
-            canvas.height = canvas.width * (img.height / img.width);
-        }
-        if(opts.height) {
-            canvas.height = opts.height;
-        }
+        // use image dimensions to set css
+        var w = maxWidth,
+            h = maxWidth * (imh / imw)
 
-        redraw();
-    };
+        self.$el.find('#map').width(w).height(h)
 
-    var lastX= canvas.width / 2;
-    var lastY = canvas.height / 2;
-    var dragStart, dragged;
+        //create the map
+        var map = L.map('map', {
+            minZoom: 1,
+            maxZoom: 8,
+            center: [w/2, h/2],
+            zoom: 1,
+            attributionControl: false,
+            zoomControl: false,
+            crs: L.CRS.Simple,
+        });
+             
+        // calculate the edges of the image, in coordinate space
+        var southWest = map.unproject([0, h], 1);
+        var northEast = map.unproject([w, 0], 1);
+        var bounds = new L.LatLngBounds(southWest, northEast);
+         
+        // add the image overlay to cover the map
+        L.imageOverlay(image, bounds).addTo(map);
+         
+        // tell leaflet that the map is exactly as big as the image
+        map.setMaxBounds(bounds);
 
-    canvas.addEventListener('mousedown',function(evt){
-        lastX = evt.offsetX || (evt.pageX - canvas.offsetLeft);
-        lastY = evt.offsetY || (evt.pageY - canvas.offsetTop);
-        dragStart = ctx.transformedPoint(lastX,lastY);
-        dragged = false;
-    }, false);
+        // add free drawing
+        var freeDraw = new L.FreeDraw({
+          mode: L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE | L.FreeDraw.MODES.DELETE
+        });
 
-    canvas.addEventListener('mousemove',function(evt){
-        lastX = evt.offsetX || (evt.pageX - canvas.offsetLeft);
-        lastY = evt.offsetY || (evt.pageY - canvas.offsetTop);
-        dragged = true;
-        if (dragStart){
-            var pt = ctx.transformedPoint(lastX,lastY);
-            ctx.translate(pt.x-dragStart.x,pt.y-dragStart.y);
-            redraw();
-        }
-    },false);
-    canvas.addEventListener('mouseup',function(evt){
-        dragStart = null;
-        if (!dragged) zoom(evt.shiftKey ? -1 : 1 );
-    },false);
+        freeDraw.options.attemptMerge = false
+        freeDraw.options.setHullAlgorithm('brian3kb/graham_scan_js')
+        freeDraw.options.setSmoothFactor(0)
 
-    var scaleFactor = 1.025;
-    var zoom = function(clicks){
-        var pt = ctx.transformedPoint(lastX,lastY);
-        ctx.translate(pt.x, pt.y);
-        var factor = Math.pow(scaleFactor,clicks);
-        ctx.scale(factor,factor);
-        ctx.translate(-pt.x, -pt.y);
-        redraw();
-    };
+        map.addLayer(freeDraw)
 
-    var handleScroll = function(evt){
-        var delta = evt.wheelDelta ? evt.wheelDelta/40 : evt.detail ? -evt.detail : 0;
-        if (delta) zoom(delta);
-        return evt.preventDefault() && false;
-    };
-    canvas.addEventListener('DOMMouseScroll',handleScroll,false);
-    canvas.addEventListener('mousewheel',handleScroll,false);
+        d3.select('body').on('keydown', keydown).on('keyup', keyup);
 
-
-    function trackTransforms(ctx){
-
-        var svg = document.createElementNS("http://www.w3.org/2000/svg",'svg');
-        var xform = svg.createSVGMatrix();
-
-        ctx.getTransform = function(){ return xform; };
-        
-        var savedTransforms = [];
-        var save = ctx.save;
-        ctx.save = function(){
-            savedTransforms.push(xform.translate(0,0));
-            return save.call(ctx);
-        };
-        var restore = ctx.restore;
-        ctx.restore = function(){
-            xform = savedTransforms.pop();
-            return restore.call(ctx);
-        };
-
-        var scale = ctx.scale;
-        ctx.scale = function(sx,sy){            
-            var oldXForm = xform;
-            xform = xform.scaleNonUniform(sx,sy);
-            if(xform.d < 1) {
-                xform = oldXForm;
-                return;
+        function keydown() {
+            if (d3.event.altKey) {
+                freeDraw.setMode(L.FreeDraw.MODES.EDIT)
             }
+            if (d3.event.metaKey | d3.event.shiftKey) {
+                freeDraw.setMode(L.FreeDraw.MODES.VIEW)
+            }
+        }
 
-            return scale.call(ctx,sx,sy);
-        };
-        
-        var rotate = ctx.rotate;
-        ctx.rotate = function(radians){
-            xform = xform.rotate(radians*180/Math.PI);
-            return rotate.call(ctx,radians);
-        };
-        
-        var translate = ctx.translate;
-        ctx.translate = function(dx,dy){
-            xform = xform.translate(dx,dy);
-            return translate.call(ctx,dx,dy);
-        };
-        
-        var transform = ctx.transform;
-        ctx.transform = function(a,b,c,d,e,f){
-            var m2 = svg.createSVGMatrix();
-            m2.a=a; m2.b=b; m2.c=c; m2.d=d; m2.e=e; m2.f=f;
-            xform = xform.multiply(m2);
-            return transform.call(ctx,a,b,c,d,e,f);
-        };
+        function keyup() {
+            freeDraw.setMode(L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE)
+        }
 
-        var setTransform = ctx.setTransform;
-        ctx.setTransform = function(a,b,c,d,e,f){
-            xform.a = a;
-            xform.b = b;
-            xform.c = c;
-            xform.d = d;
-            xform.e = e;
-            xform.f = f;
-            return setTransform.call(ctx,a,b,c,d,e,f);
-        };
-        var pt  = svg.createSVGPoint();
-        ctx.transformedPoint = function(x,y) {
-            pt.x=x; pt.y=y;
-            return pt.matrixTransform(xform.inverse());
-        };
+
+        // test extracting coordinates from regions
+
+        // setInterval(function(d) {
+        
+        //     var n = freeDraw.memory.states.length
+        //     var coords = freeDraw.memory.states[n-1].map( function(d) {
+        //         var points = []
+        //         d.forEach(function (p) {
+        //             var newpoint = map.project(p, 1)
+        //             newpoint.x *= (imw / w)
+        //             newpoint.y *= (imh / h)
+        //             points.push(newpoint)
+        //         })
+        //         return points
+        //     })
+
+        //     console.log(coords)
+
+        // }, 5000)
+
     }
 
-    this.canvas = canvas;
-    this.img = img;
 };
 
 
 module.exports = ImageViz;
-
 
 
 ImageViz.prototype.setImage = function(image) {

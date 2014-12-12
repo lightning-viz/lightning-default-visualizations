@@ -1,0 +1,81 @@
+.leaflet-container img.leaflet-image-layer {
+    max-width: none !important;
+}
+
+#map .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    box-shadow: inset -100px 0 100px -100px rgba(0, 0, 0, .25);
+    width: 100%;
+    height: 100%;
+    z-index: 2001;
+}
+
+
+#map g path {
+    transition: all 0.25s;
+    stroke-width: 4px;
+    stroke-opacity: 1;
+    stroke: rgb(255,128,0);
+    position: absolute;
+    z-index: 1001;
+    fill: lighten(rgb(255,128,0), 20%);
+    fill-opacity: .6;
+    -webkit-filter: none;
+}
+
+#map.mode-delete path {
+    cursor: no-drop;
+}
+
+#map.mode-delete path:hover {
+    fill: #4d4d4d !important;
+}
+
+#map div.polygon-elbow {
+    -webkit-transition: opacity .25s;
+    box-shadow: 0 0 0 2px white, 0 0 10px rgba(0, 0, 0, .35);
+    border: 5px solid rgb(255,128,0);
+    border-radius: 10px;
+    transition: opacity 0.25s;
+    cursor: move;
+    opacity: 0;
+    pointer-events: none;
+    box-sizing: border-box;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+#map div.polygon-elbow.non-polygon {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    border: 5px solid darkgray;
+}
+
+#map.mode-edit div.polygon-elbow {
+    opacity: 1;
+    pointer-events: all;
+}
+
+#map svg.tracer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2001;
+    pointer-events: none;
+}
+
+.mouse-line {
+    stroke: rgb(255,128,0);
+    stroke-width: 2;
+    opacity: 1.0;
+}
+
+
+#map.mode-create {
+    cursor: crosshair;
+}
