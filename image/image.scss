@@ -18,10 +18,10 @@
     transition: all 0.25s;
     stroke-width: 4px;
     stroke-opacity: 1;
-    stroke: rgb(255,128,0);
+    stroke: rgb(255,255,255);
     position: absolute;
     z-index: 1001;
-    fill: lighten(rgb(255,128,0), 20%);
+    fill: lighten(rgb(230,230,230), 20%);
     fill-opacity: .6;
     -webkit-filter: none;
 }
@@ -37,7 +37,7 @@
 #map div.polygon-elbow {
     -webkit-transition: opacity .25s;
     box-shadow: 0 0 0 2px white, 0 0 10px rgba(0, 0, 0, .35);
-    border: 5px solid rgb(255,128,0);
+    border: 5px solid rgb(255,255,255);
     border-radius: 10px;
     transition: opacity 0.25s;
     cursor: move;
@@ -70,7 +70,7 @@
 }
 
 .mouse-line {
-    stroke: rgb(255,128,0);
+    stroke: rgb(255,255,255);
     stroke-width: 2;
     opacity: 1.0;
 }
