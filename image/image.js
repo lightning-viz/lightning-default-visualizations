@@ -11,30 +11,12 @@ F(L)
 var ImageViz = function(selector, data, images, opts) {
 
     var image = images[0];
-    var clickCount = 0;
+    var coords = [];
 
     this.$el = $(selector).first();
     this.$el.append(markup);
 
     var self = this;
-
-    this.$el.click(function() {
-        clickCount++;
-        utils.updateSettings(self, {
-            clickCount: clickCount
-        }, function(err) {
-            console.log('saved user data');
-        });
-    });
-
-    utils.getSettings(this, function(err, settings) {
-
-        console.log(settings);
-        if(!err) {
-            clickCount = settings.clickCount;
-        }
-        
-    });
 
     opts = opts || {};
 
@@ -105,26 +87,37 @@ var ImageViz = function(selector, data, images, opts) {
             freeDraw.setMode(L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE)
         }
 
+        self.$el.click(function() {
 
-        // test extracting coordinates from regions
+            // extract coordinates from regions
+            var n = freeDraw.memory.states.length
+            var coords = freeDraw.memory.states[n-1].map( function(d) {
+                var points = []
+                d.forEach(function (p) {
+                    var newpoint = map.project(p, 1)
+                    newpoint.x *= (imw / w)
+                    newpoint.y *= (imh / h)
+                    points.push([newpoint.x, newpoint.y])
+                })
+                return points
+            })
 
-        // setInterval(function(d) {
-        
-        //     var n = freeDraw.memory.states.length
-        //     var coords = freeDraw.memory.states[n-1].map( function(d) {
-        //         var points = []
-        //         d.forEach(function (p) {
-        //             var newpoint = map.project(p, 1)
-        //             newpoint.x *= (imw / w)
-        //             newpoint.y *= (imh / h)
-        //             points.push(newpoint)
-        //         })
-        //         return points
-        //     })
+            utils.updateSettings(self, {
+                coords: coords
+            }, function(err) {
+                console.log('saved user data');
+                console.log(coords)
+            });
+        });
 
-        //     console.log(coords)
+        utils.getSettings(this, function(err, settings) {
 
-        // }, 5000)
+            console.log(settings);
+            if(!err) {
+                coords = settings.coords;
+            }
+            
+        });
 
     }
 
