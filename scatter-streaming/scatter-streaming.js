@@ -26,6 +26,8 @@ var ScatterStreaming = function(selector, data, images, opts) {
     this.selector = selector;
     this.defaultFill = '#deebfa'
     this.defaultStroke = '#68a1e5'
+    this.defaultSize = 8
+    this.defaultAlpha = 0.9
     this._init();
 
 };
@@ -55,13 +57,14 @@ ScatterStreaming.prototype.appendData = function(data) {
     this.svg.selectAll('circle.older').transition().style('opacity', 0.25)
     this.svg.selectAll('circle.oldest').transition().style('opacity', 0.1)
     
+
     // add new points
     this.svg.selectAll('circle:not(.old):not(.older):not(.oldest):not(.gone)')
       .data(newpoints).enter()
         .append('circle')
         .style('opacity', 0.0)
         .attr('class', 'dot')
-        .attr('r', 6)
+        .attr('r', function(d) { return (d.s == null ? self.defaultSize : d.s)})
         .attr('transform', function(d) {
            return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
