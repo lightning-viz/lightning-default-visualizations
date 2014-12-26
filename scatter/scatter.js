@@ -26,6 +26,8 @@ var ScatterPlot = function(selector, data, images, opts) {
     this.selector = selector;
     this.defaultFill = '#deebfa'
     this.defaultStroke = '#68a1e5'
+    this.defaultSize = 8
+    this.defaultAlpha = 0.9
     this._init();
 
 };
@@ -142,12 +144,14 @@ ScatterPlot.prototype._init = function() {
         .data(data)
       .enter().append('circle')
         .attr('class', 'dot')
-        .attr('r', 6)
+        .attr('r', function(d) { return (d.s == null ? self.defaultSize : d.s)})
         .attr('transform', function(d) {
             return 'translate(' + self.x(d.x) + ',' + self.y(d.y) + ')';
         })
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .style('fill-opacity',function(d) { return (d.a == null ? self.defaultAlpha : d.a);})
+        .style('stroke-opacity',function(d) { return (d.a == null ? self.defaultAlpha : d.a);})
         .on('mouseover', darken)
         .on('mouseout', brighten);
 
@@ -177,36 +181,48 @@ ScatterPlot.prototype._init = function() {
 
 ScatterPlot.prototype._formatData = function(data) {
 
-    var getColorsFromData = function(data) {
+    var getColorFromData = function(data) {
 
-        if(data.hasOwnProperty('labels')) {
+        if(data.hasOwnProperty('label')) {
 
             // get bounds and number of labels
-            labels = data.labels
-            var mn = d3.min(labels, function(d) {return d.k; });
-            var mx = d3.max(labels, function(d) {return d.k; });
+            label = data.label
+            var mn = d3.min(label, function(d) {return d; });
+            var mx = d3.max(label, function(d) {return d; });
             var n = mx - mn + 1
             var colors = utils.getColors(n)
 
             // get an array of d3 colors
-            retColors = labels.map(function(d) {return d3.rgb(colors[d.k - mn])});
+            retColor = label.map(function(d) {return d3.rgb(colors[d - mn])});
 
-        } else if (data.hasOwnProperty('colors')) {
+        } else if (data.hasOwnProperty('color')) {
 
             // get an array of d3 colors directly from r,g,b values
-            colors = data.colors
-            retColors = colors.map(function(d) {return d3.rgb(d.r, d.g, d.b)})
+            color = data.color
+            retColor = color.map(function(d) {return d3.rgb(d[0], d[1], d[2])})
 
         } else {
 
             // otherwise return empty
-            retColors = []
+            retColor = []
         }
 
-        return retColors
+        return retColor
     }
 
-    retColors = getColorsFromData(data)
+    var getPropertyFromData = function(data, name) {
+
+        if (data.hasOwnProperty(name)) {
+            ret = data[name]
+        } else {
+            ret = []
+        }
+        return ret
+    }
+
+    retColor = getColorFromData(data)
+    retSize = getPropertyFromData(data, 'size')
+    retAlpha = getPropertyFromData(data, 'alpha')
 
     if (data.hasOwnProperty('points')) {
         points = data.points
@@ -215,7 +231,11 @@ ScatterPlot.prototype._formatData = function(data) {
     }
 
     return points.map(function(d, i) {
-        d.c = retColors[i]
+        d.x = d[0]
+        d.y = d[1]
+        d.c = retColor.length > 1 ? retColor[i] : retColor[0]
+        d.s = retSize.length > 1 ? retSize[i] : retSize[0]
+        d.a = retAlpha.length > 1 ? retAlpha[i] : retAlpha[0]
         return d
     })
 
@@ -235,12 +255,14 @@ ScatterPlot.prototype.updateData = function(data) {
         
     newdat.transition().ease('linear')
         .attr('class', 'dot')
-        .attr('r',6)
+        .attr('r', function(d) { return (d.s == null ? self.defaultSize : d.s)})
         .attr('transform', function(d) {
             return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
         })
         .style('fill',function(d) { return (d.c == null ?  self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .style('fill-opacity',function(d) { return (d.a == null ? self.defaultAlpha : d.a);})
+        .style('stroke-opacity',function(d) { return (d.a == null ? self.defaultAlpha : d.a);})
 
     newdat.enter()
         .append('circle')
@@ -248,10 +270,12 @@ ScatterPlot.prototype.updateData = function(data) {
         .on('mouseout', self.brighten)
         .style('opacity', 0.0)
         .attr('class','dot')
-        .attr('r',6)
+        .attr('r', function(d) { return (d.s == null ? self.defaultSize : d.s)})
         .attr('transform', function(d) {return 'translate(' + x(d.x) + ',' + y(d.y) + ')';})
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .style('fill-opacity', function(d) { return (d.a == null ? self.defaultOpacity : d.a)})
+        .style('stroke-opacity',function(d) { return (d.a == null ? self.defaultAlpha : d.a);})
       .transition().ease('linear')
         .duration(300)
         .style('opacity', 1.0)
