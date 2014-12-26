@@ -10,10 +10,6 @@ var ROIViz = function(selector, data, images, options) {
     $el.append(templateHTML());
     this.$el = $el;
 
-    if(data.points) {
-        data = data.points;
-    }
-
     var ScatterPlot = require('../viz/scatter');
     var scatter = new ScatterPlot(selector + ' #scatter-plot', data, null, {width: $(selector).width(), height: Math.min(500, $(selector).width * 0.6)});
     var LineChart = require('../viz/line');
