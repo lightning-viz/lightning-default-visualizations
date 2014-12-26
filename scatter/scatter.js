@@ -233,6 +233,7 @@ ScatterPlot.prototype._formatData = function(data) {
     return points.map(function(d, i) {
         d.x = d[0]
         d.y = d[1]
+        d.i = i
         d.c = retColor.length > 1 ? retColor[i] : retColor[0]
         d.s = retSize.length > 1 ? retSize[i] : retSize[0]
         d.a = retAlpha.length > 1 ? retAlpha[i] : retAlpha[0]
