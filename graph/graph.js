@@ -2,7 +2,6 @@ var d3 = require('d3');
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
 
-
 var margin = {
     top: 20,
     right: 20,
