@@ -24,7 +24,6 @@ var Force = function(selector, data, images, opts) {
     this.selector = selector;
     this.defaultSize = 8
     this.defaultFill = '#68a1e5'
-    this.defaultStroke = '#68a1e5'
     this._init();
 
 };
@@ -147,12 +146,14 @@ Force.prototype._init = function() {
         d3.event.sourceEvent.stopPropagation();
       });
 
+    var linkStroke = nodes[0].c == null ? '#A38EF3' : '#999'
+
     var link = svg.selectAll(".link")
         .data(links)
     .enter().append("line")
         .attr("class", "link")
-        .style("stroke-width", function(d) { return Math.sqrt(d.value); })
-        .style("stroke", '#999')
+        .style("stroke-width", function(d) { return 1 * Math.sqrt(d.value); })
+        .style("stroke", linkStroke)
         .style("stroke-opacity", 0.9);
 
     var node = svg.selectAll(".node")
@@ -235,7 +236,6 @@ Force.prototype._formatData = function(data) {
         d.n = retName[i]
         d.c = retColor.length > 1 ? retColor[i] : retColor[0]
         d.s = retSize.length > 1 ? retSize[i] : retSize[0]
-        console.log(i)
         return d
     });
 
