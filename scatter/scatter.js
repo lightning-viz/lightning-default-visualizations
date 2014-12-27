@@ -257,14 +257,16 @@ ScatterPlot.prototype.appendData = function(data) {
     var y = this.y
     
     this.svg.selectAll('circle')
-        .data(data)
+        .data(points)
       .enter().append('circle')
         .style('opacity', 0.0)
         .attr('class', 'dot')
-        .attr('r',6)
+        .attr('r', function(d) { return (d.s == null ? self.defaultSize : d.s)})
         .attr('transform', function(d) {return 'translate(' + x(d.x) + ',' + y(d.y) + ')';})
         .style('fill',function(d) { return (d.c == null ? self.defaultFill : d.c);})
         .style('stroke',function(d) { return (d.c == null ? self.defaultStroke : d.c.darker(0.75));})
+        .style('fill-opacity', function(d) { return (d.a == null ? self.defaultOpacity : d.a)})
+        .style('stroke-opacity',function(d) { return (d.a == null ? self.defaultAlpha : d.a);})
         .on('mouseover', self.darken)
         .on('mouseout', self.brighten)
       .transition()
