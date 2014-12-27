@@ -1,3 +1,4 @@
+'use strict';
 var d3 = require('d3');
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
@@ -75,8 +76,10 @@ Force.prototype._init = function() {
 
     // array indicating links
     var linkedByIndex = {};
+    var i
     for (i = 0; i < nodes.length; i++) {
-        linkedByIndex[i + "," + i] = 1;
+        console.log(i)
+        linkedByIndex[i + ',' + i] = 1;
     };
     links.forEach(function (d) {
         linkedByIndex[d.source + "," + d.target] = 1;
@@ -91,7 +94,7 @@ Force.prototype._init = function() {
         console.log(toggleOpacity)
         if (toggleOpacity == 0) {
             // change opacity of all but the neighbouring nodes
-            d = d3.select(this).node().__data__;
+            var d = d3.select(this).node().__data__;
             node.style("stroke", function (o) {
                 return d.index == o.index ? "rgb(30,30,30)" : "white";
             });
@@ -99,7 +102,7 @@ Force.prototype._init = function() {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
             link.style("opacity", function (o) {
-                return d.index==o.source.index | d.index==o.target.index ? linkStrokeOpacity : 0.1;
+                return d.index==o.source.index | d.index==o.target.index ? 1 : linkStrokeOpacity / 10;
             });
             toggleOpacity = 1;
         } else {
@@ -158,9 +161,9 @@ Force.prototype._init = function() {
 
 Force.prototype._formatData = function(data) {
 
-    retColor = utils.getColorFromData(data)
-    retSize = data.size || []
-    retName = data.name || []
+    var retColor = utils.getColorFromData(data)
+    var retSize = data.size || []
+    var retName = data.name || []
 
     data.nodes = data.nodes.map(function (d,i) {
         d = []

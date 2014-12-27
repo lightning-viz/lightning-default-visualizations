@@ -273,7 +273,7 @@ LineGraph.prototype._formatData = function(data) {
     }
 
     return data;
-}
+};
 
 
 module.exports = LineGraph;
