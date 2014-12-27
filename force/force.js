@@ -113,7 +113,7 @@ Force.prototype._init = function() {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
             link.style("opacity", function (o) {
-                return d.index==o.source.index | d.index==o.target.index ? 1 : 0.2;
+                return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
             });
             toggleOpacity = 1;
         } else {
