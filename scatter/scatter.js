@@ -44,10 +44,12 @@ ScatterPlot.prototype._init = function() {
     var selector = this.selector
     var self = this
 
-    var xDomain = d3.extent(data, function(d) {
+    var points = data.points
+
+    var xDomain = d3.extent(points, function(d) {
             return d.x;
         });
-    var yDomain = d3.extent(data, function(d) {
+    var yDomain = d3.extent(points, function(d) {
             return d.y;
         });
 
@@ -140,7 +142,7 @@ ScatterPlot.prototype._init = function() {
     }
 
     svg.selectAll('.dot')
-        .data(data)
+        .data(points)
       .enter().append('circle')
         .attr('class', 'dot')
         .attr('r', function(d) { return (d.s == null ? self.defaultSize : d.s)})
@@ -175,22 +177,17 @@ ScatterPlot.prototype._init = function() {
     this.brighten = brighten;
     this.darken = darken;
     this.svg = svg;
+    this.points = points;
 
 }
 
 ScatterPlot.prototype._formatData = function(data) {
 
     retColor = utils.getColorFromData(data)
-    retSize = utils.getPropertyFromData(data, 'size')
-    retAlpha = utils.getPropertyFromData(data, 'alpha')
+    retSize = data.size || []
+    retAlpha = data.alpha || []
 
-    if (data.hasOwnProperty('points')) {
-        points = data.points
-    } else {
-        points = data
-    }
-
-    return points.map(function(d, i) {
+    data.points = data.points.map(function(d, i) {
         d.x = d[0]
         d.y = d[1]
         d.i = i
@@ -199,6 +196,8 @@ ScatterPlot.prototype._formatData = function(data) {
         d.a = retAlpha.length > 1 ? retAlpha[i] : retAlpha[0]
         return d
     })
+
+    return data
 
 };
 
@@ -212,7 +211,7 @@ ScatterPlot.prototype.updateData = function(data) {
     var y = this.y
 
     var newdat = this.svg.selectAll('circle')
-        .data(this._formatData(data))
+        .data(this._formatData(data).points)
         
     newdat.transition().ease('linear')
         .attr('class', 'dot')
@@ -250,8 +249,8 @@ ScatterPlot.prototype.appendData = function(data) {
     
     // add new points to existing points
    
-    this.data = this.data.concat(this._formatData(data))
-    data = this.data
+    this.points = this.points.concat(this._formatData(data).points)
+    points = this.points
 
     self = this
     var x = this.x
