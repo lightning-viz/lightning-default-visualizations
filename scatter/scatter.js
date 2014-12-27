@@ -1,5 +1,4 @@
 var d3 = require('d3');
-
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 
@@ -181,48 +180,9 @@ ScatterPlot.prototype._init = function() {
 
 ScatterPlot.prototype._formatData = function(data) {
 
-    var getColorFromData = function(data) {
-
-        if(data.hasOwnProperty('label')) {
-
-            // get bounds and number of labels
-            label = data.label
-            var mn = d3.min(label, function(d) {return d; });
-            var mx = d3.max(label, function(d) {return d; });
-            var n = mx - mn + 1
-            var colors = utils.getColors(n)
-
-            // get an array of d3 colors
-            retColor = label.map(function(d) {return d3.rgb(colors[d - mn])});
-
-        } else if (data.hasOwnProperty('color')) {
-
-            // get an array of d3 colors directly from r,g,b values
-            color = data.color
-            retColor = color.map(function(d) {return d3.rgb(d[0], d[1], d[2])})
-
-        } else {
-
-            // otherwise return empty
-            retColor = []
-        }
-
-        return retColor
-    }
-
-    var getPropertyFromData = function(data, name) {
-
-        if (data.hasOwnProperty(name)) {
-            ret = data[name]
-        } else {
-            ret = []
-        }
-        return ret
-    }
-
-    retColor = getColorFromData(data)
-    retSize = getPropertyFromData(data, 'size')
-    retAlpha = getPropertyFromData(data, 'alpha')
+    retColor = utils.getColorFromData(data)
+    retSize = utils.getPropertyFromData(data, 'size')
+    retAlpha = utils.getPropertyFromData(data, 'alpha')
 
     if (data.hasOwnProperty('points')) {
         points = data.points
