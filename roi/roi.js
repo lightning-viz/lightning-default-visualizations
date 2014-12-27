@@ -35,7 +35,4 @@ var ROIViz = function(selector, data, images, options) {
     });
 };
 
-
-
-
 module.exports = ROIViz;
