@@ -25,7 +25,7 @@ var Graph = function(selector, data, images, opts) {
     this.images = images || []
     this.selector = selector;
     this.defaultFill = '#68a1e5'
-    this.defaultSize = 4
+    this.defaultSize = 8
     this._init();
 };
 
