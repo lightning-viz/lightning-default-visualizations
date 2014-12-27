@@ -42,6 +42,12 @@ Force.prototype._init = function() {
     var links = this.data.links
     var nodes = this.data.nodes
 
+    // if points are colored use gray, otherwise use our default
+    var linkStrokeColor = nodes[0].c == null ? '#A38EF3' : '#999'
+
+    // set opacity inversely proportional to number of links
+    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
+
     var zoom = d3.behavior.zoom()
         .scaleExtent([0.1, 20])
         .on("zoom", zoomed)
@@ -81,25 +87,6 @@ Force.prototype._init = function() {
         return linkedByIndex[a.index + "," + b.index];
     }
 
-    function connectedNodesStroke() {
-        if (toggleStroke == 0) {
-            // change stroke of connecting nodes
-            d = d3.select(this).node().__data__;
-            node.style("stroke", function (o) {
-                return neighboring(d, o) | neighboring(o, d) ? "gray" : "white";
-            });
-            node.style("stroke-width", function (o) {
-                return neighboring(d, o) | neighboring(o, d) ? 1.5 : 1;
-            });
-            toggleStroke = 1;
-        } else {
-            // restore properties
-            node.style("stroke-width", 1);
-            node.style("stroke", "white")
-            toggleStroke = 0;
-        }
-    }
-
     function connectedNodesOpacity() {
         console.log(toggleOpacity)
         if (toggleOpacity == 0) {
@@ -112,14 +99,14 @@ Force.prototype._init = function() {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
             link.style("opacity", function (o) {
-                return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1;
+                return d.index==o.source.index | d.index==o.target.index ? linkStrokeOpacity : 0.1;
             });
             toggleOpacity = 1;
         } else {
             // restore properties
             node.style("stroke", "white")
             node.style("opacity", 1)
-            link.style("opacity", 1);
+            link.style("opacity", linkStrokeOpacity);
             toggleOpacity = 0;
         }
     }
@@ -146,15 +133,13 @@ Force.prototype._init = function() {
         d3.event.sourceEvent.stopPropagation();
       });
 
-    var linkStroke = nodes[0].c == null ? '#A38EF3' : '#999'
-
     var link = svg.selectAll(".link")
         .data(links)
     .enter().append("line")
         .attr("class", "link")
         .style("stroke-width", function(d) { return 1 * Math.sqrt(d.value); })
-        .style("stroke", linkStroke)
-        .style("stroke-opacity", 0.9);
+        .style("stroke", linkStrokeColor)
+        .style("stroke-opacity", linkStrokeOpacity);
 
     var node = svg.selectAll(".node")
         .data(nodes)
@@ -162,6 +147,7 @@ Force.prototype._init = function() {
         .attr("class", "node")
         .attr("r", function(d) { return (d.s == null ? self.defaultSize : d.s)})
         .style("fill", function(d) { return (d.c == null ? self.defaultFill : d.c);})
+        .style("fill-opacity", 0.9)
         .style("stroke", "white")
         .style("stroke-width", 1)
         .on('dblclick', connectedNodesOpacity)

@@ -45,7 +45,11 @@ Graph.prototype._init = function() {
     var nodes = data.nodes
     var links = data.links
 
-    var linkStroke = nodes[0].c == null ? '#A38EF3' : '#999'
+    // if points are colored use gray, otherwise use our default
+    var linkStrokeColor = nodes[0].c == null ? '#A38EF3' : '#999'
+
+    // set opacity inversely proportional to number of links
+    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
 
     var xDomain = d3.extent(nodes, function(d) {
         return d.x;
@@ -81,10 +85,9 @@ Graph.prototype._init = function() {
         .range([height, 0]);
 
     nodes = _.map(nodes, function(n) {
-        return {
-            x: x(n.x),
-            y: y(n.y)
-        }
+        n.x = x(n.x)
+        n.y = y(n.y)
+        return n
     });
 
     var zoom = d3.behavior.zoom()
@@ -128,9 +131,9 @@ Graph.prototype._init = function() {
     _.each(data.links, function(link) {
         svg.append('path').attr('d', line([nodes[link.source], nodes[link.target]]))
             .style('stroke-width', 1 * Math.sqrt(link.value))
-            .style('stroke', linkStroke)
+            .style('stroke', linkStrokeColor)
             .style('fill', 'none')
-            .style('stroke-opacity', 0.1); //use opacity as blending
+            .style('stroke-opacity', linkStrokeOpacity); //use opacity as blending
     })
 
     //draw nodes
@@ -141,8 +144,9 @@ Graph.prototype._init = function() {
        .classed('node', true)
        .attr("r", function(d) { return (d.s == null ? self.defaultSize : d.s)})
        .style("fill", function(d) { return (d.c == null ? self.defaultFill : d.c);})
-       .attr('fill-opacity',0.7)
-       .attr('stroke','white')
+       .attr('fill-opacity',0.9)
+       .attr('stroke', 'white')
+       .attr('stroke-width', 1)
        .attr('cx', function(d){ return d.x;})
        .attr('cy', function(d){ return d.y;});
 
