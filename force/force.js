@@ -239,6 +239,13 @@ Force.prototype._formatData = function(data) {
         return d
     });
 
+    data.links = data.links.map(function (d,i) {
+        d.source = d[0]
+        d.target = d[1]
+        d.value = d[2]
+        return d
+    })
+
     return data
 
 }
