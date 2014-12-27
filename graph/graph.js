@@ -48,7 +48,7 @@ Graph.prototype._init = function() {
     var links = data.links;
 
     // if points are colored use gray, otherwise use our default
-    var linkStrokeColor = nodes[0].c === null ? '#A38EF3' : '#999';
+    var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
 
     // set opacity inversely proportional to number of links
     var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15);
@@ -176,7 +176,7 @@ Graph.prototype._init = function() {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
             link.style("opacity", function (o) {
-                 return d.i==o.source | d.i==o.target ? 1 : linkStrokeOpacity / 10;
+                 return d.i==o.source | d.i==o.target ? 0.9 : linkStrokeOpacity / 10;
             });
             toggleOpacity = 1;
         } else {
@@ -194,8 +194,8 @@ Graph.prototype._init = function() {
       .enter()
        .append('circle')
        .classed('node', true)
-       .attr('r', function(d) { return (d.s === null ? self.defaultSize : d.s); })
-       .style('fill', function(d) { return (d.c === null ? self.defaultFill : d.c); })
+       .attr('r', function(d) { return (d.s ? d.s : self.defaultSize); })
+       .style('fill', function(d) { return (d.c ? d.c : self.defaultFill); })
        .attr('fill-opacity',0.9)
        .attr('stroke', 'white')
        .attr('stroke-width', 1)
@@ -227,6 +227,8 @@ Graph.prototype._formatData = function(data) {
         d.value = d[2];
         return d;
     });
+
+    console.log(data)
 
     return data;
 

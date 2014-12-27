@@ -44,7 +44,7 @@ Force.prototype._init = function() {
     var nodes = this.data.nodes
 
     // if points are colored use gray, otherwise use our default
-    var linkStrokeColor = nodes[0].c == null ? '#A38EF3' : '#999'
+    var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
 
     // set opacity inversely proportional to number of links
     var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
@@ -139,8 +139,8 @@ Force.prototype._init = function() {
         .data(nodes)
     .enter().append("circle")
         .attr("class", "node")
-        .attr("r", function(d) { return (d.s == null ? self.defaultSize : d.s)})
-        .style("fill", function(d) { return (d.c == null ? self.defaultFill : d.c);})
+        .attr("r", function(d) { return (d.s ? d.s : self.defaultSize); })
+        .style("fill", function(d) { return (d.c ? d.c : self.defaultFill); })
         .style("fill-opacity", 0.9)
         .style("stroke", "white")
         .style("stroke-width", 1)
