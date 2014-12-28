@@ -32,7 +32,7 @@ var ROIViz = function(selector, data, images, options) {
         utils.fetchData(self, ['series', d.i], function(err, data) {
             if(!err) {
                 var series = data
-                var newdata = {'series': _.times(series.length, _.constant(0))};
+                var newdata = {'series': series};
                 line.updateData(newdata);   
             }
         });
