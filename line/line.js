@@ -36,6 +36,7 @@ var LineGraph = function(selector, data, images, opts) {
 
     this.data = this._formatData(data);
     this.selector = selector;
+    this.defaultSize = 2;
     this._init();
 };
 
@@ -49,16 +50,19 @@ LineGraph.prototype._init = function() {
     var selector = this.selector;
     var self = this;
 
+    var series = data.series;
+    var color = data.color.length > 0 ? data.color : utils.getColors(series.length);
+    var size = data.size
 
+    console.log(color)
 
-    var yDomain = nestedExtent(data, function(d) {
+    var yDomain = nestedExtent(series, function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(data, function(d) {
+    var xDomain = nestedExtent(series, function(d) {
         return d.x;
     });
 
-    
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
     var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
@@ -78,8 +82,7 @@ LineGraph.prototype._init = function() {
         })
         .y(function (d) {
             return self.y(d.y);
-        });
-
+        })
 
     var yToggle;
     if(opts.zoomAxes) {
@@ -117,7 +120,6 @@ LineGraph.prototype._init = function() {
         .attr('width', width)
         .attr('height', height)
         .attr('class', 'plot');
-
 
     d3.select('body').on('keydown', function() {
         if(d3.event.shiftKey) {
@@ -188,17 +190,15 @@ LineGraph.prototype._init = function() {
     var chartBody = svg.append('g')
         .attr('clip-path', 'url(#clip)');
 
-
-
-    var colors = utils.getColors(data.length);
-    _.each(data, function(d, i) {
+    _.each(series, function(d, i) {
         chartBody.append('path')
             .datum(d)
             .attr('class', 'line')
-            .attr('stroke', colors[i])
+            .attr('stroke', color[i])
+            .style('stroke-width', size[i] ? size[i] : self.defaultSize)
+            .style('stroke-opacity', 0.9)
             .attr('d', self.line);
     });
-
 
     function updateAxis() {
 
@@ -214,7 +214,6 @@ LineGraph.prototype._init = function() {
                     .tickFormat(''));
     }
 
-
     function zoomed() {
 
         updateAxis();
@@ -222,7 +221,6 @@ LineGraph.prototype._init = function() {
             .attr('class', 'line')
             .attr('d', self.line);
     }
-
 
     this.svg = svg;
     this.zoomed = zoomed;
@@ -232,45 +230,32 @@ LineGraph.prototype._init = function() {
 
 LineGraph.prototype._formatData = function(data) {
 
-    data = data || [];
-
-
-    // Data can be:
-    //
-    // Array of points
-    // e.g.
-    // [{x: 1, y: 2}, {x: 2, y: 3}]
-    //
-    // or an array of timeseries values
-    // e.g
-    // [1, 2, 3, 5, 6, 3]
-    //
-    //
-    // or an array of either of these
-
-    if(_.isArray(data[0])) {
-        data = _.map(data, function(d) {
-            if(_.isNumber(d[0])) {
-                return _.map(d, function(datum, i) {
-                    return {
-                        x: i,
-                        y: datum
-                    };
-                });
-            }
-            return d;
+    if(_.isArray(data.series[0])) {
+        // handle case of mutliple series
+        data.series = _.map(data.series, function(d) {
+            return _.map(d, function(datum, i) {
+                return {
+                    x: data.index ? data.index[i] : i,
+                    y: datum
+                };
+            });
         });
     } else {
-        data = [_.map(data, function(d, i) {
-            if(_.isNumber(d)) {
-                return {
-                    x: i,
-                    y: d
-                };
-            }
-            return d;
+        // handle a single series
+        data.series = [_.map(data.series, function(d, i) {
+            return {
+                x: data.index ? data.index[i] : i,
+                y: d
+            };
         })];
     }
+
+    data.color = utils.getColorFromData(data);
+    if (data.color.length == 1) {
+        data.color = _.times(data.series.length, _.constant(data.color));
+    }
+
+    data.size = data.size || []
 
     return data;
 };
@@ -282,12 +267,12 @@ module.exports = LineGraph;
 LineGraph.prototype.updateData = function(data) {
 
     this.data = this._formatData(data);
-    data = this.data;
+    var series = this.data.series;
 
-    var yDomain = nestedExtent(data, function(d) {
+    var yDomain = nestedExtent(series, function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(data, function(d) {
+    var xDomain = nestedExtent(series, function(d) {
         return d.x;
     });
     
@@ -300,7 +285,7 @@ LineGraph.prototype.updateData = function(data) {
     this.updateAxis();
 
     this.svg.selectAll('.line')
-        .data(data)
+        .data(series)
         .transition()
         .attr('d', this.line);
 
@@ -310,12 +295,12 @@ LineGraph.prototype.updateData = function(data) {
 LineGraph.prototype.appendData = function(data) {
     
     this.data = this.data.concat(this._formatData(data));
-    data = this.data;
+    var series = this.data.series;
 
-    var yDomain = nestedExtent(data, function(d) {
+    var yDomain = nestedExtent(series, function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(data, function(d) {
+    var xDomain = nestedExtent(series, function(d) {
         return d.x;
     });
     
@@ -328,7 +313,7 @@ LineGraph.prototype.appendData = function(data) {
     this.updateAxis();
 
     this.svg.selectAll('.line')
-        .data(data)
+        .data(series)
         .transition()
         .attr('d', this.line);
 };
