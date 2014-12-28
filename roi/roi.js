@@ -17,7 +17,9 @@ var ROIViz = function(selector, data, images, options) {
 
     utils.fetchData(this, ['series', 0], function(err, data) {
         if(!err) {
-            line = new LineChart(selector + ' #line-chart', Array.apply(null, new Array(data.length)).map(Number.prototype.valueOf,0), null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
+            var series = data
+            var newdata = {'series': _.times(series.length, _.constant(0))};
+            line = new LineChart(selector + ' #line-chart', newdata, null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         } else {
             line = new LineChart(selector + ' #line-chart', [], null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         }
@@ -29,7 +31,9 @@ var ROIViz = function(selector, data, images, options) {
     scatter.on('hover', function(d) {
         utils.fetchData(self, ['series', d.i], function(err, data) {
             if(!err) {
-                line.updateData(data);   
+                var series = data
+                var newdata = {'series': _.times(series.length, _.constant(0))};
+                line.updateData(newdata);   
             }
         });
     });
