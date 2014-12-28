@@ -256,6 +256,9 @@ LineGraph.prototype._formatData = function(data) {
     }
 
     data.size = data.size || []
+    if (data.size.length == 1) {
+        data.size = _.times(data.series.length, _.constant(data.size));
+    }
 
     return data;
 };
