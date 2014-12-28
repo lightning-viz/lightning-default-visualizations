@@ -228,8 +228,6 @@ Graph.prototype._formatData = function(data) {
         return d;
     });
 
-    console.log(data)
-
     return data;
 
 };
