@@ -15,7 +15,7 @@ var ROIViz = function(selector, data, images, options) {
     var LineChart = require('../viz/line');
     var line;
 
-    utils.fetchData(this, ['timeseries', 0], function(err, data) {
+    utils.fetchData(this, ['series', 0], function(err, data) {
         if(!err) {
             line = new LineChart(selector + ' #line-chart', Array.apply(null, new Array(data.length)).map(Number.prototype.valueOf,0), null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         } else {
@@ -27,7 +27,7 @@ var ROIViz = function(selector, data, images, options) {
 
     var self = this;
     scatter.on('hover', function(d) {
-        utils.fetchData(self, ['timeseries', d.i], function(err, data) {
+        utils.fetchData(self, ['series', d.i], function(err, data) {
             if(!err) {
                 line.updateData(data);   
             }
