@@ -24,7 +24,7 @@ var nestedExtent = function(data, map) {
 };
 
 
-var LineGraph = function(selector, data, images, opts) {
+var Line = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {};
@@ -41,7 +41,7 @@ var LineGraph = function(selector, data, images, opts) {
 };
 
 
-LineGraph.prototype._init = function() {
+Line.prototype._init = function() {
 
     var data = this.data;
     var height = this.height;
@@ -247,7 +247,7 @@ LineGraph.prototype._init = function() {
 };
 
 
-LineGraph.prototype._formatData = function(data) {
+Line.prototype._formatData = function(data) {
 
     // parse the array data
     if(_.isArray(data.series[0])) {
@@ -290,10 +290,10 @@ LineGraph.prototype._formatData = function(data) {
 };
 
 
-module.exports = LineGraph;
+module.exports = Line;
 
 
-LineGraph.prototype.updateData = function(data) {
+Line.prototype.updateData = function(data) {
 
     var self = this
     
@@ -347,7 +347,7 @@ LineGraph.prototype.updateData = function(data) {
 };
 
 
-LineGraph.prototype.appendData = function(data) {
+Line.prototype.appendData = function(data) {
 
     // add new lines to existing lines
     

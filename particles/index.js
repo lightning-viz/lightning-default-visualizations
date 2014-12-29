@@ -3,7 +3,7 @@ var _ = require('lodash');
 require('three-fly-controls')(THREE);
 
 
-var ParticleTest = function(selector, data, images, opts) {
+var Particles = function(selector, data, images, opts) {
 
     var width = $(selector).width();
     var height = width * 0.7;
@@ -112,7 +112,7 @@ var ParticleTest = function(selector, data, images, opts) {
 
 
 
-ParticleTest.prototype.updateData = function(data) {
+Particles.prototype.updateData = function(data) {
 
 
     var self = this;
@@ -148,6 +148,6 @@ ParticleTest.prototype.updateData = function(data) {
 };
 
 
-module.exports = ParticleTest;
+module.exports = Particles;
 
 

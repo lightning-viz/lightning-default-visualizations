@@ -1,10 +1,9 @@
-
 var Datamaps = require('datamaps-all-browserify');
 var _ = require('lodash');
-var templateHTML = require('./map.jade');
+var templateHTML = require('./template.jade');
 
 
-var MapViz = function(selector, data, images, opts) {
+var Map = function(selector, data, images, opts) {
 
     var $el = $(selector).first();
     $el.append(templateHTML());
@@ -73,6 +72,4 @@ var MapViz = function(selector, data, images, opts) {
 };
 
 
-
-
-module.exports = MapViz;
+module.exports = Map;

@@ -1,6 +1,6 @@
 'use strict';
 var d3 = require('d3');
-var ScatterPlot = require('../viz/scatter');
+var Scatter = require('../viz/scatter');
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 
@@ -32,7 +32,7 @@ var ScatterStreaming = function(selector, data, images, opts) {
 
 };
 
-inherits(ScatterStreaming, ScatterPlot);
+inherits(ScatterStreaming, Scatter);
 
 ScatterStreaming.prototype.appendData = function(data) {
    

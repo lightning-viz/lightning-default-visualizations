@@ -10,7 +10,7 @@ var margin = {
 };
 
 
-var ScatterPlot = function(selector, data, images, opts) {
+var Scatter = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {};
@@ -31,11 +31,11 @@ var ScatterPlot = function(selector, data, images, opts) {
 
 };
 
-inherits(ScatterPlot, require('events').EventEmitter);
+inherits(Scatter, require('events').EventEmitter);
 
-module.exports = ScatterPlot;
+module.exports = Scatter;
 
-ScatterPlot.prototype._init = function() {
+Scatter.prototype._init = function() {
 
     var data = this.data
     var height = this.height
@@ -195,7 +195,7 @@ ScatterPlot.prototype._init = function() {
 
 }
 
-ScatterPlot.prototype._formatData = function(data) {
+Scatter.prototype._formatData = function(data) {
 
     retColor = utils.getColorFromData(data)
     retSize = data.size || []
@@ -215,7 +215,7 @@ ScatterPlot.prototype._formatData = function(data) {
 
 };
 
-ScatterPlot.prototype.updateData = function(data) {
+Scatter.prototype.updateData = function(data) {
     
     // update existing points, add new ones
     // and delete old ones
@@ -259,7 +259,7 @@ ScatterPlot.prototype.updateData = function(data) {
     
 };
 
-ScatterPlot.prototype.appendData = function(data) {
+Scatter.prototype.appendData = function(data) {
     
     // add new points to existing points
    

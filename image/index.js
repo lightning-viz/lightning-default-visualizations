@@ -8,7 +8,7 @@ F(L)
 
 // code adopted from http://kempe.net/blog/2014/06/14/leaflet-pan-zoom-image.html
 
-var ImageViz = function(selector, data, images, opts) {
+var Img = function(selector, data, images, opts) {
 
     var image = images[0];
     var coords = [];
@@ -124,15 +124,15 @@ var ImageViz = function(selector, data, images, opts) {
 };
 
 
-module.exports = ImageViz;
+module.exports = Img;
 
 
-ImageViz.prototype.setImage = function(image) {
+Img.prototype.setImage = function(image) {
     this.img = image;
 };
 
 
-ImageViz.prototype.updateData = function(image) {
+Img.prototype.updateData = function(image) {
     // in this case data should just be an image
     this.setImage(image);
 };

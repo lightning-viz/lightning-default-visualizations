@@ -1,17 +1,17 @@
 var d3 = require('d3');
 var _ = require('lodash');
-var templateHTML = require('./gallery.jade');
-var ImageViz = require('../viz/image');
+var templateHTML = require('./template.jade');
+var Img = require('../viz/image');
 
 
-var GalleryViz = function(selector, data, images, opts) {
+var Gallery = function(selector, data, images, opts) {
     this.$el = $(selector).first();
     this.selector = selector;
     this.images = images || [];
     this._init();
 };
 
-GalleryViz.prototype._init = function() {
+Gallery.prototype._init = function() {
 
     this.currentImage = 0;
 
@@ -26,33 +26,33 @@ GalleryViz.prototype._init = function() {
     });
 
 
-    this.imageViz = new ImageViz(this.selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});    
+    this.imageViz = new Img(this.selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});    
 };
 
 
-module.exports = GalleryViz;
+module.exports = Gallery;
 
 
-GalleryViz.prototype.addImage = function(imageData) {
+Gallery.prototype.addImage = function(imageData) {
     this.images.push(imageData);
     this.$el.find('.gallery-container').append('<div class="gallery-thumbnail"><img src="' + imageData + '_small" /></div>');
 };
 
 
-GalleryViz.prototype.setImage = function(index) {
+Gallery.prototype.setImage = function(index) {
     
-    this.imageViz = new ImageViz(this.selector + ' .image-container', [], [this.images[index]], {width: this.$el.width()});
+    this.imageViz = new Img(this.selector + ' .image-container', [], [this.images[index]], {width: this.$el.width()});
     this.$el.find('.image-viz:gt(0)').remove();
 };
 
 
 
-GalleryViz.prototype.updateData = function(data) {
+Gallery.prototype.updateData = function(data) {
     this.images = data;
     this._init();
 };
 
-GalleryViz.prototype.appendData = function(data) {
+Gallery.prototype.appendData = function(data) {
     // can be a single image or an array of images
     
     if(_.isArray(data)) {

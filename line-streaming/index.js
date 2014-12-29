@@ -2,7 +2,7 @@
 var d3 = require('d3');
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
-var LineGraph = require('../viz/line');
+var Line = require('../viz/line');
 var inherits = require('inherits');
 
 
@@ -42,7 +42,7 @@ var LineStreaming = function(selector, data, images, opts) {
 };
 
 
-inherits(LineStreaming, LineGraph);
+inherits(LineStreaming, Line);
 
 
 LineStreaming.prototype.appendData = function(data) {
@@ -50,7 +50,6 @@ LineStreaming.prototype.appendData = function(data) {
     var newData = this._formatData(data);
 
     var self = this;
-
 
     _.each(newData, function(d, i) {
         if(i < self.data.length) {

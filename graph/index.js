@@ -141,8 +141,6 @@ Graph.prototype._init = function() {
         .style('fill', 'none')
         .style('opacity', linkStrokeOpacity);
 
-    console.log(link)
-
     // highlight based on links
     // borrowed from: http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
 

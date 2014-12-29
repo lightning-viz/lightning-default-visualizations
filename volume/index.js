@@ -2,9 +2,7 @@ var THREE = require('three.js');
 var _ = require('lodash');
 require('three-fly-controls')(THREE);
 
-
-
-var ThreeVolume = function(selector, data, images, opts) {
+var Volume = function(selector, data, images, opts) {
 
     images = images || [];
     opts = opts || {};
@@ -92,6 +90,6 @@ var ThreeVolume = function(selector, data, images, opts) {
 
 
 
-module.exports = ThreeVolume;
+module.exports = Volume;
 
 
