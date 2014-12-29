@@ -52,7 +52,7 @@ LineGraph.prototype._init = function() {
 
     var series = data.series;
 
-    var lineSize = Math.max(10 - 0.1 * series[0].d.length, 2);
+    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 2);
 
     var yDomain = nestedExtent(series, function(d) {
         return d.y;
@@ -238,6 +238,8 @@ LineGraph.prototype._init = function() {
             .attr('d', function(d) { return self.line(d.d)});
     }
 
+    this.defaultSize = defaultSize;
+    this.highlight = highlight;
     this.svg = svg;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
@@ -292,6 +294,8 @@ module.exports = LineGraph;
 
 LineGraph.prototype.updateData = function(data) {
 
+var self = this
+    
     this.data = this._formatData(data);
     var series = this.data.series;
 
@@ -310,10 +314,30 @@ LineGraph.prototype.updateData = function(data) {
 
     this.updateAxis();
 
-    this.svg.selectAll('.line')
+    var newdat = this.svg.selectAll('.line')
         .data(series)
-        .transition()
-        .attr('d', this.line);
+    
+    newdat.transition()
+        .attr('class', 'line')
+        .attr('d', function(d) { return self.line(d.d)})   
+        .attr('stroke', function(d) {return d.c})
+        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
+        .style('stroke-opacity', 0.9)
+        .on('mouseover', self.highlight)
+        .on('mouseout', self.highlight)  
+
+    newdat.enter()
+        .append('path')
+        .attr('class', 'line')
+        .attr('stroke', function(d) {return d.c})
+        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
+        .style('stroke-opacity', 0.9)
+        .attr('d', function(d) { return self.line(d.d)})
+        .on('mouseover', self.highlight)
+        .on('mouseout', self.highlight)
+
+    newdat.exit().transition()
+        .style('opacity', 0.0).remove()
 
 };
 
