@@ -193,9 +193,9 @@ LineGraph.prototype._init = function() {
     function highlight(d, i) {
 
         if (toggleOpacity == 0) {
-            var d = d3.select(this)[0][0].__data__
-            svg.selectAll('.line').transition().duration(100).ease('linear').delay(100).style("opacity", function (o) {
-                return d.i == o.i ? 0.9 : 0.2;
+            //var d = d3.select(this)[0][0].__data__
+            svg.selectAll('.line').transition().duration(100).ease('linear').delay(100).style("opacity", function (o, j) {
+                return i == j ? 0.9 : 0.2;
             });
             toggleOpacity = 1
         } else {
@@ -243,6 +243,7 @@ LineGraph.prototype._init = function() {
     this.svg = svg;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
+    this.series = series;
 };
 
 
@@ -343,33 +344,39 @@ LineGraph.prototype.updateData = function(data) {
         .transition()
         .style('opacity', 1.0)
    
-    
-    
 };
 
 
 LineGraph.prototype.appendData = function(data) {
+
+    // add new lines to existing lines
     
-    this.data = this.data.concat(this._formatData(data));
-    var series = this.data.series;
-
-    var yDomain = nestedExtent(series, function(d) {
-        return d.y;
-    });
-    var xDomain = nestedExtent(series, function(d) {
-        return d.x;
-    });
+    var self = this
     
-    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-    var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
+    var toappend = this._formatData(data).series
+    
+    toappend = toappend.map(function (d) {
+        d.i = d.i + self.series.length
+        return d
+    })
 
-    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread]);
-    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
-
-    this.updateAxis();
-
-    this.svg.selectAll('.line')
+    this.series = this.series.concat(toappend)
+    
+    var series = this.series;  
+    
+    var newdat = this.svg.selectAll('.line')
         .data(series)
+
+    newdat.enter()
+        .append('path')
+        .attr('class', 'line') 
+        .attr('d', function(d) { return self.line(d.d)})
+        .attr('stroke', function(d) {return d.c})
+        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
+        .style('stroke-opacity', 0.9)
+        .on('mouseover', self.highlight)
+        .on('mouseout', self.highlight) 
+        .style('opacity', 0.0)
         .transition()
-        .attr('d', this.line);
+        .style('opacity', 1.0)
 };
