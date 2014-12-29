@@ -52,7 +52,7 @@ LineGraph.prototype._init = function() {
 
     var series = data.series;
 
-    var lineSize = Math.max(20 - 0.02 * series.length, 2);
+    var lineSize = Math.max(10 - 0.1 * series[0].d.length, 2);
 
     var yDomain = nestedExtent(series, function(d) {
         return d.y;
@@ -210,7 +210,7 @@ LineGraph.prototype._init = function() {
         .append('path')
         .attr('class', 'line')
         .attr('stroke', function(d) {return d.c})
-        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
+        .style('stroke-width', function(d) {return d.s ? d.s : lineSize})
         .style('stroke-opacity', 0.9)
         .attr('d', function(d) { return self.line(d.d)})
         .on('mouseover', highlight)
