@@ -126,6 +126,20 @@ ScatterPlot.prototype._init = function() {
                 .tickSize(-width, 0, 0)
                 .tickFormat(''));
 
+
+    svg.append('svg:clipPath')
+        .attr('id', 'clip')
+        .append('svg:rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', width)
+        .attr('height', height);
+
+    var chartBody = svg.append('g')
+        .attr('clip-path', 'url(#clip)');
+
+
+
     function darken(d, i) {
         var point = d3.select(this)
         var newcolor = d3.hsl(point.style('fill')).darker(0.5)
@@ -141,7 +155,7 @@ ScatterPlot.prototype._init = function() {
         console.log('out: ' + i);
     }
 
-    svg.selectAll('.dot')
+    chartBody.selectAll('.dot')
         .data(points)
       .enter().append('circle')
         .attr('class', 'dot')
