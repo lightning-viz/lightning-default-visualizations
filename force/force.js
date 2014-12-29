@@ -85,6 +85,14 @@ Force.prototype._init = function() {
         linkedByIndex[d.source + "," + d.target] = 1;
     });
 
+    function selectedNodeOpacityIn() {
+        d3.select(this).transition().duration(100).style("stroke", "rgb(30,30,30)")
+    }
+
+    function selectedNodeOpacityOut() {
+        d3.select(this).transition().duration(50).style("stroke", "white")
+    }
+
     // look up neighbor pairs
     function neighboring(a, b) {
         return linkedByIndex[a.index + "," + b.index];
@@ -95,9 +103,6 @@ Force.prototype._init = function() {
         if (toggleOpacity == 0) {
             // change opacity of all but the neighbouring nodes
             var d = d3.select(this).node().__data__;
-            node.style("stroke", function (o) {
-                return d.index == o.index ? "rgb(30,30,30)" : "white";
-            });
             node.style("opacity", function (o) {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
@@ -107,7 +112,6 @@ Force.prototype._init = function() {
             toggleOpacity = 1;
         } else {
             // restore properties
-            node.style("stroke", "white")
             node.style("opacity", 1)
             link.style("opacity", linkStrokeOpacity);
             toggleOpacity = 0;
@@ -145,6 +149,8 @@ Force.prototype._init = function() {
         .style("stroke", "white")
         .style("stroke-width", 1)
         .on('dblclick', connectedNodesOpacity)
+        .on('mouseenter', selectedNodeOpacityIn)
+        .on('mouseleave', selectedNodeOpacityOut)
         .call(drag);
 
     force.on("tick", function() {
