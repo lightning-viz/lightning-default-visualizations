@@ -169,21 +169,21 @@ Graph.prototype._init = function() {
         if (toggleOpacity == 0) {
             // change opacity of all but the neighbouring nodes
             var d = d3.select(this).node().__data__;
-            node.style("stroke", function (o) {
+            node.transition().duration(100).delay(250).style("stroke", function (o) {
                 return d.i == o.i ? "rgb(30,30,30)" : "white";
-            });
-            node.style("opacity", function (o) {
+            })
+            .style("opacity", function (o) {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
-            link.style("opacity", function (o) {
+            link.transition().duration(100).delay(300).style("opacity", function (o) {
                  return d.i==o.source | d.i==o.target ? 0.9 : linkStrokeOpacity / 10;
             });
             toggleOpacity = 1;
         } else {
             // restore properties
             node.style("stroke", "white")
-            node.style("opacity", 1)
-            link.style("opacity", linkStrokeOpacity);
+            node.transition().duration(50).style("opacity", 1)
+            link.transition().duration(50).style("opacity", linkStrokeOpacity);
             toggleOpacity = 0;
         }
     }
@@ -201,7 +201,8 @@ Graph.prototype._init = function() {
        .attr('stroke-width', 1)
        .attr('cx', function(d){ return d.x;})
        .attr('cy', function(d){ return d.y;})
-       .on('click', connectedNodesOpacity)
+       .on('mouseover', connectedNodesOpacity)
+       .on('mouseout', connectedNodesOpacity)
 
 };
 
