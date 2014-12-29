@@ -11,7 +11,8 @@ var margin = {
 };
 
 
-var nestedExtent = function(arrays, map) {
+var nestedExtent = function(data, map) {
+    var arrays = data.map(function(d) {return d.d})
     var max = d3.max(arrays, function(arr) {
         return d3.max(_.map(arr, map));
     });
@@ -36,7 +37,6 @@ var LineGraph = function(selector, data, images, opts) {
 
     this.data = this._formatData(data);
     this.selector = selector;
-    this.defaultSize = 2;
     this._init();
 };
 
@@ -51,10 +51,8 @@ LineGraph.prototype._init = function() {
     var self = this;
 
     var series = data.series;
-    var color = data.color.length > 0 ? data.color : utils.getColors(series.length);
-    var size = data.size
 
-    console.log(color)
+    var lineSize = Math.max(10 - 0.1 * series[0].d.length, 2);
 
     var yDomain = nestedExtent(series, function(d) {
         return d.y;
@@ -190,15 +188,33 @@ LineGraph.prototype._init = function() {
     var chartBody = svg.append('g')
         .attr('clip-path', 'url(#clip)');
 
-    _.each(series, function(d, i) {
-        chartBody.append('path')
-            .datum(d)
-            .attr('class', 'line')
-            .attr('stroke', color[i])
-            .style('stroke-width', size[i] ? size[i] : self.defaultSize)
-            .style('stroke-opacity', 0.9)
-            .attr('d', self.line);
-    });
+    var toggleOpacity = 0;
+
+    function highlight(d, i) {
+
+        if (toggleOpacity == 0) {
+            var d = d3.select(this)[0][0].__data__
+            line.transition().duration(100).ease('linear').delay(100).style("opacity", function (o) {
+                return d.i == o.i ? 0.9 : 0.2;
+            });
+            toggleOpacity = 1
+        } else {
+            line.transition().duration(100).ease('linear').style('opacity', 0.9)
+            toggleOpacity = 0;
+        }
+    }
+
+    var line = chartBody.selectAll('.line')
+        .data(series)
+        .enter()
+        .append('path')
+        .attr('class', 'line')
+        .attr('stroke', function(d) {return d.c})
+        .style('stroke-width', function(d) {return d.s ? d.s : lineSize})
+        .style('stroke-opacity', 0.9)
+        .attr('d', function(d) { return self.line(d.d)})
+        .on('mouseover', highlight)
+        .on('mouseout', highlight)
 
     function updateAxis() {
 
@@ -219,7 +235,7 @@ LineGraph.prototype._init = function() {
         updateAxis();
         self.svg.selectAll('.line')
             .attr('class', 'line')
-            .attr('d', self.line);
+            .attr('d', function(d) { return self.line(d.d)});
     }
 
     this.svg = svg;
@@ -230,6 +246,7 @@ LineGraph.prototype._init = function() {
 
 LineGraph.prototype._formatData = function(data) {
 
+    // parse the array data
     if(_.isArray(data.series[0])) {
         // handle case of mutliple series
         data.series = _.map(data.series, function(d) {
@@ -250,15 +267,21 @@ LineGraph.prototype._formatData = function(data) {
         })];
     }
 
-    data.color = utils.getColorFromData(data);
-    if (data.color.length == 1) {
-        data.color = _.times(data.series.length, _.constant(data.color));
+    // parse colors and sizes, and automatically fill colors
+    // with our random colors if none provided
+    var retColor = utils.getColorFromData(data);
+    if (retColor.length == 0) {
+        retColor = utils.getColors(data.series.length)
     }
+    var retSize = data.size || []
 
-    data.size = data.size || []
-    if (data.size.length == 1) {
-        data.size = _.times(data.series.length, _.constant(data.size));
-    }
+    // embed properties in data array
+    data.series = data.series.map(function(line, i) {
+        var d = {'d': line, 'i': i}
+        d.c = retColor.length > 1 ? retColor[i] : retColor[0]
+        d.s = retSize.length > 1 ? retSize[i] : retSize[0]
+        return d
+    })
 
     return data;
 };
