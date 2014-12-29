@@ -1,10 +1,10 @@
 var d3 = require('d3');
 var _ = require('lodash');
-var templateHTML = require('./roi.jade');
+var templateHTML = require('./scatter-line.jade');
 var utils = require('lightning-client-utils');
 
 
-var ROIViz = function(selector, data, images, options) {
+var ScatterLine = function(selector, data, images, options) {
 
     var $el = $(selector).first();
     $el.append(templateHTML());
@@ -42,4 +42,4 @@ var ROIViz = function(selector, data, images, options) {
     });
 };
 
-module.exports = ROIViz;
+module.exports = ScatterLine;
