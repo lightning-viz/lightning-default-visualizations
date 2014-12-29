@@ -164,26 +164,30 @@ Graph.prototype._init = function() {
         return linkedByIndex[a.i + ',' + b.i];
     }
 
+    function selectedNodeOpacityIn() {
+        d3.select(this).transition().duration(100).style("stroke", "rgb(30,30,30)")
+    }
+
+    function selectedNodeOpacityOut() {
+        d3.select(this).transition().duration(50).style("stroke", "white")
+    }
+
     function connectedNodesOpacity() {
 
         if (toggleOpacity == 0) {
             // change opacity of all but the neighbouring nodes
             var d = d3.select(this).node().__data__;
-            node.transition().duration(100).delay(250).style("stroke", function (o) {
-                return d.i == o.i ? "rgb(30,30,30)" : "white";
-            })
-            .style("opacity", function (o) {
+            node.style("opacity", function (o) {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
-            link.transition().duration(100).delay(300).style("opacity", function (o) {
+            link.style("opacity", function (o) {
                  return d.i==o.source | d.i==o.target ? 0.9 : linkStrokeOpacity / 10;
             });
             toggleOpacity = 1;
         } else {
             // restore properties
-            node.style("stroke", "white")
-            node.transition().duration(50).style("opacity", 1)
-            link.transition().duration(50).style("opacity", linkStrokeOpacity);
+            node.style("opacity", 1)
+            link.style("opacity", linkStrokeOpacity);
             toggleOpacity = 0;
         }
     }
@@ -201,8 +205,9 @@ Graph.prototype._init = function() {
        .attr('stroke-width', 1)
        .attr('cx', function(d){ return d.x;})
        .attr('cy', function(d){ return d.y;})
-       .on('mouseover', connectedNodesOpacity)
-       .on('mouseout', connectedNodesOpacity)
+       .on('click', connectedNodesOpacity)
+       .on('mouseenter', selectedNodeOpacityIn)
+       .on('mouseleave', selectedNodeOpacityOut)
 
 };
 
