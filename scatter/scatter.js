@@ -3,8 +3,8 @@ var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 
 var margin = {
-    top: 20,
-    right: 20,
+    top: 0,
+    right: 0,
     bottom: 20,
     left: 45
 };
