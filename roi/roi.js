@@ -33,6 +33,9 @@ var ROIViz = function(selector, data, images, options) {
             if(!err) {
                 var series = data
                 var newdata = {'series': series};
+                if (d.c) {
+                    newdata.color = [[d.c.r, d.c.g, d.c.b]]
+                }
                 line.updateData(newdata);   
             }
         });
