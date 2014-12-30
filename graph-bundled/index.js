@@ -1,5 +1,7 @@
 var d3 = require('d3');
 var _ = require('lodash');
+var inherits = require('inherits');
+//var Graph = require('../viz/graph');
 var utils = require('lightning-client-utils');
 
 d3.ForceEdgeBundling = function(){
@@ -420,14 +422,48 @@ var margin = {
 };
 
 
-module.exports = function(selector, data, images, opts) {
+var GraphBundled = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {};
     }
-    
-    var nodes = data.points || data.nodes;
-    
+
+    this.opts = opts;
+
+    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+
+    this.data = this._formatData(data);
+    this.images = images || [];
+    this.selector = selector;
+    this.defaultFill = '#68a1e5';
+    this.defaultSize = 8;
+    this._init();
+
+}
+
+inherits(GraphBundled, require('events').EventEmitter);
+//inherits(GraphBundled, Graph);
+
+module.exports = GraphBundled;
+
+GraphBundled.prototype._init = function() {
+
+    var data = this.data;
+    var images = this.images;
+    var width = this.width;
+    var opts = this.opts;
+    var selector = this.selector;
+    var self = this;
+
+    var nodes = data.nodes;
+    var links = data.links;
+
+    // if points are colored use gray, otherwise use our default
+    var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
+
+    // set opacity inversely proportional to number of links
+    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15);
+
     var xDomain = d3.extent(nodes, function(d) {
         return d.x;
     });
@@ -436,22 +472,22 @@ module.exports = function(selector, data, images, opts) {
         return d.y;
     });
 
-    this.images = images || [];
-    imageCount = this.images.length;
+    var imageCount = images.length;
+
+    var ratio = 0;
     
     if (imageCount > 0) {
-        var colors = ['white','white'];
         var imwidth = (opts.imwidth || xDomain[1]);
         var imheight = (opts.imheight || yDomain[1]);
-        var ratio = imwidth / imheight;
+        ratio = imwidth / imheight;
+        self.defaultFill = 'white';
+        linkStrokeColor = 'white';
         xDomain = [0, imwidth];
         yDomain = [0, imheight];
     } else {
-        var colors = utils.getColors(2);
-        var ratio = Math.sqrt(2);
+        ratio = Math.sqrt(2);
     }
 
-    var width = $(selector).width() - margin.left - margin.right;
     var height = width / ratio;
 
     var x = d3.scale.linear()
@@ -463,13 +499,10 @@ module.exports = function(selector, data, images, opts) {
         .range([height, 0]);
 
     nodes = _.map(nodes, function(n) {
-        return {
-            x: x(n.x),
-            y: y(n.y)
-        }
+        n.x = x(n.x);
+        n.y = y(n.y);
+        return n;
     });
-
-    nodes = _.object(_.range(nodes.length), nodes);
 
     var zoom = d3.behavior.zoom()
         .x(x)
@@ -504,43 +537,119 @@ module.exports = function(selector, data, images, opts) {
             .attr('xlink:href', utils.getThumbnail(this.images));
     }
 
+    var toggleOpacity = 0;
+
+    // array indicating links
+    var linkedByIndex = {};
+    var i
+    for (i = 0; i < nodes.length; i++) {
+        linkedByIndex[i + ',' + i] = 1;
+    };
+    links.forEach(function (d) {
+        linkedByIndex[d.source + ',' + d.target] = 1;
+    });
+
+    // look up neighbor pairs
+    function neighboring(a, b) {
+        return linkedByIndex[a.i + ',' + b.i];
+    }
+
+    function selectedNodeOpacityIn() {
+        d3.select(this).transition().duration(100).style("stroke", "rgb(30,30,30)")
+    }
+
+    function selectedNodeOpacityOut() {
+        d3.select(this).transition().duration(50).style("stroke", "white")
+    }
 
     setTimeout(function() {
 
-        var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(data.links);
+        var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(links);
         var results   = fbundling();    
 
+        function connectedNodesOpacity() {
+
+            if (toggleOpacity == 0) {
+                // change opacity of all but the neighbouring nodes
+                var d = d3.select(this).node().__data__;
+                node.style("opacity", function (o) {
+                    return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
+                });
+                link.style("opacity", function (o) {
+                    console.log(o)
+                    return d.i==o[0].i | d.i==o[o.length-1].i ? 0.9 : linkStrokeOpacity / 10;
+                });
+                toggleOpacity = 1;
+            } else {
+                // restore properties
+                node.style("opacity", 1)
+                link.style("opacity", linkStrokeOpacity);
+                toggleOpacity = 0;
+                }
+        };
+
         var line = d3.svg.line()
-                        .x(function(d){return d.x;})
-                        .y(function(d){return d.y;})
-                        .interpolate('linear');
+            .x(function(d){return d.x;})
+            .y(function(d){return d.y;})
+            .interpolate('linear');
 
-
-        results.forEach(function(edgeSubpointData){   
-        // for each of the arrays in the results 
-        // draw a line between the subdivions points for that edge
-
-            svg.append('path').attr('d', line(edgeSubpointData))
-                .style('stroke-width', 1)
-                .style('stroke', colors[0])
-                .style('fill', 'none')
-                .style('stroke-opacity',0.05); //use opacity as blending
-        });
-
+        var link = svg.selectAll('.link')
+            .data(results)
+          .enter().append('path')
+            .attr('d', function(d) { return line(d); })
+            .style('stroke-width', 1)
+            .style('stroke', linkStrokeColor)
+            .style('fill', 'none')
+            .style('opacity', linkStrokeOpacity);
 
         //draw nodes
-        svg.selectAll('.node')
-           .data(d3.entries(nodes))
-           .enter()
-           .append('circle')
-           .classed('node', true)
-           .attr({'r': 3.5, 'fill': colors[1]})
-           .attr('fill-opacity',0.5)
-           .attr('stroke','white')
-           .attr('cx', function(d){ return d.value.x;})
-           .attr('cy', function(d){ return d.value.y;});
+        var node = svg.selectAll('.node')
+            .data(nodes)
+          .enter()
+            .append('circle')
+            .classed('node', true)
+            .attr('r', function(d) { return (d.s ? d.s : self.defaultSize); })
+            .style('fill', function(d) { return (d.c ? d.c : self.defaultFill); })
+            .attr('fill-opacity',0.9)
+            .attr('stroke', 'white')
+            .attr('stroke-width', 1)
+            .attr('cx', function(d){ return d.x;})
+            .attr('cy', function(d){ return d.y;})
+            .on('mouseenter', selectedNodeOpacityIn)
+            .on('mouseleave', selectedNodeOpacityOut)
+            .on('click', connectedNodesOpacity);
+
     }, 10);
 
 
 };
+
+GraphBundled.prototype._formatData = function(data) {
+
+    var retColor = utils.getColorFromData(data);
+    var retSize = data.size || [];
+    var retName = data.name || [];
+
+    data.nodes = data.nodes.map(function (d,i) {
+        d.x = d[0];
+        d.y = d[1];
+        d.i = i
+        d.n = retName[i];
+        d.c = retColor.length > 1 ? retColor[i] : retColor[0];
+        d.s = retSize.length > 1 ? retSize[i] : retSize[0];
+        return d;
+    });
+
+    data.links = data.links.map(function (d) {
+        d.source = d[0];
+        d.target = d[1];
+        d.value = d[2];
+        return d;
+    });
+
+    return data;
+
+};
+
+
 
