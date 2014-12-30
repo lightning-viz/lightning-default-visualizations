@@ -1,6 +1,6 @@
 var Datamaps = require('datamaps-all-browserify');
 var _ = require('lodash');
-var templateHTML = require('./template.jade');
+var templateHTML = require('./map.jade');
 
 
 var Map = function(selector, data, images, opts) {
