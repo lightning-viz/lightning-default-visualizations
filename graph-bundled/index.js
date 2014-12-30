@@ -492,11 +492,11 @@ GraphBundled.prototype._init = function() {
 
     var x = d3.scale.linear()
         .domain(xDomain)
-        .range([width, 0]);
+        .range([width - 10, 0 + 10]);
 
     var y = d3.scale.linear()
         .domain(yDomain)
-        .range([height, 0]);
+        .range([height - 10, 0 + 10]);
 
     nodes = _.map(nodes, function(n) {
         n.x = x(n.x);
