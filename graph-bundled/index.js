@@ -515,6 +515,7 @@ GraphBundled.prototype._init = function() {
         .attr('height', height + margin.top + margin.bottom)
         .append("g")
         .call(zoom)
+        .on('dblclick.zoom', null)
         .append("g");
 
     svg.append("rect")
