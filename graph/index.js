@@ -63,14 +63,14 @@ Graph.prototype._init = function() {
 
     var imageCount = images.length;
 
-    var ratio = [];
+    var ratio = 0;
 
     if (imageCount > 0) {
         var imwidth = (opts.imwidth || xDomain[1]);
         var imheight = (opts.imheight || yDomain[1]);
         ratio = imwidth / imheight;
         self.defaultFill = 'white';
-        self.lineStrokeColor = 'white';
+        linkStrokeColor = 'white';
         xDomain = [0, imwidth];
         yDomain = [0, imheight];
     } else {
