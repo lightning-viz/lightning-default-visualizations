@@ -1,6 +1,6 @@
 var d3 = require('d3');
 var _ = require('lodash');
-var templateHTML = require('./template.jade');
+var templateHTML = require('./gallery.jade');
 var Img = require('../viz/image');
 
 

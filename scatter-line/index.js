@@ -1,6 +1,6 @@
 var d3 = require('d3');
 var _ = require('lodash');
-var templateHTML = require('./template.jade');
+var templateHTML = require('./scatter-line.jade');
 var utils = require('lightning-client-utils');
 
 
