@@ -89,7 +89,7 @@ var Matrix = function(selector, data, images, opts) {
                 var xPos = x(cell.x);
                 var yPos = x(i);
                 var b = [[xPos, yPos], [xPos + x.rangeBand(), yPos + x.rangeBand()]];
-                var fillColor = nodes[cell.x].group === nodes[cell.y].group ? color(nodes[cell.x].group) : null;
+                var fillColor = nodes[cell.x].group === nodes[cell.y].group ? color(nodes[cell.x].group) : '#1F77B4';
                 L.rectangle(b, {color: buildRGBA(fillColor, z(cell.z)), weight: 1}).addTo(map);
 
             });
