@@ -27,11 +27,12 @@ var Img = function(selector, data, images, opts) {
     var maxWidth = this.$el.width();
 
     // create an image so we can get aspect ratio
-    var img = new Image();
+    this.img = new Image();
+    var img = this.img;
     img.src = image;
 
     img.onload = function() {
-
+        
         // get image dimensions
         var imw = img.width;
         var imh = img.height;
@@ -40,10 +41,13 @@ var Img = function(selector, data, images, opts) {
         var w = maxWidth,
             h = maxWidth * (imh / imw);
 
-        self.$el.find('#image-map-' + this.mid).width(w).height(h);
+        self.$el.find('#image-map-' + self.mid).width(w).height(h);
 
         //create the map
-        var map = L.map('image-map-' + this.mid, {
+        if(self.map) {
+            self.map.remove();    
+        }
+        self.map = L.map('image-map-' + self.mid, {
             minZoom: 1,
             maxZoom: 8,
             center: [w/2, h/2],
@@ -52,6 +56,8 @@ var Img = function(selector, data, images, opts) {
             zoomControl: false,
             crs: L.CRS.Simple,
         });
+        
+        var map = self.map;
              
         // calculate the edges of the image, in coordinate space
         var southWest = map.unproject([0, h], 1);
@@ -59,7 +65,7 @@ var Img = function(selector, data, images, opts) {
         var bounds = new L.LatLngBounds(southWest, northEast);
          
         // add the image overlay to cover the map
-        L.imageOverlay(image, bounds).addTo(map);
+        L.imageOverlay(img.src, bounds).addTo(map);
          
         // tell leaflet that the map is exactly as big as the image
         map.setMaxBounds(bounds);
@@ -131,7 +137,7 @@ module.exports = Img;
 
 
 Img.prototype.setImage = function(image) {
-    this.img = image;
+    this.img.src = image;
 };
 
 

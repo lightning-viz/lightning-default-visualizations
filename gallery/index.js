@@ -40,9 +40,7 @@ Gallery.prototype.addImage = function(imageData) {
 
 
 Gallery.prototype.setImage = function(index) {
-    
-    this.imageViz = new Img(this.selector + ' .image-container', [], [this.images[index]], {width: this.$el.width()});
-    this.$el.find('.image-viz:gt(0)').remove();
+    this.imageViz.setImage(this.images[index]);
 };
 
 
