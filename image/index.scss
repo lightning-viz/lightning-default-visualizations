@@ -2,7 +2,7 @@
     max-width: none !important;
 }
 
-#map .overlay {
+.image-map .overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -14,7 +14,7 @@
 }
 
 
-#map g path {
+.image-map g path {
     transition: all 0.25s;
     stroke-width: 4px;
     stroke-opacity: 1;
@@ -26,15 +26,15 @@
     -webkit-filter: none;
 }
 
-#map.mode-delete path {
+.image-map.mode-delete path {
     cursor: no-drop;
 }
 
-#map.mode-delete path:hover {
+.image-map.mode-delete path:hover {
     fill: #4d4d4d !important;
 }
 
-#map div.polygon-elbow {
+.image-map div.polygon-elbow {
     -webkit-transition: opacity .25s;
     box-shadow: 0 0 0 2px white, 0 0 10px rgba(0, 0, 0, .35);
     border: 5px solid rgb(180,180,180);
@@ -48,18 +48,18 @@
     height: 0 !important;
 }
 
-#map div.polygon-elbow.non-polygon {
+.image-map div.polygon-elbow.non-polygon {
     opacity: 0 !important;
     pointer-events: none !important;
     border: 5px solid darkgray;
 }
 
-#map.mode-edit div.polygon-elbow {
+.image-map.mode-edit div.polygon-elbow {
     opacity: 1;
     pointer-events: all;
 }
 
-#map svg.tracer {
+.image-map svg.tracer {
     position: absolute;
     top: 0;
     left: 0;
@@ -76,6 +76,6 @@
 }
 
 
-#map.mode-create {
+.image-map.mode-create {
     cursor: crosshair;
 }
