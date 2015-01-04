@@ -1,20 +1,30 @@
+'use strict';
+
 var d3 = require('d3');
-var inherits = require('inherits');
+var _ = require('lodash');
+
+var L = require('leaflet');
+var Color = require('color');
+var id = 0;
+
 
 var margin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 45
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
 };
-
-
 
 
 var Matrix = function(selector, data, images, opts) {
 
-    var width = $(selector).width() - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
+    this.mid = id++;
+    this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="matrix-map-' + this.mid + '" class="matrix-map"></div>';
+
+    opts = opts || {};
+
+    var width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    var height = (opts.height || (width * 0.6)) - margin.top - margin.bottom;
 
     var matrix = [];
     var nodes = data.nodes;
@@ -38,46 +48,54 @@ var Matrix = function(selector, data, images, opts) {
     });
 
 
-    //x.domain(d3.range(n))
     x.domain(d3.range(n).sort(function(a, b) { return nodes[b].group - nodes[a].group; }));
 
-    var zoom = d3.behavior.zoom()
-        .scaleExtent([0.1, 20])
-        .translate([(margin.left + (width / 2) - Math.min(width, height)/2), 0])
-        .on('zoom', zoomed);
+    var buildRGBA = function(fill, opacity) {
+        var color = Color(fill);
+        color.alpha(opacity);
+        return color.rgbString();
+    };
 
-    var svg = d3.select(selector)
-        .append('svg:svg')
-        .attr('class', 'matrix')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .attr('pointer-events', 'all')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(zoom)
-        .append('svg:g')
-        .attr('transform', 'translate(' + (margin.left + (width / 2) - Math.min(width, height)/2)  + ', 0)');
+    buildRGBA = _.memoize(buildRGBA, function(fill, opacity) {
+        return fill + ',' + opacity;
+    });
 
-    svg.selectAll('.row')
-        .data(matrix)
-        .enter().append('g')
-        .attr('class', 'row')
-        .attr('transform', function(d, i) { return 'translate(0,' + x(i) + ')'; })
-        .each(function(row) {
-            d3.select(this).selectAll('.cell')
-                .data(row.filter(function(d) { return d.z; }))
-                .enter().append('rect')
-                .attr('class', 'cell')
-                .attr('x', function(d) { return x(d.x); })
-                .attr('width', x.rangeBand())
-                .attr('height', x.rangeBand())
-                .style('fill-opacity', function(d) { return z(d.z); })
-                .style('fill', function(d) { return nodes[d.x].group === nodes[d.y].group ? color(nodes[d.x].group) : null; });
-        });
+    var maxX = matrix.length * x.rangeBand();
+    var maxY = matrix[0].length * x.rangeBand();
+
+    var bounds = [[0, 0], [maxX, maxY]];
 
 
-    function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
-    }
+    this.$el = $(selector).first();
+    this.$el.append(this.markup);
+
+    this.$el.find('#matrix-map-' + this.mid).width(maxX).height(maxY);
+
+    var map = L.map('matrix-map-' + this.mid, {
+        center: [maxX/2, maxY/2],
+        attributionControl: false,
+        zoomControl: false,
+        crs: L.CRS.Simple,
+    });
+
+    map.fitBounds(bounds);
+    map.setMaxBounds(bounds);
+
+
+    setTimeout(function() {
+        _.each(matrix, function(row, i) {
+            _.each(row, function(cell) {
+
+                var xPos = x(cell.x);
+                var yPos = x(i);
+                var b = [[xPos, yPos], [xPos + x.rangeBand(), yPos + x.rangeBand()]];
+                var fillColor = nodes[cell.x].group === nodes[cell.y].group ? color(nodes[cell.x].group) : null;
+                L.rectangle(b, {color: buildRGBA(fillColor, z(cell.z)), weight: 1}).addTo(map);
+
+            });
+        });    
+    }, 0);
+    
 
 };
 
