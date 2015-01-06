@@ -45,7 +45,7 @@ Adjacency.prototype._init = function() {
 
     var matrix = data.matrix;
     var label = data.label;
-    var color = utils.getColors(matrix.length);
+    var color = utils.getColors(_.uniq(label).length);
 
     // get min and max of matrix value data
     var zmin = d3.min(data.matrix, function(d) {
