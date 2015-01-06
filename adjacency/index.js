@@ -118,7 +118,7 @@ Adjacency.prototype._init = function() {
                 } else {
                     var cellColor = buildRGBA("rgb(240,240,240)", 1.0)
                 }
-                L.rectangle(b, {color: cellColor, weight: 0.5, className: "cell"}).addTo(map);
+                L.rectangle(b, {color: cellColor, weight: 0.7, className: "cell"}).addTo(map);
             });
         });    
     }, 0);

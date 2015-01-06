@@ -101,7 +101,7 @@ Matrix.prototype._init = function() {
                 var xPos = x(cell.x);
                 var yPos = y(i);
                 var b = [[yPos, xPos], [yPos + y.rangeBand(), xPos + x.rangeBand()]];
-                L.rectangle(b, {color: z(cell.z), weight: 0.5, smoothFactor: 1.0, className: "cell"}).addTo(map);
+                L.rectangle(b, {color: z(cell.z), weight: 0.7, smoothFactor: 1.0, className: "cell"}).addTo(map);
             });
         });    
     }, 0);
