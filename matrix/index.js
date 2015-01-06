@@ -2,6 +2,8 @@
 
 var d3 = require('d3');
 var _ = require('lodash');
+var utils = require('lightning-client-utils')
+var colorbrewer = require('colorbrewer')
 
 var L = require('leaflet');
 var Color = require('color');
@@ -56,12 +58,23 @@ var Matrix = function(selector, data, images, opts) {
         return color.rgbString();
     };
 
-    buildRGBA = _.memoize(buildRGBA, function(fill, opacity) {
-        return fill + ',' + opacity;
+    // get min and max of matrix value data
+    var zmin = d3.min(data.matrix, function(d) {
+        return d3.min(d, function(e) {
+            return e.z
+        });
+    });
+    var zmax = d3.max(data.matrix, function(d) {
+        return d3.max(d, function(e) {
+            return e.z
+        });
     });
 
-    var maxX = matrix.length * x.rangeBand();
-    var maxY = matrix[0].length * x.rangeBand();
+    // set up color brewer
+    // TODO add ability to select scale and update dynamically
+    var cbrewn = 9
+    var zdomain = d3.range(cbrewn).map(function(d) {return d * (zmax - zmin) / (cbrewn - 1) + zmin})
+    var z = d3.scale.linear().domain(zdomain).range(colorbrewer.Purples[cbrewn]);
 
     var bounds = [[0, 0], [maxX, maxY]];
 
