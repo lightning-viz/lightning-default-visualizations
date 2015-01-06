@@ -99,5 +99,20 @@ var Matrix = function(selector, data, images, opts) {
 
 };
 
+Matrix.prototype._formatData = function(data) {
+
+    data.matrix = _.map(data.matrix, function(d, i) {
+        return _.map(d, function(e, j) {
+            var p = []
+            p.x = j
+            p.y = i
+            p.z = e
+            return p
+        })
+    });
+
+    return data
+
+}
 
 module.exports = Matrix;
