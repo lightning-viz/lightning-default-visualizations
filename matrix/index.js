@@ -28,6 +28,7 @@ var Matrix = function(selector, data, images, opts) {
 
     this.data = this._formatData(data)
     this.selector = selector;
+    this.defaultColormap = 'Purples';
     this._init();
 
 }
@@ -38,6 +39,7 @@ Matrix.prototype._init = function() {
     var height = this.height
     var data = this.data
     var selector = this.selector
+    var self = this
 
     this.mid = id++;
     this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="matrix-map-' + this.mid + '" class="matrix-map"></div>';
@@ -59,8 +61,9 @@ Matrix.prototype._init = function() {
     // set up color brewer
     // TODO add ability to select scale and update dynamically
     var cbrewn = 9
+    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
     var zdomain = d3.range(cbrewn).map(function(d) {return d * (zmax - zmin) / (cbrewn - 1) + zmin})
-    var z = d3.scale.linear().domain(zdomain).range(colorbrewer.Purples[cbrewn]);
+    var z = d3.scale.linear().domain(zdomain).range(color);
 
     // set up x and y scales and ranges
     var nrow = matrix.length
@@ -98,7 +101,7 @@ Matrix.prototype._init = function() {
                 var xPos = x(cell.x);
                 var yPos = y(i);
                 var b = [[yPos, xPos], [yPos + y.rangeBand(), xPos + x.rangeBand()]];
-                L.rectangle(b, {color: z(cell.z), weight: 0.7, smoothFactor: 1.0, className: "cell"}).addTo(map);
+                L.rectangle(b, {color: z(cell.z), weight: 0.5, smoothFactor: 1.0, className: "cell"}).addTo(map);
             });
         });    
     }, 0);
