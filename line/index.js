@@ -1,7 +1,9 @@
 'use strict';
 var d3 = require('d3');
+require('d3-multiaxis-zoom')(d3);
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
+
 
 var margin = {
     top: 30,
@@ -64,8 +66,6 @@ Line.prototype._init = function() {
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
     var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
-    var noZoom = d3.scale.linear();
-
     this.x = d3.scale.linear()
         .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread])
         .range([0, width]);
@@ -82,28 +82,10 @@ Line.prototype._init = function() {
             return self.y(d.y);
         })
 
-    var yToggle;
-    if(opts.zoomAxes) {
-        this.zoom = d3.behavior.zoom();
-        if(opts.zoomAxes.indexOf('x') > -1) {
-            this.zoom.x(this.x);
-        } 
-        if(opts.zoomAxes.indexOf('y') > -1) {
-            this.zoom.y(this.y);
-            yToggle = true;
-        } else {
-            yToggle = false;
-        }
-
-        this.zoom.on('zoom', zoomed);
-
-    } else {
-        yToggle = true;
-        this.zoom = d3.behavior.zoom()
-            .x(this.x)
-            .y(this.y)
-            .on('zoom', zoomed);
-    }
+    this.zoom = d3.behavior.zoom()
+        .x(this.x)
+        .y(this.y)
+        .on('zoom', zoomed);
 
     var svg = d3.select(selector)
         .append('svg:svg')
@@ -119,17 +101,6 @@ Line.prototype._init = function() {
         .attr('height', height)
         .attr('class', 'plot');
 
-    d3.select('body').on('keydown', function() {
-        if(d3.event.shiftKey) {
-            if(yToggle) {
-                yToggle = false;
-                self.zoom.y(noZoom);
-            } else {
-                yToggle = true;
-                self.zoom.y(self.y);
-            }
-        }
-    });
 
     var makeXAxis = function () {
         return d3.svg.axis()
