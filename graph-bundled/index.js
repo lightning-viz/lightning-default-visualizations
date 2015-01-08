@@ -1,4 +1,5 @@
 var d3 = require('d3');
+require('d3-multiaxis-zoom')(d3);
 var _ = require('lodash');
 var inherits = require('inherits');
 var Graph = require('../viz/graph');
@@ -526,7 +527,7 @@ GraphBundled.prototype._init = function() {
         .attr("height", height + margin.top + margin.bottom);
 
     function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
+        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
     }
 
     if (imageCount > 0) {
