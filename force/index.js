@@ -1,5 +1,6 @@
 'use strict';
 var d3 = require('d3');
+require('d3-multiaxis-zoom')(d3);
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 
@@ -49,7 +50,10 @@ Force.prototype._init = function() {
     // set opacity inversely proportional to number of links
     var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
 
+    var identity = d3.scale.linear();
     var zoom = d3.behavior.zoom()
+        .x(identity)
+        .y(identity)
         .scaleExtent([0.1, 20])
         .on("zoom", zoomed)
 
@@ -65,7 +69,7 @@ Force.prototype._init = function() {
         .append('svg:g')
 
     function zoomed() {
-        svg.attr("transform", "translate(" + d3.event.translate + ")" + " scale(" + d3.event.scale + ")");
+        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
     }
 
     // highlight based on links
