@@ -283,7 +283,7 @@ Line.prototype.updateData = function(data) {
 
     this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread]);
     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
-
+    this.zoom.x(this.x).y(this.y);
     this.updateAxis();
     
     var newdat = this.svg.selectAll('.line')
