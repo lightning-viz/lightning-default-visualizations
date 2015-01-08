@@ -60,7 +60,7 @@ Adjacency.prototype._init = function() {
     });
 
     // set up opacity scale
-    var z = d3.scale.linear().domain([0, zmax/5]).range([0.3,1]).clamp(true);
+    var z = d3.scale.linear().domain([0, zmax/3]).range([0.3,1]).clamp(true);
 
     // set up x and y scales and ranges
     var nrow = matrix.length
@@ -136,14 +136,16 @@ Adjacency.prototype._formatData = function(data) {
 
     data.links.forEach(function(link) {
         matrix[link[0]][link[1]].z = link[2];
-        matrix[link[1]][link[0]].z = link[2];
         matrix[link[0]][link[0]].z = 1;
         matrix[link[1]][link[1]].z = 1;
     });
 
     data.matrix = matrix
 
-    data.label = data.label ? data.label : _.times(n, _.constant(0))
+    data.label = data.label ? data.label : _.times(n, _.constant(0));
+
+    var min = d3.min(data.label);
+    data.label = data.label.map(function(d) {return d - min});
 
     return data
 
