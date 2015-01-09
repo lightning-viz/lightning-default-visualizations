@@ -499,11 +499,11 @@ GraphBundled.prototype._init = function() {
         .domain(yDomain)
         .range([height - 10, 0 + 10]);
 
-    nodes = _.map(nodes, function(n) {
-        n.x = x(n.x);
-        n.y = y(n.y);
-        return n;
-    });
+    // nodes = _.map(nodes, function(n) {
+    //     n.x = x(n.x);
+    //     n.y = y(n.y);
+    //     return n;
+    // });
 
     var zoom = d3.behavior.zoom()
         .x(x)
@@ -527,7 +527,12 @@ GraphBundled.prototype._init = function() {
         .attr("height", height + margin.top + margin.bottom);
 
     function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
+        svg.selectAll('.link')
+            .attr('d', function(d) { return line(d); });
+
+        svg.selectAll('.node')
+           .attr('cx', function(d){ return x(d.x);})
+           .attr('cy', function(d){ return y(d.y);});
     }
 
     if (imageCount > 0) {
@@ -564,10 +569,17 @@ GraphBundled.prototype._init = function() {
         d3.select(this).transition().duration(50).style("stroke", "white")
     }
 
+    var line = d3.svg.line()
+        .x(function(d){ return d ? x(d.x) : null; })
+        .y(function(d){ return d ? y(d.y) : null; })
+        .interpolate('linear');
+
     setTimeout(function() {
 
         var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(links);
         var results   = fbundling();    
+
+        console.log(results);
 
         function connectedNodesOpacity() {
 
@@ -590,14 +602,11 @@ GraphBundled.prototype._init = function() {
                 }
         };
 
-        var line = d3.svg.line()
-            .x(function(d){return d.x;})
-            .y(function(d){return d.y;})
-            .interpolate('linear');
 
         var link = svg.selectAll('.link')
             .data(results)
           .enter().append('path')
+            .classed('link', true)
             .attr('d', function(d) { return line(d); })
             .style('stroke-width', 1)
             .style('stroke', linkStrokeColor)
@@ -615,8 +624,8 @@ GraphBundled.prototype._init = function() {
             .attr('fill-opacity',0.9)
             .attr('stroke', 'white')
             .attr('stroke-width', 1)
-            .attr('cx', function(d){ return d.x;})
-            .attr('cy', function(d){ return d.y;})
+            .attr('cx', function(d){ return x(d.x);})
+            .attr('cy', function(d){ return y(d.y);})
             .on('mouseenter', selectedNodeOpacityIn)
             .on('mouseleave', selectedNodeOpacityOut)
             .on('click', connectedNodesOpacity);
