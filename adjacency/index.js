@@ -78,9 +78,9 @@ Adjacency.prototype._init = function() {
     // create the graphic as a map
     this.$el = $(selector).first();
     this.$el.append(this.markup);
-    this.$el.find('#matrix-map-' + this.mid).width(maxX).height(maxY);
+    this.$el.find('#adjacency-map-' + this.mid).width(maxX).height(maxY);
 
-    var map = L.map('matrix-map-' + this.mid, {
+    var map = L.map('adjacency-map-' + this.mid, {
         center: [maxX/2, maxY/2],
         attributionControl: false,
         zoomControl: false,
