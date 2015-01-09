@@ -167,7 +167,6 @@ Force.prototype._init = function() {
 
     force.on('tick', function() {
 
-        console.log('TICK--------------------------TICK');
         svg.selectAll('.link').attr('x1', function(d) { return x(d.source.x); })
             .attr('y1', function(d) { return y(d.source.y); })
             .attr('x2', function(d) { return x(d.target.x); })
