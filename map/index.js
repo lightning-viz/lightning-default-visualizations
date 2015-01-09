@@ -34,11 +34,13 @@ Map.prototype._init = function() {
     var height = this.height
     var data = this.data
     var selector = this.selector
+    
+    var regions = data.regions
+    var values = data.values
 
     var $el = $(selector).first();
     $el.append(templateHTML());
     
-    console.log($el)
     var dataObj = {}; 
     var fills = {
         defaultFill: '#ddd'
@@ -52,12 +54,12 @@ Map.prototype._init = function() {
     
     var color = d3.scale.linear().domain([0,1]).range(['#fff', '#9175f0']);
 
-    _.each(data, function(val, key) {
-        var c = color(val);
+    _.each(regions, function(reg, i) {
+        var c = color(values[i]);
         fills[c] = c;
-        dataObj[key] = {
+        dataObj[reg] = {
             fillKey: c,
-            value: val
+            value: values[i]
         };
     });
 
@@ -88,4 +90,3 @@ Map.prototype._formatData = function(data) {
     return data
 
 }
-
