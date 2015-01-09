@@ -48,7 +48,7 @@ Map.prototype._init = function() {
 
     // if the data keys are of length 3, this
     // should be treated as a world map
-    var isWorld = _.every(_.keys(data), function(v) {
+    var isWorld = _.every(regions, function(v) {
         return v.length === 3;
     });
     
