@@ -52,7 +52,10 @@ Map.prototype._init = function() {
         return v.length === 3;
     });
     
-    var color = d3.scale.linear().domain([0,1]).range(['#fff', '#9175f0']);
+    var min = d3.min(values)
+    var max = d3.max(values)
+
+    var color = d3.scale.linear().domain([min,max]).range(['#fff', '#9175f0']);
 
     _.each(regions, function(reg, i) {
         var c = color(values[i]);
