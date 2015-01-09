@@ -54,7 +54,7 @@ Line.prototype._init = function() {
 
     var series = data.series;
 
-    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 2);
+    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 3);
 
     var yDomain = nestedExtent(series, function(d) {
         return d.y;
