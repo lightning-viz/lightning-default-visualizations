@@ -40,7 +40,7 @@ ScatterStreaming.prototype.appendData = function(data) {
     var y = this.y
     var self = this
     
-    var newpoints = this._formatData(data)
+    var newpoints = this._formatData(data).points
 
     // use classes to handle vanishing points over multiple updates
     // order: current -> old -> older -> oldest -> gone
