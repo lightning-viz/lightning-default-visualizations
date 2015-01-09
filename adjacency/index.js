@@ -41,7 +41,7 @@ Adjacency.prototype._init = function() {
     var self = this
 
     this.mid = id++;
-    this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="matrix-map-' + this.mid + '" class="adjacency-map"></div>';
+    this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="adjacency-map-' + this.mid + '" class="adjacency-map"></div>';
 
     var matrix = data.matrix;
     var label = data.label;
