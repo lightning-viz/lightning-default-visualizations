@@ -1,4 +1,6 @@
+'use strict';
 var d3 = require('d3');
+require('d3-multiaxis-zoom')(d3);
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
 var simplify = require('simplify-js');
@@ -12,12 +14,11 @@ var margin = {
  
 var maxHeight = 600;
  
- 
 var LineStackedGraph = function(selector, data, images, opts) {
  
+    opts = opts || {};
     var colors = utils.getColors(data.length);
  
-    console.log('data.length: ' + data.length);
  
     if(_.isArray(data[0])) {
         data = _.map(data, function(d) {
@@ -71,10 +72,14 @@ var LineStackedGraph = function(selector, data, images, opts) {
     });
  
     var chartWidth = $(selector).width();
- 
+    var chartHeight = (opts.height || (chartWidth * 0.8));
  
     // do everything for the minimap
     var minimapWidth = 0.2 * chartWidth;
+
+    chartWidth -= minimapWidth;
+
+
     var minimapLineHeight = 20;
     var minimapLinePadding = 5;
  
@@ -88,22 +93,17 @@ var LineStackedGraph = function(selector, data, images, opts) {
                     .range([minimapLineHeight, 0]);
  
     var minimapLine = d3.svg.line()
-                        .x(function(d, i) {
+                        .x(function(d) {
                             return minimapX(d.x);
                         })
-                        .y(function(d, i) {
+                        .y(function(d) {
                             return minimapY(d.y);
                         });
  
  
-    var chartWidth = $(selector).width();
-    var chartLineHeight = 100;
-    var chartLinePadding = 20;
  
- 
-    var max = 0;
- 
- 
+
+    var selectedLinesLength = 0; 
     var getChartData = function(dataObjArr) {
 
         return _.map(dataObjArr, function(dataObj, i) {
@@ -113,7 +113,7 @@ var LineStackedGraph = function(selector, data, images, opts) {
                     x: point.x
                 };
  
-                p.y = point.y + i * (chartLineHeight + chartLinePadding);
+                p.y = chartY(point.y) + i * (chartHeight / selectedLinesLength);
  
                 return p;
             });
@@ -121,24 +121,26 @@ var LineStackedGraph = function(selector, data, images, opts) {
             return dataObj;
         });
 
-    }
+    };
+
+
  
-    var chartYHeight = Math.min((chartLineHeight+chartLinePadding) * data.length, maxHeight);
  
     var chartX = d3.scale.linear()
                     .domain([xDomain[0] - xSpread * 0.05, xDomain[1] + xSpread * 0.05])
                     .range([0, chartWidth]);
  
     var chartY = d3.scale.linear()
-                    .domain([yDomain[0] - ySpread * 0.05, yDomain[1] + ySpread * 0.05])
-                    .range([chartYHeight, 0]);
+                    .domain([yDomain[0] - ySpread * 0.05, yDomain[1] + ySpread * 0.05]);
+    
+    var zoomY = d3.scale.linear();
  
     var chartLine = d3.svg.line()
-                        .x(function(d, i) {
+                        .x(function(d) {
                             return chartX(d.x);
                         })
-                        .y(function(d, i) {
-                            return chartY(d.y);
+                        .y(function(d) {
+                            return zoomY(d.y);
                         });
  
  
@@ -146,10 +148,7 @@ var LineStackedGraph = function(selector, data, images, opts) {
  
     _.each(simpleData, function(d, i) {
  
-        console.log('iter: ' + i);
- 
         var minimapSvg = minimapDiv.append('div').attr('class', 'miniline-container')
-            .style('width', minimapWidth + 'px')
             .append('svg')
             .attr('class', 'stacked-line-plot-minimap')
             .attr('width', minimapWidth)
@@ -187,15 +186,16 @@ var LineStackedGraph = function(selector, data, images, opts) {
 
     var zoom = d3.behavior.zoom()
         .x(chartX)
+        .y(zoomY)
         .on('zoom', zoomed);
 
 
-    var chartDiv = d3.select(selector).append('div').attr('class', 'chart');
+    var chartDiv = d3.select(selector).append('div').attr('class', 'chart').style('width', chartWidth + 'px');
  
     var chartSvg = chartDiv.append('svg')
         .attr('class', 'stacked-line-plot')
         .attr('width', chartWidth)
-        .attr('height', chartYHeight)
+        .attr('height', chartHeight)
         .call(zoom);
  
     var chart = chartSvg.append('g')
@@ -207,25 +207,37 @@ var LineStackedGraph = function(selector, data, images, opts) {
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', chartWidth)
-        .attr('height', (chartLineHeight + chartLinePadding) * data.length);
+        .attr('height', chartHeight);
  
  
-    chartBody = chart.append('g')
+    var chartBody = chart.append('g')
         .attr('clip-path', 'url(#chartClip)');
 
 
     var updateChart = function() {
  
-        var tempData = [];
+        var tempData = [], domainData = [];
         $('.miniline-container').each(function(i) {
             if($(this).hasClass('active')) {
                 tempData.push({
                     data: data[i],
                     index: i
                 });
+
+                domainData.push(data[i]);
             }
         });
- 
+
+        selectedLinesLength = tempData.length;
+        
+
+        var yDomain = nestedExtent(domainData, function(d) {
+            return d.y;
+        });
+        var ySpread = Math.abs(yDomain[0] - yDomain[1]);
+
+        chartY.domain([yDomain[0] - ySpread * 0.05, yDomain[1] + ySpread * 0.05]).range([chartHeight / selectedLinesLength, 0]);
+
         tempData = getChartData(tempData);
 
         var lineContainer = chartBody.selectAll('.line')
@@ -244,12 +256,9 @@ var LineStackedGraph = function(selector, data, images, opts) {
                 return d.index;
             })
             .style('stroke', function(d, i) {
-                console.log(d.index);
                 return colors[d.index];
             });
 
-
-        console.log(lineContainer.exit());
 
         lineContainer.exit().remove();
 
@@ -258,51 +267,14 @@ var LineStackedGraph = function(selector, data, images, opts) {
             .duration(750)
             .attr('d', function(d) {
                 return chartLine(d.data);
-            });   
+            });
     }
 
-    var lastS, lastT = [0, 0];
     function zoomed() {
-
-
-        var t = d3.event.translate;
-        var s = d3.event.scale;
-
-        if(s === lastS) {
-
-            // get dominant translation direction
-            var threshold = 7;
-            if(Math.abs(Math.abs(t[0] - lastT[0]) - Math.abs(t[1] - lastT[1])) > threshold) {
-                if(Math.abs(t[0] - lastT[0]) > Math.abs(t[1] - lastT[1])) {
-                    t[1] = lastT[1];
-                } else {
-                    t[0] = lastT[0];
-                }
-            } else {
-                return;
-            }
-
-            zoom.translate(t);
-
-            chartY = chartY
-                .range([chartYHeight, 0 + t[1]]);
-
-            chart.selectAll('.line')
-                // .transition()
-                // .duration(200)
-                .attr('d', function(d) {
-                    return chartLine(d.data);
-                });
-        } else {
-
-            chart.selectAll('.line')
-                .attr('d', function(d) {
-                    return chartLine(d.data);
-                });
-        }
-
-        lastS = s;
-        lastT = t;
+        chart.selectAll('.line')
+            .attr('d', function(d) {
+                return chartLine(d.data);
+            });
     }
 };
  
@@ -316,3 +288,5 @@ LineStackedGraph.prototype.updateData = function(data) {
         .transition()
         .attr('d', this.line);
 };
+
+
