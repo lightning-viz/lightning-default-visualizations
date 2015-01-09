@@ -1,85 +1,128 @@
+'use strict';
+
 var d3 = require('d3');
-var inherits = require('inherits');
+var _ = require('lodash');
+var utils = require('lightning-client-utils')
+var colorbrewer = require('colorbrewer')
+
+var L = require('leaflet');
+var Color = require('color');
+var id = 0;
 
 var margin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 45
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
 };
-
-
-
 
 var Matrix = function(selector, data, images, opts) {
 
-    var width = $(selector).width() - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
-
-    var matrix = [];
-    var nodes = data.nodes;
-    var n = nodes.length;
-    var color = d3.scale.category10().domain(d3.range(10));
-    
-    var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
-
-    var zrng = d3.extent(data.links, function(d) {
-            return d.value;
-        });
-    var z = d3.scale.linear().domain([zrng[0], zrng[1]]).clamp(true);
-
-    nodes.forEach(function(node, i) {
-        node.index = i;
-        matrix[i] = d3.range(n).map(function(j) { return {x: j, y: i, z: 0}; });
-    });
-
-    data.links.forEach(function(link) {
-        matrix[link.source][link.target].z += link.value;
-    });
-
-
-    //x.domain(d3.range(n))
-    x.domain(d3.range(n).sort(function(a, b) { return nodes[b].group - nodes[a].group; }));
-
-    var zoom = d3.behavior.zoom()
-        .scaleExtent([0.1, 20])
-        .translate([(margin.left + (width / 2) - Math.min(width, height)/2), 0])
-        .on('zoom', zoomed);
-
-    var svg = d3.select(selector)
-        .append('svg:svg')
-        .attr('class', 'matrix')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .attr('pointer-events', 'all')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(zoom)
-        .append('svg:g')
-        .attr('transform', 'translate(' + (margin.left + (width / 2) - Math.min(width, height)/2)  + ', 0)');
-
-    svg.selectAll('.row')
-        .data(matrix)
-        .enter().append('g')
-        .attr('class', 'row')
-        .attr('transform', function(d, i) { return 'translate(0,' + x(i) + ')'; })
-        .each(function(row) {
-            d3.select(this).selectAll('.cell')
-                .data(row.filter(function(d) { return d.z; }))
-                .enter().append('rect')
-                .attr('class', 'cell')
-                .attr('x', function(d) { return x(d.x); })
-                .attr('width', x.rangeBand())
-                .attr('height', x.rangeBand())
-                .style('fill-opacity', function(d) { return z(d.z); })
-                .style('fill', function(d) { return nodes[d.x].group === nodes[d.y].group ? color(nodes[d.x].group) : null; });
-        });
-
-
-    function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scale + ')');
+    if(!opts) {
+        opts = {};
     }
+
+    this.opts = opts
+    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+
+    this.data = this._formatData(data)
+    this.selector = selector;
+    this.defaultColormap = 'Purples';
+    this._init();
+
+}
+
+Matrix.prototype._init = function() {
+
+    var width = this.width
+    var height = this.height
+    var data = this.data
+    var selector = this.selector
+    var self = this
+
+    this.mid = id++;
+    this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="matrix-map-' + this.mid + '" class="matrix-map"></div>';
+
+    var matrix = data.matrix;
+
+    // get min and max of matrix value data
+    var zmin = d3.min(data.matrix, function(d) {
+        return d3.min(d, function(e) {
+            return e.z
+        });
+    });
+    var zmax = d3.max(data.matrix, function(d) {
+        return d3.max(d, function(e) {
+            return e.z
+        });
+    });
+
+    // set up color brewer
+    // TODO add ability to select scale and update dynamically
+    var cbrewn = 9
+    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
+    var zdomain = d3.range(cbrewn).map(function(d) {return d * (zmax - zmin) / (cbrewn - 1) + zmin})
+    var z = d3.scale.linear().domain(zdomain).range(color);
+
+    // set up x and y scales and ranges
+    var nrow = matrix.length
+    var ncol = matrix[0].length
+    var y = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
+    var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
+    y.domain(d3.range(nrow));
+    x.domain(d3.range(ncol))
+    var maxY = nrow * y.rangeBand();
+    var maxX = ncol * x.rangeBand();
+
+    // bounds for the graphic
+    var bounds = [[0, 0], [maxY, maxX]];
+
+    // create the graphic as a map
+    this.$el = $(selector).first();
+    this.$el.append(this.markup);
+    this.$el.find('#matrix-map-' + this.mid).width(maxX).height(maxY);
+
+    var map = L.map('matrix-map-' + this.mid, {
+        center: [maxX/2, maxY/2],
+        attributionControl: false,
+        zoomControl: false,
+        crs: L.CRS.Simple,
+    });
+
+    // set the bounds
+    map.fitBounds(bounds);
+    map.setMaxBounds(bounds);
+
+    // render the rectangles
+    setTimeout(function() {
+        _.each(matrix, function(row, i) {
+            _.each(row, function(cell) {
+                var xPos = x(cell.x);
+                var yPos = y(i);
+                var b = [[yPos, xPos], [yPos + y.rangeBand(), xPos + x.rangeBand()]];
+                L.rectangle(b, {color: z(cell.z), weight: 0.7, smoothFactor: 1.0, className: "cell"}).addTo(map);
+            });
+        });    
+    }, 0);
+    
 
 };
 
+Matrix.prototype._formatData = function(data) {
+
+    data.matrix = _.map(data.matrix, function(d, i) {
+        return _.map(d, function(e, j) {
+            var p = []
+            p.x = j
+            p.y = i
+            p.z = e
+            return p
+        })
+    });
+
+    return data
+
+}
 
 module.exports = Matrix;

@@ -1,0 +1,16 @@
+.leaflet-container img.leaflet-image-layer {
+    max-width: none !important;
+}
+
+.adjacency-map {
+    background-color: #fff;
+    
+    path {
+        fill-opacity: 1.0;
+        stroke-opacity: 1.0;
+        stroke: white;
+    }
+    
+}
+
+   

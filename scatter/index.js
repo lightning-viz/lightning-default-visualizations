@@ -1,4 +1,5 @@
 var d3 = require('d3');
+require('d3-multiaxis-zoom')(d3);
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 
