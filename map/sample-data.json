@@ -1,9 +1,7 @@
 [{
     "name": "us map data",
     "data": {
-        "MI": 1.0,
-        "NY": 0.75,
-        "CA": 0.33,
-        "OH": 0.5
+    		"regions": ["MI", "NY", "CA", "OH"],
+    		"values": [1.0, 0.75, 0.33, 0.5]
     }
 }]
