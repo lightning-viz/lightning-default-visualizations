@@ -85,7 +85,7 @@ Map.prototype._init = function() {
                 //return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong></div>';
             },
             highlightBorderColor: '#fff',
-            highlightFillColor: z((max-min)/2),
+            highlightFillColor: 'rgb(150,150,150)',
         }
 
     });
