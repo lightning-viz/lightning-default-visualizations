@@ -39,6 +39,8 @@ Map.prototype._init = function() {
     var regions = data.regions
     var values = data.values
 
+    var self = this
+
     var $el = $(selector).first();
     $el.append(templateHTML());
     
