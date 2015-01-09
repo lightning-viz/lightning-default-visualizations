@@ -1,5 +1,6 @@
 var Datamaps = require('datamaps-all-browserify');
 var _ = require('lodash');
+var colorbrewer = require('colorbrewer')
 var templateHTML = require('./map.jade');
 
 var margin = {
@@ -21,7 +22,7 @@ var Map = function(selector, data, images, opts) {
     this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
     this.selector = selector
     this.data = this._formatData(data)
-
+    this.defaultColormap = 'Purples';
     this._init();
 
 };
@@ -55,10 +56,13 @@ Map.prototype._init = function() {
     var min = d3.min(values)
     var max = d3.max(values)
 
-    var color = d3.scale.linear().domain([min,max]).range(['#fff', '#9175f0']);
+    var cbrewn = 9
+    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
+    var zdomain = d3.range(cbrewn).map(function(d) {return d * (max - min) / (cbrewn - 1) + min})
+    var z = d3.scale.linear().domain(zdomain).range(color);
 
     _.each(regions, function(reg, i) {
-        var c = color(values[i]);
+        var c = z(values[i]);
         fills[c] = c;
         dataObj[reg] = {
             fillKey: c,
