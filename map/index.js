@@ -72,10 +72,10 @@ Map.prototype._init = function() {
         geographyConfig: {        
 
             popupTemplate: function(geography, data) { //this function should just return a string
-                if(data) {
-                    return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong><br/>' + data.value + '</div>';
-                }
-                return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong></div>';
+                //if(data) {
+                //    return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong><br/>' + data.value + '</div>';
+                //}
+                //return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong></div>';
             },
             highlightBorderColor: '#fff',
             highlightFillColor: '#68a1e5',
