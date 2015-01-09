@@ -1,27 +1,32 @@
+var sid = 0;
 var d3 = require('d3');
 var _ = require('lodash');
-var templateHTML = require('./scatter-line.jade');
 var utils = require('lightning-client-utils');
 
 
 var ScatterLine = function(selector, data, images, options) {
 
+    this.id = sid++;
+
     var $el = $(selector).first();
-    $el.append(templateHTML());
+
+    var markup = '<div id="scatter-line-' + this.id + '"><div class="scatter"></div><div class="line"></div></div>';
+    $el.append(markup);
     this.$el = $el;
 
     var Scatter = require('../viz/scatter');
-    var scatter = new Scatter(selector + ' #scatter-plot', data, null, {width: $(selector).width(), height: Math.min(500, $(selector).width * 0.6)});
+    var scatter = new Scatter(selector + ' #scatter-line-' + this.id + ' .scatter', data, null, {width: $(selector).width(), height: Math.min(500, $(selector).width * 0.6)});
     var Line = require('../viz/line');
     var line;
 
+    var self = this;
     utils.fetchData(this, ['series', 0], function(err, data) {
         if(!err) {
             var series = data
             var newdata = {'series': _.times(series.length, _.constant(0))};
-            line = new Line(selector + ' #line-chart', newdata, null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
+            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', newdata, null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         } else {
-            line = new Line(selector + ' #line-chart', [], null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
+            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', [], null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         }
     });
 
