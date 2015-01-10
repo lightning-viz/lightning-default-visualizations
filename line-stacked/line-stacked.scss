@@ -21,7 +21,16 @@ svg {
     float: left;
     width: 60%;
 
-    background: #fafafa;
+    background: #fcfcfc;
+
+    .grid .tick {
+        stroke: rgba(0,0,0,0.1);
+        stroke-width: 1;
+    }
+    .grid path {
+        stroke-width: 1;
+    }
+
 }
  
 .miniline-container {
@@ -38,12 +47,4 @@ svg {
     &.active {
         opacity: 1.0;
     }
-}
-
-.grid .tick {
-    stroke: #BEC9CE;
-    opacity: 0.6;
-}
-.grid path {
-    stroke-width: 0;
 }
