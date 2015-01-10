@@ -39,3 +39,11 @@ svg {
         opacity: 1.0;
     }
 }
+
+.grid .tick {
+    stroke: #BEC9CE;
+    opacity: 0.6;
+}
+.grid path {
+    stroke-width: 0;
+}

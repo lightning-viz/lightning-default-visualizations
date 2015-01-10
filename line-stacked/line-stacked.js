@@ -12,12 +12,14 @@ var margin = {
     left: 10
 };
  
-var maxHeight = 600;
  
 var LineStackedGraph = function(selector, data, images, opts) {
  
     opts = opts || {};
     var colors = utils.getColors(data.length);
+
+    this.$el = $(selector);
+    this.lid = utils.getUniqueId();
  
  
     if(_.isArray(data[0])) {
@@ -72,7 +74,7 @@ var LineStackedGraph = function(selector, data, images, opts) {
     });
  
     var chartWidth = $(selector).width();
-    var chartHeight = (opts.height || (chartWidth * 0.8));
+    var chartHeight = (opts.height || (chartWidth * 0.6));
  
     // do everything for the minimap
     var minimapWidth = 0.2 * chartWidth;
@@ -144,7 +146,7 @@ var LineStackedGraph = function(selector, data, images, opts) {
                         });
  
  
-    var minimapDiv = d3.select(selector).append('div').attr('class', 'minimap');
+    var minimapDiv = d3.select(selector).append('div').attr('class', 'minimap').attr('id', this.lid);
  
     _.each(simpleData, function(d, i) {
  
@@ -175,8 +177,10 @@ var LineStackedGraph = function(selector, data, images, opts) {
             .style('stroke', colors[i]);
  
     });
+
+    var $minilines = $(selector).find('#' + this.lid + ' .miniline-container');
  
-    $(selector).find('.miniline-container').click(function() {
+    $minilines.click(function() {
         $(this).toggleClass('active');
         updateChart();
     });
@@ -186,7 +190,6 @@ var LineStackedGraph = function(selector, data, images, opts) {
 
     var zoom = d3.behavior.zoom()
         .x(chartX)
-        .y(zoomY)
         .on('zoom', zoomed);
 
 
@@ -200,6 +203,16 @@ var LineStackedGraph = function(selector, data, images, opts) {
  
     var chart = chartSvg.append('g')
         .attr('class', 'chart');
+
+
+    var xGrid = d3.svg.axis()
+                    .scale(chartX)
+                    .orient('bottom')
+                    .ticks(5)
+                    .tickSize(-chartHeight, 0, 0)
+                    .tickFormat('');
+
+
  
     chart.append('svg:clipPath')
         .attr('id', 'chartClip')
@@ -214,10 +227,17 @@ var LineStackedGraph = function(selector, data, images, opts) {
         .attr('clip-path', 'url(#chartClip)');
 
 
+    chartBody.append('g')
+        .attr('class', 'grid x')
+        .attr('transform', 'translate(0,' + chartHeight + ')')
+        .call(xGrid
+        );
+
+
     var updateChart = function() {
  
         var tempData = [], domainData = [];
-        $('.miniline-container').each(function(i) {
+        $minilines.each(function(i) {
             if($(this).hasClass('active')) {
                 tempData.push({
                     data: data[i],
@@ -240,13 +260,15 @@ var LineStackedGraph = function(selector, data, images, opts) {
 
         tempData = getChartData(tempData);
 
+
+
         var lineContainer = chartBody.selectAll('.line')
                             .data(tempData, function(d) {
                                 return d.index;
                             });
 
         lineContainer
-            .enter().append('g')
+            .enter()
             .append('path')
             .attr('class', 'line')
             .attr('d', function(d) {
@@ -271,6 +293,10 @@ var LineStackedGraph = function(selector, data, images, opts) {
     }
 
     function zoomed() {
+
+        chartBody.select('.x.grid')
+            .call(xGrid);
+
         chart.selectAll('.line')
             .attr('d', function(d) {
                 return chartLine(d.data);
