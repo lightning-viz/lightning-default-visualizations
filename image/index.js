@@ -1,17 +1,17 @@
 'use strict';
 
 var utils = require('lightning-client-utils');
-var id = 0;
+
 var d3 = require('d3');
 var L = require('leaflet');
 var F = require('leaflet.freedraw-browserify');
-F(L)
+F(L);
 
 // code adopted from http://kempe.net/blog/2014/06/14/leaflet-pan-zoom-image.html
 
 var Img = function(selector, data, images, opts) {
 
-    this.mid = id++;
+    this.mid = utils.getUniqueId();
     this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="image-map-' + this.mid + '" class="image-map"></div>';
 
     var image = images[0];

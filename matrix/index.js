@@ -7,7 +7,6 @@ var colorbrewer = require('colorbrewer')
 
 var L = require('leaflet');
 var Color = require('color');
-var id = 0;
 
 var margin = {
     top: 0,
@@ -41,7 +40,8 @@ Matrix.prototype._init = function() {
     var selector = this.selector
     var self = this
 
-    this.mid = id++;
+    this.mid = utils.getUniqueId();
+
     this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="matrix-map-' + this.mid + '" class="matrix-map"></div>';
 
     var matrix = data.matrix;
