@@ -521,6 +521,7 @@ GraphBundled.prototype._init = function() {
         .attr("height", height + margin.top + margin.bottom);
 
     function zoomed() {
+        
         svg.selectAll('.link')
             .attr('d', function(d) { return line(d); });
 
@@ -581,8 +582,6 @@ GraphBundled.prototype._init = function() {
             
         var results   = fbundling();    
 
-        console.log(results);
-
         function connectedNodesOpacity() {
 
             if (toggleOpacity == 0) {
@@ -592,7 +591,6 @@ GraphBundled.prototype._init = function() {
                     return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
                 });
                 link.style("opacity", function (o) {
-                    console.log(o)
                     return d.i==o[0].i | d.i==o[o.length-1].i ? 0.9 : linkStrokeOpacity / 10;
                 });
                 toggleOpacity = 1;
