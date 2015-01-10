@@ -499,12 +499,6 @@ GraphBundled.prototype._init = function() {
         .domain(yDomain)
         .range([height - 10, 0 + 10]);
 
-    // nodes = _.map(nodes, function(n) {
-    //     n.x = x(n.x);
-    //     n.y = y(n.y);
-    //     return n;
-    // });
-
     var zoom = d3.behavior.zoom()
         .x(x)
         .y(y)
