@@ -14,9 +14,9 @@ d3.ForceEdgeBundling = function(){
             S_initial = 0.1,        // init. distance to move points
             P_initial = 1,          // init. subdivision number
             P_rate    = 2,          // subdivision rate increase
-            C = 3,                  // number of cycles to perform
+            C = 4,                  // number of cycles to perform
             I_initial = 90,         // init. number of iterations for cycle
-            I_rate = 0.6666667,     // rate at which iteration number decreases i.e. 2/3
+            I_rate = 0.333333,     // rate at which iteration number decreases i.e. 2/3
             compatibility_threshold = 0.6,
             invers_quadratic_mode  = false,
             eps = 1e-6;
@@ -499,12 +499,6 @@ GraphBundled.prototype._init = function() {
         .domain(yDomain)
         .range([height - 10, 0 + 10]);
 
-    // nodes = _.map(nodes, function(n) {
-    //     n.x = x(n.x);
-    //     n.y = y(n.y);
-    //     return n;
-    // });
-
     var zoom = d3.behavior.zoom()
         .x(x)
         .y(y)
@@ -527,6 +521,7 @@ GraphBundled.prototype._init = function() {
         .attr("height", height + margin.top + margin.bottom);
 
     function zoomed() {
+        
         svg.selectAll('.link')
             .attr('d', function(d) { return line(d); });
 
@@ -573,13 +568,19 @@ GraphBundled.prototype._init = function() {
         .x(function(d){ return d ? x(d.x) : null; })
         .y(function(d){ return d ? y(d.y) : null; })
         .interpolate('linear');
-
+   
+    var xscale = d3.mean(nodes, function(d) {return Math.abs(d.x)})
+    var yscale = d3.mean(nodes, function(d) {return Math.abs(d.y)})
+    var scale = (xscale + yscale) / 2
+    
     setTimeout(function() {
 
-        var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(links);
+        var fbundling = d3.ForceEdgeBundling()
+            .nodes(nodes)
+            .edges(links)
+            .step_size(scale/1000)
+            
         var results   = fbundling();    
-
-        console.log(results);
 
         function connectedNodesOpacity() {
 
@@ -590,7 +591,6 @@ GraphBundled.prototype._init = function() {
                     return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
                 });
                 link.style("opacity", function (o) {
-                    console.log(o)
                     return d.i==o[0].i | d.i==o[o.length-1].i ? 0.9 : linkStrokeOpacity / 10;
                 });
                 toggleOpacity = 1;
