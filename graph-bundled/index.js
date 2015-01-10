@@ -567,10 +567,18 @@ GraphBundled.prototype._init = function() {
         .x(function(d){ return d ? x(d.x) : null; })
         .y(function(d){ return d ? y(d.y) : null; })
         .interpolate('linear');
-
+   
+    var xscale = d3.mean(nodes, function(d) {return Math.abs(d.x)})
+    var yscale = d3.mean(nodes, function(d) {return Math.abs(d.y)})
+    var scale = (xscale + yscale) / 2
+    
     setTimeout(function() {
 
-        var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(links);
+        var fbundling = d3.ForceEdgeBundling()
+            .nodes(nodes)
+            .edges(links)
+            .step_size(scale/1000)
+            
         var results   = fbundling();    
 
         console.log(results);
