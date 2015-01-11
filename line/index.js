@@ -32,7 +32,7 @@ var nestedExtent = function(data, map) {
 var Line = function(selector, data, images, opts) {
 
     var defaults = {
-        tooltips: true
+        tooltips: false
     };
 
     opts = _.defaults(opts || {}, defaults);

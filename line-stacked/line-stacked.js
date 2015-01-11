@@ -19,7 +19,7 @@ var margin = {
 var LineStackedGraph = function(selector, data, images, opts) {
  
     var defaults = {
-        tooltips: true
+        tooltips: false
     };
 
     opts = _.defaults(opts || {}, defaults);
