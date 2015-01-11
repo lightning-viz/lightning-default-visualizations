@@ -10,17 +10,18 @@
     .grid path {
         stroke-width: 0;
     }
-    // .axis path, .axis line {
-    //     fill: none;
-    //     stroke: none;
-    //     shape-rendering: crispEdges;
-    // }
-    // .axis path {
-    //     display: none;
-    // }
-    // .line {
-    //     fill: none;
-    // }
+    .axis path, .axis line {
+        fill: none;
+        stroke: none;
+        shape-rendering: crispEdges;
+    }
+    .axis path {
+        display: none;
+    }
+    .line {
+        cursor: pointer;
+        fill: none;
+    }
 
     text {
         fill: #BEC9CE;
