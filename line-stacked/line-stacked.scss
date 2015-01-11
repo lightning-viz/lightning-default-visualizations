@@ -20,6 +20,10 @@ svg {
 .chart {
     float: left;
     width: 60%;
+    
+    .line {
+        cursor: pointer;
+    }
 
     background: #fcfcfc;
 
