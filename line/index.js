@@ -3,6 +3,9 @@ var d3 = require('d3');
 require('d3-multiaxis-zoom')(d3);
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
+var TooltipPlugin = require('d3-tip');
+TooltipPlugin(d3);
+
 
 
 var margin = {
@@ -28,10 +31,11 @@ var nestedExtent = function(data, map) {
 
 var Line = function(selector, data, images, opts) {
 
-    if(!opts) {
-        opts = {};
-    }
+    var defaults = {
+        tooltips: true
+    };
 
+    opts = _.defaults(opts || {}, defaults);
     this.opts = opts;
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
@@ -53,6 +57,18 @@ Line.prototype._init = function() {
     var self = this;
 
     var series = data.series;
+
+    var tip;
+
+    if(this.opts.tooltips) {
+        var format = d3.format('.02f');
+        tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .html(function(d, i) {
+                return 'Series: ' + d.i;
+            });
+    }
+
 
     var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 3);
 
@@ -94,7 +110,11 @@ Line.prototype._init = function() {
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(this.zoom);
+        .call(this.zoom)
+
+    if(this.opts.tooltips) {
+        svg.call(tip);
+    }
 
     svg.append('svg:rect')
         .attr('width', width)
@@ -163,15 +183,22 @@ Line.prototype._init = function() {
 
     function highlight(d, i) {
 
-        if (toggleOpacity == 0) {
+        if (toggleOpacity === 0) {
             //var d = d3.select(this)[0][0].__data__
             svg.selectAll('.line').transition().duration(100).ease('linear').delay(100).style("opacity", function (o, j) {
                 return i == j ? 0.9 : 0.2;
             });
-            toggleOpacity = 1
+            toggleOpacity = 1;
+
+            if(self.opts.tooltips) {
+                tip.show(d, i);
+            }
         } else {
             svg.selectAll('.line').transition().duration(100).ease('linear').style('opacity', 0.9)
             toggleOpacity = 0;
+            if(self.opts.tooltips) {
+                tip.hide(d, i);
+            }
         }
     }
 

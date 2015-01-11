@@ -2,6 +2,10 @@ var d3 = require('d3');
 require('d3-multiaxis-zoom')(d3);
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
+var _ = require('lodash');
+var TooltipPlugin = require('d3-tip');
+TooltipPlugin(d3);
+
 
 var margin = {
     top: 0,
@@ -13,9 +17,11 @@ var margin = {
 
 var Scatter = function(selector, data, images, opts) {
 
-    if(!opts) {
-        opts = {};
-    }
+    var defaults = {
+        tooltips: true
+    };
+
+    opts = _.defaults(opts || {}, defaults);
 
     this.opts = opts
 
@@ -37,6 +43,17 @@ inherits(Scatter, require('events').EventEmitter);
 module.exports = Scatter;
 
 Scatter.prototype._init = function() {
+
+    var tip;
+    if(this.opts.tooltips) {
+        var format = d3.format('.02f');
+        tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .html(function(d) {
+                return 'x: ' + format(d.x) + '<br>' + 'y: ' + format(d.y);
+            });
+    }
+
 
     var data = this.data
     var height = this.height
@@ -75,6 +92,10 @@ Scatter.prototype._init = function() {
         .append('svg:g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
         .call(zoom);
+
+    if(this.opts.tooltips) {
+        svg.call(tip);
+    }
 
     svg.append('rect')
         .attr('width', width)
@@ -142,6 +163,9 @@ Scatter.prototype._init = function() {
 
 
     function darken(d, i) {
+        if(self.opts.tooltips) {
+            tip.show(d, i);
+        }
         var point = d3.select(this)
         var newcolor = d3.hsl(point.style('fill')).darker(0.5)
         point.style('fill', d3.rgb(newcolor))
@@ -150,6 +174,9 @@ Scatter.prototype._init = function() {
     }
 
     function brighten(d, i) {
+        if(self.opts.tooltips) {
+            tip.hide(d, i);
+        }
         var point = d3.select(this)
         var newcolor = d3.hsl(point.style('fill')).brighter(0.5)
         point.style('fill', d3.rgb(newcolor))
