@@ -4,7 +4,10 @@ require('d3-multiaxis-zoom')(d3);
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
 var simplify = require('simplify-js');
- 
+var TooltipPlugin = require('d3-tip');
+TooltipPlugin(d3);
+
+
 var margin = {
     top: 40,
     right: 10,
@@ -15,7 +18,25 @@ var margin = {
  
 var LineStackedGraph = function(selector, data, images, opts) {
  
-    opts = opts || {};
+    var defaults = {
+        tooltips: true
+    };
+
+    opts = _.defaults(opts || {}, defaults);
+    this.opts = opts;
+
+    var tip;
+
+    if(this.opts.tooltips) {
+        var format = d3.format('.02f');
+        tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .html(function(d, i) {
+                return 'Series: ' + i;
+            });
+    }
+
+
     var colors = utils.getColors(data.length);
 
     this.$el = $(selector);
@@ -200,6 +221,8 @@ var LineStackedGraph = function(selector, data, images, opts) {
         .attr('width', chartWidth)
         .attr('height', chartHeight)
         .call(zoom);
+
+
  
     var chart = chartSvg.append('g')
         .attr('class', 'chart');
@@ -225,6 +248,10 @@ var LineStackedGraph = function(selector, data, images, opts) {
  
     var chartBody = chart.append('g')
         .attr('clip-path', 'url(#chartClip)');
+
+    if(this.opts.tooltips) {
+        chartBody.call(tip);
+    }
 
 
     chartBody.append('g')
@@ -281,6 +308,19 @@ var LineStackedGraph = function(selector, data, images, opts) {
                 return colors[d.index];
             });
 
+        if(opts.tooltips) {
+            var t;
+            lineContainer
+                .on('mouseover', function(d, i) {
+                    clearTimeout(t);
+                    tip.show(d, i);
+                })
+                .on('mouseout', function(d, i) {
+                    t = setTimeout(function() {
+                        tip.hide(d, i);
+                    }, 500);
+                });
+        }
 
         lineContainer.exit().remove();
 
