@@ -139,42 +139,6 @@ Particles.prototype._formatData = function(data) {
 
 }
 
-Particles.prototype.updateData = function(data) {
-
-
-    var self = this;
-    var geometry = new THREE.Geometry();
-    
-    console.log('updating data')
-
-    _.each(data, function() {
-        var vertex = new THREE.Vector3();
-        vertex.x = Math.random() * 2000 - 1000;
-        vertex.y = Math.random() * 2000 - 1000;
-        vertex.z = Math.random() * 2000 - 1000;
-
-        geometry.vertices.push( vertex );
-
-
-    });
-
-    var materials = []
-    for (var i = 0; i < self.parameters.length; i ++ ) {
-
-        var color = self.parameters[i][0];
-        var size  = self.parameters[i][1];
-
-        materials[i] = new THREE.PointCloudMaterial( { size: size } );
-
-        var particles = new THREE.PointCloud( geometry, materials[i] );
-
-
-        self.scene.add( particles );
-
-    }
-};
-
-
 module.exports = Particles;
 
 
