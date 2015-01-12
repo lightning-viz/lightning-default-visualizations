@@ -89,14 +89,14 @@ Particles.prototype._init = function() {
             transparent: true,
             sizeAttenuation: false,
             vertexColors: THREE.VertexColors,
-            opacity: 0.8
+            opacity: 0.9
         });
         
         particles = new THREE.PointCloud( geometry, material );
         particles.sortParticles = true;
         scene.add( particles );
 
-        renderer = new THREE.WebGLRenderer();        
+        renderer = new THREE.WebGLRenderer({alpha: true});        
         renderer.setSize( width, height );
         $(selector)[0].appendChild( renderer.domElement );
 
