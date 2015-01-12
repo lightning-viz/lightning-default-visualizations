@@ -1,7 +1,7 @@
 'use strict';
 
 var utils = require('lightning-client-utils');
-
+var inherits = require('inherits');
 var d3 = require('d3');
 var L = require('leaflet');
 var F = require('leaflet.freedraw-browserify');
@@ -32,6 +32,8 @@ var Img = function(selector, data, images, opts) {
     img.src = image;
 
     img.onload = function() {
+
+        self.emit('image:loaded');
         
         // get image dimensions
         var imw = img.width;
@@ -131,6 +133,8 @@ var Img = function(selector, data, images, opts) {
     }
 
 };
+
+inherits(Img, require('events').EventEmitter);
 
 
 module.exports = Img;

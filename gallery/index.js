@@ -1,6 +1,7 @@
 var d3 = require('d3');
 var _ = require('lodash');
 var templateHTML = require('./gallery.jade');
+var inherits = require('inherits');
 var Img = require('../viz/image');
 
 
@@ -27,8 +28,13 @@ Gallery.prototype._init = function() {
 
 
     this.imageViz = new Img(this.selector + ' .image-container', [], [this.images[0]], {width: this.$el.width() || 400});    
+
+    this.imageViz.on('image:loaded', function() {
+        self.emit('image:loaded');
+    });
 };
 
+inherits(Gallery, require('events').EventEmitter);
 
 module.exports = Gallery;
 
