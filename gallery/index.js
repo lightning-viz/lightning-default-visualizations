@@ -12,6 +12,8 @@ var Gallery = function(selector, data, images, opts) {
     this._init();
 };
 
+inherits(Gallery, require('events').EventEmitter);
+
 Gallery.prototype._init = function() {
 
     this.currentImage = 0;
@@ -34,7 +36,6 @@ Gallery.prototype._init = function() {
     });
 };
 
-inherits(Gallery, require('events').EventEmitter);
 
 module.exports = Gallery;
 
