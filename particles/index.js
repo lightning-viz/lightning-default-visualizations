@@ -15,7 +15,7 @@ var Particles = function(selector, data, images, opts) {
     this.height = (opts.height || (this.width * 0.6));
 
     this.data = this._formatData(data)
-    this.defaultColor = {r: 100, g: 255, b: 0}
+    this.defaultColor = d3.rgb('#A38EF3')
     this.selector = selector;
     this._init();
 
