@@ -121,7 +121,7 @@ var Img = function(selector, data, images, opts) {
             });
         });
 
-        utils.getSettings(this, function(err, settings) {
+        utils.getSettings(self, function(err, settings) {
 
             console.log(settings);
             if(!err) {
