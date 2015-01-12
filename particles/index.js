@@ -78,7 +78,7 @@ Particles.prototype._init = function() {
         geometry.colors = colors
 
         camera.position.y = 0;
-        camera.position.x = -max*2;
+        camera.position.x = -max*1.75;
         camera.position.z = 1;
         
         camera.lookAt(new THREE.Vector3(0, 0, 0));
