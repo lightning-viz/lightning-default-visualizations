@@ -33,7 +33,6 @@ var Img = function(selector, data, images, opts) {
 
     img.onload = function() {
 
-        self.emit('image:loaded');
         
         // get image dimensions
         var imw = img.width;
@@ -98,7 +97,9 @@ var Img = function(selector, data, images, opts) {
             freeDraw.setMode(L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE)
         }
 
-        self.$el.click(function() {
+        self.emit('image:loaded');
+
+        self.$el.unbind().click(function() {
 
             // extract coordinates from regions
             var n = freeDraw.memory.states.length;
