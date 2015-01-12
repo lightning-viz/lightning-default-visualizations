@@ -12,7 +12,7 @@ var Particles = function(selector, data, images, opts) {
 
     this.opts = opts
     this.width = (opts.width || $(selector).width());
-    this.height = (opts.height || (this.width * 0.7));
+    this.height = (opts.height || (this.width * 0.6));
 
     this.data = this._formatData(data)
     this.defaultColor = {r: 100, g: 255, b: 0}
@@ -79,12 +79,12 @@ Particles.prototype._init = function() {
 
         camera.position.y = 0;
         camera.position.x = -max*2;
-        camera.position.z = 0;
+        camera.position.z = 1;
         
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         var material = new THREE.PointCloudMaterial({ 
-            size: 22,
+            size: 25,
             map: sprite,
             transparent: true,
             sizeAttenuation: false,
@@ -99,6 +99,9 @@ Particles.prototype._init = function() {
         renderer = new THREE.WebGLRenderer({alpha: true});        
         renderer.setSize( width, height );
         $(selector)[0].appendChild( renderer.domElement );
+
+        $('canvas').css('border','1px solid rgb(200,200,200)')
+        $('canvas').css('outline','-moz-outline-style: none; ')
 
         self.scene = scene;
         self.parameters = parameters;
