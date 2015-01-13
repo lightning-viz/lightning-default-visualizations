@@ -3,6 +3,7 @@ var _ = require('lodash');
 var d3 = require('d3');
 var utils = require('lightning-client-utils')
 require('three-fly-controls')(THREE);
+var inherits = require('inherits');
 
 var Particles = function(selector, data, images, opts) {
 
@@ -20,6 +21,9 @@ var Particles = function(selector, data, images, opts) {
     this._init();
 
 }
+
+inherits(Particles, require('events').EventEmitter);
+
 
 Particles.prototype._init = function() {
 
@@ -41,7 +45,7 @@ Particles.prototype._init = function() {
 
     function init() {
 
-        camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 3000 );
+        camera = new THREE.PerspectiveCamera( 50, width / height, 1, 3000 );
         
         scene = new THREE.Scene();
         //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
