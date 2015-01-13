@@ -19,7 +19,7 @@ var Volume = function(selector, data, images, opts) {
 
     function init() {
 
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize( width, height );
 
         $(selector)[0].appendChild( renderer.domElement );
@@ -45,7 +45,7 @@ var Volume = function(selector, data, images, opts) {
                 var texture = THREE.ImageUtils.loadTexture( img );
                 texture.magFilter = THREE.NearestFilter;
                 texture.minFilter = THREE.NearestFilter;
-                var material = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.05, transparent: true, blending: THREE.AdditiveBlending } );
+                var material = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.1, transparent: true, blending: THREE.AdditiveBlending } );
                 material.side = THREE.DoubleSide;
 
                 _.each(_.range(zFactor), function(j) {
