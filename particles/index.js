@@ -105,7 +105,7 @@ Particles.prototype._init = function() {
 
         self.scene = scene;
         self.parameters = parameters;
-        controls = new THREE.FlyControls(camera, $(selector)[0]);
+        controls = new THREE.FlyControls(camera, $(selector)[0], { movementSpeed: 0.1 * max / 4 });
 
     }
 
