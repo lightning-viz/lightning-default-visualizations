@@ -5,6 +5,7 @@ var utils = require('lightning-client-utils')
 require('three-fly-controls')(THREE);
 var inherits = require('inherits');
 
+
 var Particles = function(selector, data, images, opts) {
 
     if(!opts) {
@@ -35,7 +36,7 @@ Particles.prototype._init = function() {
 
     var container, stats;
     var controls;
-    var camera, scene, renderer, particles, geometry, materials = [], parameters, i, h, color, size;
+    var camera, headlight, scene, renderer, particles, geometry, materials = [], parameters, i, h, color, size;
     var mouseX = 0, mouseY = 0;
 
     var halfWidth = width / 2;
@@ -51,6 +52,7 @@ Particles.prototype._init = function() {
         //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
         geometry = new THREE.Geometry();
 
+
         var avgs = [0, 0, 0];
 
         _.each(data.points, function(p) {
@@ -61,44 +63,118 @@ Particles.prototype._init = function() {
 
         avgs = _.map(avgs, function(n) { return n / data.points.length; });
 
-        max = d3.max(data.points, function(p) {return p.z})
+        max = d3.max(data.points, function(p) {return Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z))})
+        
+
+        // setup the graph axis
+        //   
+
+        var gridSize = 50 * max;
+        var gridStep = 20;
+        var lightLineMaterial = new THREE.LineBasicMaterial({
+            color: 0xcccccc
+        });
+        var darkLineMaterial = new THREE.LineBasicMaterial({
+            color: 0x444444
+        });
+        
+        var lineGeometry, line; 
+        // x
+        for(var i=0; i<gridSize; i+=gridStep) {
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(new THREE.Vector3(0, i, 0));
+            lineGeometry.vertices.push(new THREE.Vector3(gridSize, i, 0));
+            if(i === 0) {
+                line = new THREE.Line(lineGeometry, darkLineMaterial);    
+            } else {
+                line = new THREE.Line(lineGeometry, lightLineMaterial);    
+            }
+            
+            scene.add(line);
+        }
+        for(var i=0; i<gridSize; i+=gridStep) {
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(new THREE.Vector3(0, 0, i));
+            lineGeometry.vertices.push(new THREE.Vector3(gridSize, 0, i));
+            if(i === 0) {
+                line = new THREE.Line(lineGeometry, darkLineMaterial);    
+            } else {
+                line = new THREE.Line(lineGeometry, lightLineMaterial);    
+            }
+            
+            scene.add(line);
+        }
+        for(var i=0; i<gridSize; i+=gridStep) {
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(new THREE.Vector3(0, i, 0));
+            lineGeometry.vertices.push(new THREE.Vector3(0, i, gridSize));
+            if(i === 0) {
+                line = new THREE.Line(lineGeometry, darkLineMaterial);    
+            } else {
+                line = new THREE.Line(lineGeometry, lightLineMaterial);    
+            }
+            
+            scene.add(line);
+        }
+        for(var i=0; i<gridSize; i+=gridStep) {
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(new THREE.Vector3(0, 0, i));
+            lineGeometry.vertices.push(new THREE.Vector3(0, gridSize, i));
+            if(i === 0) {
+                line = new THREE.Line(lineGeometry, darkLineMaterial);    
+            } else {
+                line = new THREE.Line(lineGeometry, lightLineMaterial);    
+            }
+            
+            scene.add(line);
+        }
+        for(var i=0; i<gridSize; i+=gridStep) {
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(new THREE.Vector3(i, 0, 0));
+            lineGeometry.vertices.push(new THREE.Vector3(i, gridSize, 0));
+            if(i === 0) {
+                line = new THREE.Line(lineGeometry, darkLineMaterial);    
+            } else {
+                line = new THREE.Line(lineGeometry, lightLineMaterial);    
+            }
+            
+            scene.add(line);
+        }
+        for(var i=0; i<gridSize; i+=gridStep) {
+            lineGeometry = new THREE.Geometry();
+            lineGeometry.vertices.push(new THREE.Vector3(i, 0, 0));
+            lineGeometry.vertices.push(new THREE.Vector3(i, 0, gridSize));
+            if(i === 0) {
+                line = new THREE.Line(lineGeometry, darkLineMaterial);    
+            } else {
+                line = new THREE.Line(lineGeometry, lightLineMaterial);    
+            }
+            
+            scene.add(line);
+        }
+
 
         var colors = [];
 
+        var sphereGeometry = new THREE.SphereGeometry( 2 );
+        var sphereMaterial, sphere;
+
         _.each(data.points, function(p, i) {
-            var vertex = new THREE.Vector3();
-            vertex.x = p.y - avgs[0];
-            vertex.y = p.z - avgs[1];
-            vertex.z = p.x - avgs[2];
-            geometry.vertices.push( vertex );
-            colors[i] = new THREE.Color();
             var rgb = p.c || self.defaultColor;
-            colors[i].setRGB(rgb.r / 255, rgb.g / 255, rgb.b / 255);
+            sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
+            sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+            sphere.position.set(p.y, p.z, p.x)            
+            scene.add(sphere);
         });
 
-        THREE.ImageUtils.crossOrigin = '';
-        var sprite = THREE.ImageUtils.loadTexture( "http://i.gif.fm/janelia-images/textures/disc.png" );
+        var maxScale = 3.75
+        var camPos = max * maxScale;
 
-        geometry.colors = colors
+        camera.position.y = camPos;
+        camera.position.x = camPos;
+        camera.position.z = camPos;
 
-        camera.position.y = 0;
-        camera.position.x = -max*1.75;
-        camera.position.z = 1;
-        
         camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-        var material = new THREE.PointCloudMaterial({ 
-            size: 25,
-            map: sprite,
-            transparent: true,
-            sizeAttenuation: false,
-            vertexColors: THREE.VertexColors,
-            opacity: 0.9
-        });
-        
-        particles = new THREE.PointCloud( geometry, material );
-        particles.sortParticles = true;
-        scene.add( particles );
 
         renderer = new THREE.WebGLRenderer({alpha: true});        
         renderer.setSize( width, height );
@@ -126,6 +202,8 @@ Particles.prototype._init = function() {
     init();
     animate();
 
+    this.scene = scene;
+
 };
 
 Particles.prototype._formatData = function(data) {
@@ -143,8 +221,26 @@ Particles.prototype._formatData = function(data) {
     })
 
     return data
+}
+
+
+Particles.prototype.appendData = function(newData) {
+
+    newData = this._formatData(newData);
+    var self = this;
+    var sphereGeometry = new THREE.SphereGeometry( 2 );
+    var sphereMaterial, sphere;
+
+    _.each(newData.points, function(p, i) {
+        var rgb = p.c || self.defaultColor;
+        sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
+        sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+        sphere.position.set(p.y, p.z, p.x)            
+        self.scene.add(sphere);
+    });
 
 }
+
 
 module.exports = Particles;
 
