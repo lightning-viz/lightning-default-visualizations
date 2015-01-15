@@ -7,7 +7,6 @@ var TooltipPlugin = require('d3-tip');
 TooltipPlugin(d3);
 
 
-
 var margin = {
     top: 30,
     right: 20,
@@ -17,7 +16,6 @@ var margin = {
 
 
 var nestedExtent = function(data, map) {
-    var arrays = data.map(function(d) {return d.d})
     var max = d3.max(arrays, function(arr) {
         return d3.max(_.map(arr, map));
     });
@@ -72,10 +70,10 @@ Line.prototype._init = function() {
 
     var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 3);
 
-    var yDomain = nestedExtent(series, function(d) {
+    var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(series, function(d) {
+    var xDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.x;
     });
 
@@ -298,10 +296,10 @@ Line.prototype.updateData = function(data) {
     this.data = this._formatData(data);
     var series = this.data.series;
 
-    var yDomain = nestedExtent(series, function(d) {
+    var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(series, function(d) {
+    var xDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.x;
     });
     
