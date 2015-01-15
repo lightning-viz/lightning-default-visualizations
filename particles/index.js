@@ -156,12 +156,18 @@ Particles.prototype._init = function() {
 
         var colors = [];
 
-        var sphereGeometry = new THREE.SphereGeometry( 2 );
-        var sphereMaterial, sphere;
+        var sphereGeometry,sphereMaterial, sphere;
 
         _.each(data.points, function(p, i) {
+
+            console.log('size: '+  p.s);
+            console.log('alpha: ' +  p.a);
+            sphereGeometry = new THREE.SphereGeometry( p.s || 2 );
             var rgb = p.c || self.defaultColor;
             sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
+            sphereMaterial.opacity = p.a || 1;
+            sphereMaterial.transparent = true;
+
             sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
             sphere.position.set(p.y, p.z, p.x)            
             scene.add(sphere);
@@ -209,6 +215,8 @@ Particles.prototype._init = function() {
 Particles.prototype._formatData = function(data) {
 
     retColor = utils.getColorFromData(data)
+    retSize = data.size || [2]
+    retAlpha = [0.5]
 
     data.points = data.points.map(function(d, i) {
         var p = []
@@ -217,6 +225,8 @@ Particles.prototype._formatData = function(data) {
         p.z = d[2]
         p.i = i
         p.c = retColor.length > 1 ? retColor[i] : retColor[0]
+        p.s = retSize.length > 1 ? retSize[i] : retSize[0]
+        p.a = retAlpha.length > 1 ? retAlpha[i] : retAlpha[0]
         return p
     })
 
@@ -228,16 +238,19 @@ Particles.prototype.appendData = function(newData) {
 
     newData = this._formatData(newData);
     var self = this;
-    var sphereGeometry = new THREE.SphereGeometry( 2 );
-    var sphereMaterial, sphere;
+    var sphereGeometry,sphereMaterial, sphere;
 
-    _.each(newData.points, function(p, i) {
+    _.each(data.points, function(p, i) {
+        sphereGeometry = new THREE.SphereGeometry( p.s || 2 );
         var rgb = p.c || self.defaultColor;
         sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
+        sphereMaterial.opacity = p.a || 1;
+        sphereMaterial.transparent = true;
         sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
         sphere.position.set(p.y, p.z, p.x)            
         self.scene.add(sphere);
     });
+
 
 }
 
