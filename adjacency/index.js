@@ -59,15 +59,15 @@ Adjacency.prototype._init = function() {
     });
 
     // set up opacity scale
-    var z = d3.scale.linear().domain([0, zmax/3]).range([0.3,1]).clamp(true);
+    var z = d3.scale.linear().domain([0, zmax]).range([0.3,1]).clamp(true);
 
     // set up x and y scales and ranges
     var nrow = matrix.length
     var ncol = matrix[0].length
     var y = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
     var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
-    y.domain(d3.range(nrow).sort(function(a, b) { return label[b] - label[a]; }));
-    x.domain(d3.range(ncol).sort(function(a, b) { return label[b] - label[a]; }))
+    y.domain(d3.range(nrow).sort(function(a, b) { return label[a] - label[b]; }));
+    x.domain(d3.range(ncol).sort(function(a, b) { return label[a] - label[b]; }))
     var maxY = nrow * y.rangeBand();
     var maxX = ncol * x.rangeBand();
 
