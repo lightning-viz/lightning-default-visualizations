@@ -216,7 +216,7 @@ Particles.prototype._formatData = function(data) {
 
     retColor = utils.getColorFromData(data)
     retSize = data.size || [2]
-    retAlpha = [0.5]
+    retAlpha = data.alpha || [1]
 
     data.points = data.points.map(function(d, i) {
         var p = []
