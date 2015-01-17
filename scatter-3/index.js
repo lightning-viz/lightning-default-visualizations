@@ -69,7 +69,7 @@ Scatter3.prototype._init = function() {
         //   
 
         var gridSize = 50 * max;
-        var gridStep = 20;
+        var gridStep = max / 4;
         var lightLineMaterial = new THREE.LineBasicMaterial({
             color: 0xcccccc
         });
@@ -156,7 +156,7 @@ Scatter3.prototype._init = function() {
 
         _.each(data.points, function(p, i) {
 
-            sphereGeometry = new THREE.SphereGeometry( p.s || 2, 10, 10);
+            sphereGeometry = new THREE.SphereGeometry( p.s || max / 30, 10, 10);
             var rgb = p.c || self.defaultColor;
             sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString()});
             sphereMaterial.opacity = p.a || 1;
