@@ -64,7 +64,6 @@ Scatter3.prototype._init = function() {
 
         max = d3.max(data.points, function(p) {return Math.max(Math.abs(p.x), Math.abs(p.y), Math.abs(p.z))})
         
-
         // setup the graph axis
         //   
 
@@ -156,7 +155,8 @@ Scatter3.prototype._init = function() {
 
         _.each(data.points, function(p, i) {
 
-            sphereGeometry = new THREE.SphereGeometry( p.s || max / 30, 10, 10);
+            var s = p.s || 8
+            sphereGeometry = new THREE.SphereGeometry( 50 * s / max, 10, 10);
             var rgb = p.c || self.defaultColor;
             sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString()});
             sphereMaterial.opacity = p.a || 1;
@@ -212,6 +212,7 @@ Scatter3.prototype._init = function() {
     animate();
 
     this.scene = scene;
+    this.max = max;
 
 };
 
@@ -243,7 +244,8 @@ Scatter3.prototype.appendData = function(newData) {
     var sphereGeometry,sphereMaterial, sphere;
 
     _.each(data.points, function(p, i) {
-        sphereGeometry = new THREE.SphereGeometry( p.s || 2 );
+        var s = p.s || 8
+        sphereGeometry = new THREE.SphereGeometry( 50 * s / self.max);
         var rgb = p.c || self.defaultColor;
         sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
         sphereMaterial.opacity = p.a || 1;
