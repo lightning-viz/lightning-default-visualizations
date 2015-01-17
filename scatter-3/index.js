@@ -18,6 +18,7 @@ var Scatter3 = function(selector, data, images, opts) {
 
     this.data = this._formatData(data)
     this.defaultColor = d3.rgb('#A38EF3')
+    this.defaultSize = 6;
     this.selector = selector;
     this._init();
 
@@ -155,8 +156,8 @@ Scatter3.prototype._init = function() {
 
         _.each(data.points, function(p, i) {
 
-            var s = p.s || 8
-            sphereGeometry = new THREE.SphereGeometry( 50 * s / max, 10, 10);
+            var s = p.s || self.defaultSize
+            sphereGeometry = new THREE.SphereGeometry( 0.008 * max * s);
             var rgb = p.c || self.defaultColor;
             sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString()});
             sphereMaterial.opacity = p.a || 1;
@@ -244,8 +245,8 @@ Scatter3.prototype.appendData = function(newData) {
     var sphereGeometry,sphereMaterial, sphere;
 
     _.each(data.points, function(p, i) {
-        var s = p.s || 8
-        sphereGeometry = new THREE.SphereGeometry( 50 * s / self.max);
+        var s = p.s || self.defaultSize
+        sphereGeometry = new THREE.SphereGeometry( 0.008 * max * s);
         var rgb = p.c || self.defaultColor;
         sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
         sphereMaterial.opacity = p.a || 1;
