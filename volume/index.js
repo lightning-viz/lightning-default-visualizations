@@ -20,7 +20,7 @@ var Volume = function(selector, data, images, opts) {
 
     function init() {
 
-        renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer = new THREE.WebGLRenderer({ alpha: true});
         renderer.setSize( width, height );
 
         $(selector)[0].appendChild( renderer.domElement );
@@ -33,18 +33,14 @@ var Volume = function(selector, data, images, opts) {
 
         // todo - get image size, 
         //        get orientation from options
-        var zFactor = 1;
         
         _.each(images, function(i) {
             self.addImage(i);
         });            
 
-
         camera.lookAt(new THREE.Vector3(0,0,175));
 
         controls = new THREE.FlyControls(camera, $(selector)[0]);
-
-        
 
     }
     
@@ -82,13 +78,15 @@ Volume.prototype.addImage = function(imageData) {
 
     img.onload = function() {
 
-        var geometry = new THREE.PlaneGeometry( img.width / 6, img.height / 6, 1 );
-    
+        var geometry = new THREE.PlaneGeometry( img.width, img.height, 1 );
+        
+        THREE.ImageUtils.crossOrigin = '';
         var texture = THREE.ImageUtils.loadTexture( img.src );
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.NearestFilter;
-        var material = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.1, transparent: true, blending: THREE.AdditiveBlending } );
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        var material = new THREE.MeshBasicMaterial( {map: texture, opacity: 0.1, transparent: true, blending: THREE.NormalBlending  } );
         material.side = THREE.DoubleSide;
+        
 
         mesh = new THREE.Mesh( geometry,  material );
         mesh.position.z = i;
