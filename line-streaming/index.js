@@ -13,11 +13,11 @@ var margin = {
     left: 45
 };
 
-var nestedExtent = function(arrays, map) {
-    var max = d3.max(arrays, function(arr) {
+var nestedExtent = function(data, map) {
+    var max = d3.max(data, function(arr) {
         return d3.max(_.map(arr, map));
     });
-    var min = d3.min(arrays, function(arr) {
+    var min = d3.min(data, function(arr) {
         return d3.min(_.map(arr, map));
     });
 
@@ -65,10 +65,10 @@ LineStreaming.prototype.appendData = function(data) {
     
     data = this.data;
 
-    var yDomain = nestedExtent(data.series, function(d) {
+    var yDomain = nestedExtent(data.series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(data.series, function(d) {
+    var xDomain = nestedExtent(data.series.map(function(d) {return d.d}), function(d) {
         return d.x;
     });
     
