@@ -32,6 +32,7 @@ Particles.prototype._init = function() {
     var height = this.height;
     var selector = this.selector;
     var data = this.data;
+    var opts = this.opts;
     var points = data.points;
 
     var container, stats;
@@ -49,9 +50,7 @@ Particles.prototype._init = function() {
         camera = new THREE.PerspectiveCamera( 50, width / height, 1, 3000 );
         
         scene = new THREE.Scene();
-        //scene.fog = new THREE.FogExp2( 0x000000, 0.001 );
         geometry = new THREE.Geometry();
-
 
         var avgs = [0, 0, 0];
 
@@ -153,27 +152,31 @@ Particles.prototype._init = function() {
             scene.add(line);
         }
 
-
-        var colors = [];
-
-        var sphereGeometry,sphereMaterial, sphere;
+        var sphereGeometry,sphereMaterial, sphere, sphereOutline, sphereOutlineMaterial;
 
         _.each(data.points, function(p, i) {
 
-            console.log('size: '+  p.s);
-            console.log('alpha: ' +  p.a);
-            sphereGeometry = new THREE.SphereGeometry( p.s || 2 );
+            sphereGeometry = new THREE.SphereGeometry( p.s || 2, 10, 10);
             var rgb = p.c || self.defaultColor;
-            sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
+            sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString()});
             sphereMaterial.opacity = p.a || 1;
             sphereMaterial.transparent = true;
 
             sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-            sphere.position.set(p.y, p.z, p.x)            
+            sphere.position.set(p.y, p.z, p.x)
+
             scene.add(sphere);
+
+            sphereOutlineMaterial = new THREE.MeshBasicMaterial( { color: "black", side: THREE.BackSide} );
+            sphereOutline = new THREE.Mesh( sphereGeometry, sphereOutlineMaterial );
+            sphereOutline.position.set(p.y, p.z, p.x);
+            sphereOutline.transparent = true
+            sphereOutline.scale.multiplyScalar(1.05);
+
+            scene.add(sphereOutline);
         });
 
-        var maxScale = 3.75
+        var maxScale = 2.00
         var camPos = max * maxScale;
 
         camera.position.y = camPos;
@@ -182,7 +185,7 @@ Particles.prototype._init = function() {
 
         camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-        renderer = new THREE.WebGLRenderer({alpha: true});        
+        renderer = new THREE.WebGLRenderer({alpha: true, antialias:true});        
         renderer.setSize( width, height );
         $(selector)[0].appendChild( renderer.domElement );
 
@@ -215,8 +218,8 @@ Particles.prototype._init = function() {
 Particles.prototype._formatData = function(data) {
 
     retColor = utils.getColorFromData(data)
-    retSize = data.size || [2]
-    retAlpha = data.alpha || [1]
+    retSize = data.size || []
+    retAlpha = data.alpha || []
 
     data.points = data.points.map(function(d, i) {
         var p = []
@@ -229,10 +232,9 @@ Particles.prototype._formatData = function(data) {
         p.a = retAlpha.length > 1 ? retAlpha[i] : retAlpha[0]
         return p
     })
-
+    
     return data
 }
-
 
 Particles.prototype.appendData = function(newData) {
 
@@ -251,9 +253,7 @@ Particles.prototype.appendData = function(newData) {
         self.scene.add(sphere);
     });
 
-
 }
-
 
 module.exports = Particles;
 
