@@ -6,7 +6,7 @@ require('three-fly-controls')(THREE);
 var inherits = require('inherits');
 
 
-var Particles = function(selector, data, images, opts) {
+var Scatter3 = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {};
@@ -23,10 +23,10 @@ var Particles = function(selector, data, images, opts) {
 
 }
 
-inherits(Particles, require('events').EventEmitter);
+inherits(Scatter3, require('events').EventEmitter);
 
 
-Particles.prototype._init = function() {
+Scatter3.prototype._init = function() {
 
     var width = this.width;
     var height = this.height;
@@ -215,7 +215,7 @@ Particles.prototype._init = function() {
 
 };
 
-Particles.prototype._formatData = function(data) {
+Scatter3.prototype._formatData = function(data) {
 
     retColor = utils.getColorFromData(data)
     retSize = data.size || []
@@ -236,7 +236,7 @@ Particles.prototype._formatData = function(data) {
     return data
 }
 
-Particles.prototype.appendData = function(newData) {
+Scatter3.prototype.appendData = function(newData) {
 
     newData = this._formatData(newData);
     var self = this;
@@ -255,6 +255,6 @@ Particles.prototype.appendData = function(newData) {
 
 }
 
-module.exports = Particles;
+module.exports = Scatter3;
 
 
