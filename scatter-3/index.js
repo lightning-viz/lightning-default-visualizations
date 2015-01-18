@@ -49,7 +49,8 @@ Scatter3.prototype._init = function() {
     function init() {
 
         camera = new THREE.PerspectiveCamera( 50, width / height, 1, 3000 );
-        
+        headlight = new THREE.PointLight ( 0xFFFFFF, 1.0 );
+
         scene = new THREE.Scene();
         geometry = new THREE.Geometry();
 
@@ -152,30 +153,37 @@ Scatter3.prototype._init = function() {
             scene.add(line);
         }
 
-        var sphereGeometry,sphereMaterial, sphere, sphereOutline, sphereOutlineMaterial;
+        var sphereGeometry, sphereMaterial, sphere, sphereOutline, sphereOutlineMaterial;
+        var sphereMaterials = [];
+        var sphereTotalGeom = new THREE.Geometry();
 
         _.each(data.points, function(p, i) {
 
             var s = p.s || self.defaultSize
-            sphereGeometry = new THREE.SphereGeometry( 0.008 * max * s);
+            var widthSegments = Math.min(64, Math.max(8, 2 * 0.008 * max * s))
+            var heightSegments = Math.min(64, Math.max(6, 2 * 0.008 * max * s))
+            sphereGeometry = new THREE.SphereGeometry( 0.008 * max * s, widthSegments, heightSegments);
+
             var rgb = p.c || self.defaultColor;
-            sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString()});
+
+            sphereMaterial = new THREE.MeshLambertMaterial( {  color: rgb.toString(), emissive: 0x333333, ambient: rgb.toString(), vertexColors: THREE.FaceColors} ) 
+
+            sphereMaterials.push(sphereMaterial);
             sphereMaterial.opacity = p.a || 1;
             sphereMaterial.transparent = true;
-
             sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-            sphere.position.set(p.y, p.z, p.x)
+            sphere.position.set(p.y, p.z, p.x);
 
-            scene.add(sphere);
+            sphere.updateMatrix();
+            sphereTotalGeom.merge(sphere.geometry, sphere.matrix, i);
 
-            sphereOutlineMaterial = new THREE.MeshBasicMaterial( { color: "black", side: THREE.BackSide} );
-            sphereOutline = new THREE.Mesh( sphereGeometry, sphereOutlineMaterial );
-            sphereOutline.position.set(p.y, p.z, p.x);
-            sphereOutline.transparent = true
-            sphereOutline.scale.multiplyScalar(1.05);
-
-            scene.add(sphereOutline);
         });
+
+        var totalMaterials = new THREE.MeshFaceMaterial(sphereMaterials);
+        var total = new THREE.Mesh(sphereTotalGeom, totalMaterials);
+        total.updateMatrix();
+        scene.add(total);
+
 
         var maxScale = 2.00
         var camPos = max * maxScale;
@@ -193,6 +201,8 @@ Scatter3.prototype._init = function() {
         $('canvas').css('border','1px solid rgb(200,200,200)')
         $('canvas').css('outline','-moz-outline-style: none; ')
 
+        scene.add(headlight);
+
         self.scene = scene;
         self.parameters = parameters;
         controls = new THREE.FlyControls(camera, $(selector)[0], { movementSpeed: 0.025 * max});
@@ -206,6 +216,7 @@ Scatter3.prototype._init = function() {
 
     function render() {
         controls.update();
+        headlight.position.copy( camera.position );
         renderer.render( scene, camera );
     }
 
@@ -241,20 +252,37 @@ Scatter3.prototype._formatData = function(data) {
 Scatter3.prototype.appendData = function(newData) {
 
     newData = this._formatData(newData);
-    var self = this;
-    var sphereGeometry,sphereMaterial, sphere;
+
+    var sphereGeometry, sphereMaterial, sphere, sphereOutline, sphereOutlineMaterial;
+    var sphereMaterials = [];
+    var sphereTotalGeom = new THREE.Geometry();
 
     _.each(data.points, function(p, i) {
+
         var s = p.s || self.defaultSize
-        sphereGeometry = new THREE.SphereGeometry( 0.008 * max * s);
+        var widthSegments = Math.min(64, Math.max(8, 2 * 0.008 * max * s))
+        var heightSegments = Math.min(64, Math.max(6, 2 * 0.008 * max * s))
+        sphereGeometry = new THREE.SphereGeometry( 0.008 * max * s, widthSegments, heightSegments);
+
         var rgb = p.c || self.defaultColor;
-        sphereMaterial = new THREE.MeshBasicMaterial( {color: rgb.toString() } );
+
+        sphereMaterial = new THREE.MeshLambertMaterial( {  color: rgb.toString(), emissive: 0x333333, ambient: rgb.toString(), vertexColors: THREE.FaceColors} ) 
+
+        sphereMaterials.push(sphereMaterial);
         sphereMaterial.opacity = p.a || 1;
         sphereMaterial.transparent = true;
         sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-        sphere.position.set(p.y, p.z, p.x)            
-        self.scene.add(sphere);
+        sphere.position.set(p.y, p.z, p.x);
+
+        sphere.updateMatrix();
+        sphereTotalGeom.merge(sphere.geometry, sphere.matrix, i);
+
     });
+
+    var totalMaterials = new THREE.MeshFaceMaterial(sphereMaterials);
+    var total = new THREE.Mesh(sphereTotalGeom, totalMaterials);
+    total.updateMatrix();
+    this.scene.add(total);
 
 }
 
