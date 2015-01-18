@@ -225,6 +225,7 @@ LineStacked.prototype._init = function() {
         .call(xGrid
         );
 
+    
     var updateChart = function() {
  
         var tempData = [], domainData = [];
@@ -308,6 +309,9 @@ LineStacked.prototype._init = function() {
                 return chartLine(d.data);
             });
     }
+    
+    $minilines.first().addClass('active');
+    updateChart();
 };
  
 module.exports = LineStacked;
