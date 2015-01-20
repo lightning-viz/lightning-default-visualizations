@@ -73,6 +73,7 @@ Volume.prototype.addImage = function(imageData) {
     var self = this;
 
     var img = new Image();
+    img.crossOrigin = '';
     
     img.src = imageData;
 
