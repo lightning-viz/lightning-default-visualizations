@@ -149,8 +149,9 @@ Scatter.prototype._init = function() {
                 .tickFormat(''));
 
 
+    var clipId = utils.getUniqueId();
     svg.append('svg:clipPath')
-        .attr('id', 'clip')
+        .attr('id', clipId)
         .append('svg:rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -158,7 +159,7 @@ Scatter.prototype._init = function() {
         .attr('height', height);
 
     var chartBody = svg.append('g')
-        .attr('clip-path', 'url(#clip)');
+        .attr('clip-path', 'url(#' + clipId + ')');
 
 
 
