@@ -5,7 +5,6 @@ var _ = require('lodash');
 var utils = require('lightning-client-utils')
 var colorbrewer = require('colorbrewer')
 
-var L = require('leaflet');
 var Color = require('color');
 
 var margin = {
