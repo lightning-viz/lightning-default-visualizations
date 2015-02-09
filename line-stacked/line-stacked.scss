@@ -1,54 +1,56 @@
- 
-svg {
-    display: block;
- 
-    path {
-        fill: none;
-        stroke-width: 1.25px;
-    }
 
-    &.stacked-line-plot {
-        cursor: move; 
+[data-type=line-stacked] { 
+    svg {
+        display: block;
+     
+        path {
+            fill: none;
+            stroke-width: 1.25px;
+        }
+
+        &.stacked-line-plot {
+            cursor: move; 
+        }
     }
-}
- 
-.minimap {
-    float: left;
-    // width: 20%;
-}
- 
-.chart {
-    float: left;
-    width: 60%;
-    
-    .line {
+     
+    .minimap {
+        float: left;
+        // width: 20%;
+    }
+     
+    .chart {
+        float: left;
+        width: 60%;
+        
+        .line {
+            cursor: pointer;
+        }
+
+        background: #fcfcfc;
+
+        .grid .tick {
+            stroke: rgba(0,0,0,0.1);
+            stroke-width: 1;
+        }
+        .grid path {
+            stroke-width: 1;
+        }
+
+    }
+     
+    .miniline-container {
+        width: auto;
+        padding: 1px 0;
         cursor: pointer;
-    }
-
-    background: #fcfcfc;
-
-    .grid .tick {
-        stroke: rgba(0,0,0,0.1);
-        stroke-width: 1;
-    }
-    .grid path {
-        stroke-width: 1;
-    }
-
-}
- 
-.miniline-container {
-    width: auto;
-    padding: 1px 0;
-    cursor: pointer;
-    opacity: 0.3;
- 
-    &:hover {
-        background-color: darken(white, 10%);
-        // opacity: 0.3;
-    }
- 
-    &.active {
-        opacity: 1.0;
+        opacity: 0.3;
+     
+        &:hover {
+            background-color: darken(white, 10%);
+            // opacity: 0.3;
+        }
+     
+        &.active {
+            opacity: 1.0;
+        }
     }
 }
