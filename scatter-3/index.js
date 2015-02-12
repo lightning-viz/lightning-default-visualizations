@@ -25,7 +25,7 @@ var Scatter3 = function(selector, data, images, opts) {
 }
 
 inherits(Scatter3, require('events').EventEmitter);
-
+module.exports = Scatter3;
 
 Scatter3.prototype._init = function() {
 
@@ -251,13 +251,14 @@ Scatter3.prototype._formatData = function(data) {
 
 Scatter3.prototype.appendData = function(newData) {
 
+    self = this
+    
     newData = this._formatData(newData);
-
     var sphereGeometry, sphereMaterial, sphere, sphereOutline, sphereOutlineMaterial;
     var sphereMaterials = [];
     var sphereTotalGeom = new THREE.Geometry();
 
-    _.each(data.points, function(p, i) {
+    _.each(newData.points, function(p, i) {
 
         var s = p.s || self.defaultSize
         var widthSegments = Math.min(64, Math.max(8, 2 * 0.008 * max * s))
@@ -278,14 +279,13 @@ Scatter3.prototype.appendData = function(newData) {
         sphereTotalGeom.merge(sphere.geometry, sphere.matrix, i);
 
     });
+    
 
     var totalMaterials = new THREE.MeshFaceMaterial(sphereMaterials);
     var total = new THREE.Mesh(sphereTotalGeom, totalMaterials);
     total.updateMatrix();
     this.scene.add(total);
 
+
 }
-
-module.exports = Scatter3;
-
 
