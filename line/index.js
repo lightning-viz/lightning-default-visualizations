@@ -36,10 +36,19 @@ var Line = function(selector, data, images, opts) {
     opts = _.defaults(opts || {}, defaults);
     this.opts = opts;
 
+    this.data = this._formatData(data);
+    
+    if(_.has(this.data, 'xaxis')) {
+        margin.bottom = 50;
+    }
+    if(_.has(this.data, 'yaxis')) {
+        margin.left = 60;
+    }
+
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
     this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
 
-    this.data = this._formatData(data);
+    
     this.selector = selector;
     this._init();
 };
@@ -179,6 +188,36 @@ Line.prototype._init = function() {
         .attr('clip-path', 'url(#' + clipId + ')');
 
     var toggleOpacity = 0;
+
+    if(_.has(this.data, 'xaxis')) {
+        var txt = this.data.xaxis;
+        if(_.isArray(txt)) {
+            txt = txt[0];
+        }
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 10)
+            .text(txt);
+    }
+    if(_.has(this.data, 'yaxis')) {
+        var txt = this.data.yaxis;
+        if(_.isArray(txt)) {
+            txt = txt[0];
+        }
+
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("x", - height / 2)
+            .attr("y", -40)
+            .text(txt);
+    }
+
+    
+
 
     function highlight(d, i) {
 
