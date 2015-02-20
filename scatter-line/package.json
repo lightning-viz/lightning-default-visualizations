@@ -1,0 +1,5 @@
+{
+    "lightning-viz": {
+        "initialDataFields": ["points", "color", "label", "size", "alpha"]
+    }
+}
