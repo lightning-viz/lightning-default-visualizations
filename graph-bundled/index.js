@@ -14,9 +14,9 @@ d3.ForceEdgeBundling = function(){
             S_initial = 0.1,        // init. distance to move points
             P_initial = 1,          // init. subdivision number
             P_rate    = 2,          // subdivision rate increase
-            C = 3,                  // number of cycles to perform
+            C = 4,                  // number of cycles to perform
             I_initial = 90,         // init. number of iterations for cycle
-            I_rate = 0.6666667,     // rate at which iteration number decreases i.e. 2/3
+            I_rate = 0.333333,     // rate at which iteration number decreases i.e. 2/3
             compatibility_threshold = 0.6,
             invers_quadratic_mode  = false,
             eps = 1e-6;
@@ -499,12 +499,6 @@ GraphBundled.prototype._init = function() {
         .domain(yDomain)
         .range([height - 10, 0 + 10]);
 
-    nodes = _.map(nodes, function(n) {
-        n.x = x(n.x);
-        n.y = y(n.y);
-        return n;
-    });
-
     var zoom = d3.behavior.zoom()
         .x(x)
         .y(y)
@@ -527,7 +521,13 @@ GraphBundled.prototype._init = function() {
         .attr("height", height + margin.top + margin.bottom);
 
     function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
+        
+        svg.selectAll('.link')
+            .attr('d', function(d) { return line(d); });
+
+        svg.selectAll('.node')
+           .attr('cx', function(d){ return x(d.x);})
+           .attr('cy', function(d){ return y(d.y);});
     }
 
     if (imageCount > 0) {
@@ -564,9 +564,22 @@ GraphBundled.prototype._init = function() {
         d3.select(this).transition().duration(50).style("stroke", "white")
     }
 
+    var line = d3.svg.line()
+        .x(function(d){ return d ? x(d.x) : null; })
+        .y(function(d){ return d ? y(d.y) : null; })
+        .interpolate('linear');
+   
+    var xscale = d3.mean(nodes, function(d) {return Math.abs(d.x)})
+    var yscale = d3.mean(nodes, function(d) {return Math.abs(d.y)})
+    var scale = (xscale + yscale) / 2
+    
     setTimeout(function() {
 
-        var fbundling = d3.ForceEdgeBundling().nodes(nodes).edges(links);
+        var fbundling = d3.ForceEdgeBundling()
+            .nodes(nodes)
+            .edges(links)
+            .step_size(scale/1000)
+            
         var results   = fbundling();    
 
         function connectedNodesOpacity() {
@@ -578,7 +591,6 @@ GraphBundled.prototype._init = function() {
                     return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
                 });
                 link.style("opacity", function (o) {
-                    console.log(o)
                     return d.i==o[0].i | d.i==o[o.length-1].i ? 0.9 : linkStrokeOpacity / 10;
                 });
                 toggleOpacity = 1;
@@ -590,14 +602,11 @@ GraphBundled.prototype._init = function() {
                 }
         };
 
-        var line = d3.svg.line()
-            .x(function(d){return d.x;})
-            .y(function(d){return d.y;})
-            .interpolate('linear');
 
         var link = svg.selectAll('.link')
             .data(results)
           .enter().append('path')
+            .classed('link', true)
             .attr('d', function(d) { return line(d); })
             .style('stroke-width', 1)
             .style('stroke', linkStrokeColor)
@@ -615,8 +624,8 @@ GraphBundled.prototype._init = function() {
             .attr('fill-opacity',0.9)
             .attr('stroke', 'white')
             .attr('stroke-width', 1)
-            .attr('cx', function(d){ return d.x;})
-            .attr('cy', function(d){ return d.y;})
+            .attr('cx', function(d){ return x(d.x);})
+            .attr('cy', function(d){ return y(d.y);})
             .on('mouseenter', selectedNodeOpacityIn)
             .on('mouseleave', selectedNodeOpacityOut)
             .on('click', connectedNodesOpacity);

@@ -16,10 +16,11 @@ var Volume = function(selector, data, images, opts) {
     var controls;
     var boxMesh, boxGeometry;
     var self = this;
+    this.images = [];
 
     function init() {
 
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({ alpha: true});
         renderer.setSize( width, height );
 
         $(selector)[0].appendChild( renderer.domElement );
@@ -32,39 +33,14 @@ var Volume = function(selector, data, images, opts) {
 
         // todo - get image size, 
         //        get orientation from options
-        var zFactor = 2;
-
-        var img = new Image();
-        img.src = images[0];
-
-        img.onload = function() {
-
-            geometry = new THREE.PlaneGeometry( img.width / 6, img.height / 6, zFactor );
         
-            _.each(images, function(img, i) {
-                var texture = THREE.ImageUtils.loadTexture( img );
-                texture.magFilter = THREE.NearestFilter;
-                texture.minFilter = THREE.NearestFilter;
-                var material = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.05, transparent: true, blending: THREE.AdditiveBlending } );
-                material.side = THREE.DoubleSide;
-
-                _.each(_.range(zFactor), function(j) {
-                    mesh = new THREE.Mesh( geometry,  material );
-                    mesh.position.z = i * zFactor + j;
-                    if(opts.rotateZ) {
-                        mesh.rotation.z = Math.PI / 2;
-                    }
-                    scene.add( mesh );
-                })
-
-            });            
-        }
-
+        _.each(images, function(i) {
+            self.addImage(i);
+        });            
 
         camera.lookAt(new THREE.Vector3(0,0,175));
 
         controls = new THREE.FlyControls(camera, $(selector)[0]);
-
 
     }
     
@@ -82,12 +58,59 @@ var Volume = function(selector, data, images, opts) {
 
     init();
     animate();
+
+    this.scene = scene;
+    this.opts = opts;
     
 
 };
 
 
+Volume.prototype.addImage = function(imageData) {
+    this.images.push(imageData);
+    var i = this.images.length-1;
 
+    var self = this;
+
+    var img = new Image();
+    img.crossOrigin = '';
+    
+    img.src = imageData;
+
+    img.onload = function() {
+
+        var geometry = new THREE.PlaneGeometry( img.width, img.height, 1 );
+        
+        THREE.ImageUtils.crossOrigin = '';
+        var texture = THREE.ImageUtils.loadTexture( img.src );
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        var material = new THREE.MeshBasicMaterial( {map: texture, opacity: 0.1, transparent: true, blending: THREE.NormalBlending  } );
+        material.side = THREE.DoubleSide;
+        
+
+        mesh = new THREE.Mesh( geometry,  material );
+        mesh.position.z = i;
+        if(self.opts.rotateZ) {
+            mesh.rotation.z = Math.PI / 2;
+        }
+        self.scene.add( mesh );
+    }
+
+};
+
+Volume.prototype.appendData = function(data) {
+    // can be a single image or an array of images
+    
+    if(_.isArray(data)) {
+        _.each(data, function(image) {
+            this.addImage(image);        
+        });
+    } else {
+        this.addImage(data);
+    }
+
+};
 
 
 module.exports = Volume;

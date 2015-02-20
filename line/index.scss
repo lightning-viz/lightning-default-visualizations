@@ -19,12 +19,17 @@
         display: none;
     }
     .line {
+        cursor: pointer;
         fill: none;
     }
 
     text {
         fill: #BEC9CE;
         font-family: monospace;
+
+        &.label {
+            fill: #4D4D4D;
+        }
 
     }
 }

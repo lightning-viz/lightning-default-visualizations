@@ -88,12 +88,6 @@ Graph.prototype._init = function() {
         .domain(yDomain)
         .range([height - 10, 0 + 10]);
 
-    nodes = _.map(nodes, function(n) {
-        n.x = x(n.x);
-        n.y = y(n.y);
-        return n;
-    });
-
     var zoom = d3.behavior.zoom()
         .x(x)
         .y(y)
@@ -115,9 +109,16 @@ Graph.prototype._init = function() {
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom);
 
+
     function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
+        svg.selectAll('.link')
+            .attr('d', function(d) { return line([nodes[d.source], nodes[d.target]]); });
+
+        svg.selectAll('.node')
+           .attr('cx', function(d){ return x(d.x);})
+           .attr('cy', function(d){ return y(d.y);});
     }
+
 
     if (imageCount > 0) {
         svg.append('svg:image')
@@ -129,15 +130,16 @@ Graph.prototype._init = function() {
     }
 
     var line = d3.svg.line()
-        .x(function(d){return d.x;})
-        .y(function(d){return d.y;})
+        .x(function(d){return x(d.x);})
+        .y(function(d){return y(d.y);})
         .interpolate('linear');
 
     var link = svg.selectAll('.link')
         .data(links)
-      .enter().append('path')
+        .enter().append('path')
+        .attr('class', 'link')
         .attr('d', function(d) { return line([nodes[d.source], nodes[d.target]]); })
-        .style('stroke-width', function(d) {return 1 * Math.sqrt(d.value)})
+        .style('stroke-width', function(d) { return 1 * Math.sqrt(d.value); })
         .style('stroke', linkStrokeColor)
         .style('fill', 'none')
         .style('opacity', linkStrokeOpacity);
@@ -150,10 +152,10 @@ Graph.prototype._init = function() {
 
     // array indicating links
     var linkedByIndex = {};
-    var i
-    for (i = 0; i < nodes.length; i++) {
+
+    for (var i = 0; i < nodes.length; i++) {
         linkedByIndex[i + ',' + i] = 1;
-    };
+    }
     links.forEach(function (d) {
         linkedByIndex[d.source + ',' + d.target] = 1;
     });
@@ -164,11 +166,11 @@ Graph.prototype._init = function() {
     }
 
     function selectedNodeOpacityIn() {
-        d3.select(this).transition().duration(100).style("stroke", "rgb(30,30,30)")
+        d3.select(this).transition().duration(100).style('stroke', 'rgb(30,30,30)');
     }
 
     function selectedNodeOpacityOut() {
-        d3.select(this).transition().duration(50).style("stroke", "white")
+        d3.select(this).transition().duration(50).style('stroke', 'white');
     }
 
     function connectedNodesOpacity() {
@@ -176,17 +178,17 @@ Graph.prototype._init = function() {
         if (toggleOpacity == 0) {
             // change opacity of all but the neighbouring nodes
             var d = d3.select(this).node().__data__;
-            node.style("opacity", function (o) {
+            node.style('opacity', function (o) {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
-            link.style("opacity", function (o) {
+            link.style('opacity', function (o) {
                  return d.i==o.source | d.i==o.target ? 0.9 : linkStrokeOpacity / 10;
             });
             toggleOpacity = 1;
         } else {
             // restore properties
-            node.style("opacity", 1)
-            link.style("opacity", linkStrokeOpacity);
+            node.style('opacity', 1);
+            link.style('opacity', linkStrokeOpacity);
             toggleOpacity = 0;
         }
     }
@@ -202,11 +204,11 @@ Graph.prototype._init = function() {
        .attr('fill-opacity',0.9)
        .attr('stroke', 'white')
        .attr('stroke-width', 1)
-       .attr('cx', function(d){ return d.x;})
-       .attr('cy', function(d){ return d.y;})
+       .attr('cx', function(d){ return x(d.x);})
+       .attr('cy', function(d){ return y(d.y);})
        .on('click', connectedNodesOpacity)
        .on('mouseenter', selectedNodeOpacityIn)
-       .on('mouseleave', selectedNodeOpacityOut)
+       .on('mouseleave', selectedNodeOpacityOut);
 
 };
 
@@ -219,7 +221,7 @@ Graph.prototype._formatData = function(data) {
     data.nodes = data.nodes.map(function (d,i) {
         d.x = d[0];
         d.y = d[1];
-        d.i = i
+        d.i = i;
         d.n = retName[i];
         d.c = retColor.length > 1 ? retColor[i] : retColor[0];
         d.s = retSize.length > 1 ? retSize[i] : retSize[0];

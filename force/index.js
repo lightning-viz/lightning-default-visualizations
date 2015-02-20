@@ -50,12 +50,13 @@ Force.prototype._init = function() {
     // set opacity inversely proportional to number of links
     var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
 
-    var identity = d3.scale.linear();
+    var x = d3.scale.linear();
+    var y = d3.scale.linear();
     var zoom = d3.behavior.zoom()
-        .x(identity)
-        .y(identity)
+        .x(x)
+        .y(y)
         .scaleExtent([0.1, 20])
-        .on("zoom", zoomed)
+        .on('zoom', zoomed)
 
     var svg = d3.select(selector)
         .append('svg:svg')
@@ -69,7 +70,14 @@ Force.prototype._init = function() {
         .append('svg:g')
 
     function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
+        svg.selectAll('.link').attr('x1', function(d) { return x(d.source.x); })
+            .attr('y1', function(d) { return y(d.source.y); })
+            .attr('x2', function(d) { return x(d.target.x); })
+            .attr('y2', function(d) { return y(d.target.y); });
+
+        svg.selectAll('.node')
+            .attr('cx', function(d) { return x(d.x); })
+            .attr('cy', function(d) { return y(d.y); });
     }
 
     // highlight based on links
@@ -86,38 +94,38 @@ Force.prototype._init = function() {
         linkedByIndex[i + ',' + i] = 1;
     };
     links.forEach(function (d) {
-        linkedByIndex[d.source + "," + d.target] = 1;
+        linkedByIndex[d.source + ',' + d.target] = 1;
     });
 
     function selectedNodeOpacityIn() {
-        d3.select(this).transition().duration(100).style("stroke", "rgb(30,30,30)")
+        d3.select(this).transition().duration(100).style('stroke', 'rgb(30,30,30)')
     }
 
     function selectedNodeOpacityOut() {
-        d3.select(this).transition().duration(50).style("stroke", "white")
+        d3.select(this).transition().duration(50).style('stroke', 'white')
     }
 
     // look up neighbor pairs
     function neighboring(a, b) {
-        return linkedByIndex[a.index + "," + b.index];
+        return linkedByIndex[a.index + ',' + b.index];
     }
 
     function connectedNodesOpacity() {
-        console.log(toggleOpacity)
+        console.log(toggleOpacity);
         if (toggleOpacity == 0) {
             // change opacity of all but the neighbouring nodes
             var d = d3.select(this).node().__data__;
-            node.style("opacity", function (o) {
+            node.style('opacity', function (o) {
                 return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
             });
-            link.style("opacity", function (o) {
+            link.style('opacity', function (o) {
                 return d.index==o.source.index | d.index==o.target.index ? 1 : linkStrokeOpacity / 10;
             });
             toggleOpacity = 1;
         } else {
             // restore properties
-            node.style("opacity", 1)
-            link.style("opacity", linkStrokeOpacity);
+            node.style('opacity', 1);
+            link.style('opacity', linkStrokeOpacity);
             toggleOpacity = 0;
         }
     }
@@ -131,66 +139,67 @@ Force.prototype._init = function() {
         .start();
 
     var drag = force.drag()
-      .on("dragstart", function(d) {
+      .on('dragstart', function(d) {
         d3.event.sourceEvent.stopPropagation();
       });
 
-    var link = svg.selectAll(".link")
+    var link = svg.selectAll('.link')
         .data(links)
-    .enter().append("line")
-        .attr("class", "link")
-        .style("stroke-width", function(d) { return 1 * Math.sqrt(d.value); })
-        .style("stroke", linkStrokeColor)
-        .style("stroke-opacity", linkStrokeOpacity);
+    .enter().append('line')
+        .attr('class', 'link')
+        .style('stroke-width', function(d) { return 1 * Math.sqrt(d.value); })
+        .style('stroke', linkStrokeColor)
+        .style('stroke-opacity', linkStrokeOpacity);
 
-    var node = svg.selectAll(".node")
+    var node = svg.selectAll('.node')
         .data(nodes)
-    .enter().append("circle")
-        .attr("class", "node")
-        .attr("r", function(d) { return (d.s ? d.s : self.defaultSize); })
-        .style("fill", function(d) { return (d.c ? d.c : self.defaultFill); })
-        .style("fill-opacity", 0.9)
-        .style("stroke", "white")
-        .style("stroke-width", 1)
+    .enter().append('circle')
+        .attr('class', 'node')
+        .attr('r', function(d) { return (d.s ? d.s : self.defaultSize); })
+        .style('fill', function(d) { return (d.c ? d.c : self.defaultFill); })
+        .style('fill-opacity', 0.9)
+        .style('stroke', 'white')
+        .style('stroke-width', 1)
         .on('dblclick', connectedNodesOpacity)
         .on('mouseenter', selectedNodeOpacityIn)
         .on('mouseleave', selectedNodeOpacityOut)
         .call(drag);
 
-    force.on("tick", function() {
-        link.attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; });
+    force.on('tick', function() {
 
-        node.attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
+        svg.selectAll('.link').attr('x1', function(d) { return x(d.source.x); })
+            .attr('y1', function(d) { return y(d.source.y); })
+            .attr('x2', function(d) { return x(d.target.x); })
+            .attr('y2', function(d) { return y(d.target.y); });
+
+        svg.selectAll('.node').attr('cx', function(d) { return x(d.x); })
+            .attr('cy', function(d) { return y(d.y); });
     });
 
 };
 
 Force.prototype._formatData = function(data) {
 
-    var retColor = utils.getColorFromData(data)
-    var retSize = data.size || []
-    var retName = data.name || []
+    var retColor = utils.getColorFromData(data);
+    var retSize = data.size || [];
+    var retName = data.name || [];
 
     data.nodes = data.nodes.map(function (d,i) {
-        d = []
-        d.i = i
-        d.n = retName[i]
-        d.c = retColor.length > 1 ? retColor[i] : retColor[0]
-        d.s = retSize.length > 1 ? retSize[i] : retSize[0]
-        return d
+        d = [];
+        d.i = i;
+        d.n = retName[i];
+        d.c = retColor.length > 1 ? retColor[i] : retColor[0];
+        d.s = retSize.length > 1 ? retSize[i] : retSize[0];
+        return d;
     });
 
-    data.links = data.links.map(function (d,i) {
-        d.source = d[0]
-        d.target = d[1]
-        d.value = d[2]
-        return d
-    })
+    data.links = data.links.map(function (d) {
+        d.source = d[0];
+        d.target = d[1];
+        d.value = d[2];
+        return d;
+    });
 
-    return data
+    return data;
 
-}
+};

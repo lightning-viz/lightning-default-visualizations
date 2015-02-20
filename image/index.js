@@ -1,17 +1,17 @@
 'use strict';
 
 var utils = require('lightning-client-utils');
-var id = 0;
+var inherits = require('inherits');
 var d3 = require('d3');
 var L = require('leaflet');
 var F = require('leaflet.freedraw-browserify');
-F(L)
+F(L);
 
 // code adopted from http://kempe.net/blog/2014/06/14/leaflet-pan-zoom-image.html
 
 var Img = function(selector, data, images, opts) {
 
-    this.mid = id++;
+    this.mid = utils.getUniqueId();
     this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="image-map-' + this.mid + '" class="image-map"></div>';
 
     var image = images[0];
@@ -32,6 +32,7 @@ var Img = function(selector, data, images, opts) {
     img.src = image;
 
     img.onload = function() {
+
         
         // get image dimensions
         var imw = img.width;
@@ -96,7 +97,9 @@ var Img = function(selector, data, images, opts) {
             freeDraw.setMode(L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE)
         }
 
-        self.$el.click(function() {
+        self.emit('image:loaded');
+
+        self.$el.unbind().click(function() {
 
             // extract coordinates from regions
             var n = freeDraw.memory.states.length;
@@ -119,7 +122,7 @@ var Img = function(selector, data, images, opts) {
             });
         });
 
-        utils.getSettings(this, function(err, settings) {
+        utils.getSettings(self, function(err, settings) {
 
             console.log(settings);
             if(!err) {
@@ -131,6 +134,8 @@ var Img = function(selector, data, images, opts) {
     }
 
 };
+
+inherits(Img, require('events').EventEmitter);
 
 
 module.exports = Img;

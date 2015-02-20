@@ -3,6 +3,8 @@ var d3 = require('d3');
 require('d3-multiaxis-zoom')(d3);
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
+var TooltipPlugin = require('d3-tip');
+TooltipPlugin(d3);
 
 
 var margin = {
@@ -14,11 +16,10 @@ var margin = {
 
 
 var nestedExtent = function(data, map) {
-    var arrays = data.map(function(d) {return d.d})
-    var max = d3.max(arrays, function(arr) {
+    var max = d3.max(data, function(arr) {
         return d3.max(_.map(arr, map));
     });
-    var min = d3.min(arrays, function(arr) {
+    var min = d3.min(data, function(arr) {
         return d3.min(_.map(arr, map));
     });
 
@@ -28,16 +29,26 @@ var nestedExtent = function(data, map) {
 
 var Line = function(selector, data, images, opts) {
 
-    if(!opts) {
-        opts = {};
-    }
+    var defaults = {
+        tooltips: false
+    };
 
+    opts = _.defaults(opts || {}, defaults);
     this.opts = opts;
+
+    this.data = this._formatData(data);
+    
+    if(_.has(this.data, 'xaxis')) {
+        margin.bottom = 50;
+    }
+    if(_.has(this.data, 'yaxis')) {
+        margin.left = 60;
+    }
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
     this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
 
-    this.data = this._formatData(data);
+    
     this.selector = selector;
     this._init();
 };
@@ -54,12 +65,24 @@ Line.prototype._init = function() {
 
     var series = data.series;
 
-    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 2);
+    var tip;
 
-    var yDomain = nestedExtent(series, function(d) {
+    if(this.opts.tooltips) {
+        var format = d3.format('.02f');
+        tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .html(function(d, i) {
+                return 'Series: ' + d.i;
+            });
+    }
+
+
+    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 3);
+
+    var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(series, function(d) {
+    var xDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.x;
     });
 
@@ -94,7 +117,11 @@ Line.prototype._init = function() {
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(this.zoom);
+        .call(this.zoom)
+
+    if(this.opts.tooltips) {
+        svg.call(tip);
+    }
 
     svg.append('svg:rect')
         .attr('width', width)
@@ -148,8 +175,9 @@ Line.prototype._init = function() {
                 .tickSize(-width, 0, 0)
                 .tickFormat(''));
 
+    var clipId = utils.getUniqueId();
     var clip = svg.append('svg:clipPath')
-        .attr('id', 'clip')
+        .attr('id', clipId)
         .append('svg:rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -157,21 +185,58 @@ Line.prototype._init = function() {
         .attr('height', height);
 
     var chartBody = svg.append('g')
-        .attr('clip-path', 'url(#clip)');
+        .attr('clip-path', 'url(#' + clipId + ')');
 
     var toggleOpacity = 0;
 
+    if(_.has(this.data, 'xaxis')) {
+        var txt = this.data.xaxis;
+        if(_.isArray(txt)) {
+            txt = txt[0];
+        }
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 10)
+            .text(txt);
+    }
+    if(_.has(this.data, 'yaxis')) {
+        var txt = this.data.yaxis;
+        if(_.isArray(txt)) {
+            txt = txt[0];
+        }
+
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("x", - height / 2)
+            .attr("y", -40)
+            .text(txt);
+    }
+
+    
+
+
     function highlight(d, i) {
 
-        if (toggleOpacity == 0) {
+        if (toggleOpacity === 0) {
             //var d = d3.select(this)[0][0].__data__
             svg.selectAll('.line').transition().duration(100).ease('linear').delay(100).style("opacity", function (o, j) {
                 return i == j ? 0.9 : 0.2;
             });
-            toggleOpacity = 1
+            toggleOpacity = 1;
+
+            if(self.opts.tooltips) {
+                tip.show(d, i);
+            }
         } else {
             svg.selectAll('.line').transition().duration(100).ease('linear').style('opacity', 0.9)
             toggleOpacity = 0;
+            if(self.opts.tooltips) {
+                tip.hide(d, i);
+            }
         }
     }
 
@@ -271,10 +336,10 @@ Line.prototype.updateData = function(data) {
     this.data = this._formatData(data);
     var series = this.data.series;
 
-    var yDomain = nestedExtent(series, function(d) {
+    var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(series, function(d) {
+    var xDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.x;
     });
     

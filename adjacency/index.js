@@ -7,7 +7,6 @@ var colorbrewer = require('colorbrewer')
 
 var L = require('leaflet');
 var Color = require('color');
-var id = 0;
 
 var margin = {
     top: 0,
@@ -40,7 +39,7 @@ Adjacency.prototype._init = function() {
     var selector = this.selector
     var self = this
 
-    this.mid = id++;
+    this.mid = utils.getUniqueId();
     this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="adjacency-map-' + this.mid + '" class="adjacency-map"></div>';
 
     var matrix = data.matrix;
@@ -60,15 +59,15 @@ Adjacency.prototype._init = function() {
     });
 
     // set up opacity scale
-    var z = d3.scale.linear().domain([0, zmax/3]).range([0.3,1]).clamp(true);
+    var z = d3.scale.linear().domain([0, zmax]).range([0.3,1]).clamp(true);
 
     // set up x and y scales and ranges
     var nrow = matrix.length
     var ncol = matrix[0].length
     var y = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
     var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
-    y.domain(d3.range(nrow).sort(function(a, b) { return label[b] - label[a]; }));
-    x.domain(d3.range(ncol).sort(function(a, b) { return label[b] - label[a]; }))
+    y.domain(d3.range(nrow).sort(function(a, b) { return label[a] - label[b]; }));
+    x.domain(d3.range(ncol).sort(function(a, b) { return label[a] - label[b]; }))
     var maxY = nrow * y.rangeBand();
     var maxX = ncol * x.rangeBand();
 

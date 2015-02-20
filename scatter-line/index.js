@@ -2,6 +2,7 @@ var sid = 0;
 var d3 = require('d3');
 var _ = require('lodash');
 var utils = require('lightning-client-utils');
+var inherits = require('inherits');
 
 
 var ScatterLine = function(selector, data, images, options) {
@@ -26,8 +27,10 @@ var ScatterLine = function(selector, data, images, options) {
             var newdata = {'series': _.times(series.length, _.constant(0))};
             line = new Line(selector + ' #scatter-line-' + self.id + ' .line', newdata, null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         } else {
-            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', [], null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
+            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', {series: [0,0]}, null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
         }
+
+        self.emit('size:updated');
     });
 
     var r;
@@ -46,5 +49,9 @@ var ScatterLine = function(selector, data, images, options) {
         });
     });
 };
+
+
+inherits(ScatterLine, require('events').EventEmitter);
+
 
 module.exports = ScatterLine;

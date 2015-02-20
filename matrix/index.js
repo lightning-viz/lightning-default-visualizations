@@ -5,9 +5,7 @@ var _ = require('lodash');
 var utils = require('lightning-client-utils')
 var colorbrewer = require('colorbrewer')
 
-var L = require('leaflet');
 var Color = require('color');
-var id = 0;
 
 var margin = {
     top: 0,
@@ -41,87 +39,167 @@ Matrix.prototype._init = function() {
     var selector = this.selector
     var self = this
 
-    this.mid = id++;
-    this.markup = '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="matrix-map-' + this.mid + '" class="matrix-map"></div>';
+    var entries = data.entries;
+    var nrow = data.nrow
+    var ncol = data.ncol
 
-    var matrix = data.matrix;
+    // automatically scale stroke width by number of cells
+    var strokeWidth = Math.max(1 - 0.00009 * nrow * ncol, 0.1);
 
     // get min and max of matrix value data
-    var zmin = d3.min(data.matrix, function(d) {
-        return d3.min(d, function(e) {
-            return e.z
-        });
+    var zmin = d3.min(entries, function(d) {
+        return d.z
     });
-    var zmax = d3.max(data.matrix, function(d) {
-        return d3.max(d, function(e) {
-            return e.z
-        });
+    var zmax = d3.max(entries, function(d) {
+        return d.z
     });
 
+    // function for numerical domain spacing
+    function linspace(a, b, n) {
+      var every = (b-a)/(n-1)
+      var ranged = _.range(a, b, every);
+      return ranged.length == n ? ranged : ranged.concat(b);
+    }
+
     // set up color brewer
-    // TODO add ability to select scale and update dynamically
     var cbrewn = 9
     var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
-    var zdomain = d3.range(cbrewn).map(function(d) {return d * (zmax - zmin) / (cbrewn - 1) + zmin})
+    var zdomain = linspace(zmin, zmax, cbrewn)
     var z = d3.scale.linear().domain(zdomain).range(color);
 
     // set up x and y scales and ranges
-    var nrow = matrix.length
-    var ncol = matrix[0].length
-    var y = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
-    var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]);
-    y.domain(d3.range(nrow));
-    x.domain(d3.range(ncol))
+    var y = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]).domain(d3.range(nrow));
+    var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]).domain(d3.range(ncol));
     var maxY = nrow * y.rangeBand();
     var maxX = ncol * x.rangeBand();
 
-    // bounds for the graphic
-    var bounds = [[0, 0], [maxY, maxX]];
+    // set up variables to toggle with keypresses
+    var clist = ['Purples', 'Blues', 'Greens', 'Oranges', 'Reds', 'Greys']
+    var cindex = 0
+    var scale = 0
 
-    // create the graphic as a map
-    this.$el = $(selector).first();
-    this.$el.append(this.markup);
-    this.$el.find('#matrix-map-' + this.mid).width(maxX).height(maxY);
+    // create canvas
+    var canvas = d3.select(selector)
+        .append('canvas')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .node().getContext("2d")
 
-    var map = L.map('matrix-map-' + this.mid, {
-        center: [maxX/2, maxY/2],
-        attributionControl: false,
-        zoomControl: false,
-        crs: L.CRS.Simple,
-    });
+    // add keydown events
+    d3.select('body').on('keydown', update)
 
-    // set the bounds
-    map.fitBounds(bounds);
-    map.setMaxBounds(bounds);
+    // create dummy container for data binding
+    var detachedContainer = document.createElement("custom");
+    var dataContainer = d3.select(detachedContainer);
 
-    // render the rectangles
-    setTimeout(function() {
-        _.each(matrix, function(row, i) {
-            _.each(row, function(cell) {
-                var xPos = x(cell.x);
-                var yPos = y(i);
-                var b = [[yPos, xPos], [yPos + y.rangeBand(), xPos + x.rangeBand()]];
-                L.rectangle(b, {color: z(cell.z), weight: 0.7, smoothFactor: 1.0, className: "cell"}).addTo(map);
-            });
-        });    
-    }, 0);
+    // drawing wrapper to handle binding
+    function drawCustom(data) {
+
+        var dataBinding = dataContainer.selectAll("custom.rect")
+            .data(data);
+
+        dataBinding
+            .attr("fillStyle", function(d) {return z(d.z)});
+          
+        dataBinding.enter()
+            .append("custom")
+            .classed("rect", true)
+            .attr("x", function(d) {return x(d.x)})
+            .attr("y", function(d, i) {return y(d.y)})
+            .attr("width", y.rangeBand())
+            .attr("height", x.rangeBand())
+            .attr("fillStyle", function(d) {return z(d.z)})
+            .attr("strokeStyle", "white")
+            .attr("lineWidth", strokeWidth)
+  
+        drawCanvas();
     
+    }
+
+    // draw the matrix
+    function drawCanvas() {
+
+      // clear canvas
+      canvas.clearRect(0, 0, width, height);
+      
+      // select nodes and draw their data to canvas
+      var elements = dataContainer.selectAll("custom.rect");
+      elements.each(function(d) {
+        var node = d3.select(this);
+        canvas.beginPath();
+        canvas.fillStyle = node.attr("fillStyle");
+        canvas.strokeStyle = node.attr("strokeStyle");
+        canvas.lineWidth = node.attr("lineWidth");
+        canvas.rect(node.attr("x"), node.attr("y"), node.attr("height"), node.attr("width"));
+        canvas.fill();
+        canvas.stroke();
+        canvas.closePath();
+      })
+    }
+
+    // update event for keypresses
+    // TODO supplement with a window
+    function update() {
+        if (d3.event.keyCode == 38 | d3.event.keyCode == 40) {
+            d3.event.preventDefault();
+            if (d3.event.keyCode == 38) {
+                scale = scale + 0.05
+                if (scale > 0.4) {
+                    scale = 0.4
+                }
+            }
+            if (d3.event.keyCode == 40) {
+                scale = scale - 0.05
+                if (scale < -3) {
+                    scale = -3
+                }
+            }
+            var extent = zmax - zmin
+            zdomain = linspace(zmin + extent * scale, zmax - extent * scale, cbrewn)
+            z.domain(zdomain)
+            drawCustom(entries);
+        }
+        if (d3.event.keyCode == 37 | d3.event.keyCode == 39) {
+            d3.event.preventDefault();
+            if (d3.event.keyCode == 37) {
+                cindex = cindex - 1
+                if (cindex < 0) {
+                    cindex = clist.length - 1
+                }
+            }
+            if (d3.event.keyCode == 39) {
+                cindex = cindex + 1
+                if (cindex > clist.length - 1) {
+                    cindex = 0
+                }
+            }
+            color = colorbrewer[clist[cindex]][cbrewn]
+            z.range(color)
+            drawCustom(entries);
+        }
+    }
+
+    drawCustom(entries)
 
 };
 
 Matrix.prototype._formatData = function(data) {
 
-    data.matrix = _.map(data.matrix, function(d, i) {
-        return _.map(d, function(e, j) {
+    var entries = []
+    _.each(data.matrix, function(d, i) {
+        _.each(d, function(e, j) {
             var p = []
             p.x = j
             p.y = i
             p.z = e
-            return p
+            entries.push(p)
         })
     });
 
-    return data
+    var nrow = data.matrix.length
+    var ncol = data.matrix[0].length
+
+    return {entries: entries, nrow: nrow, ncol: ncol, colormap: data.colormap}
 
 }
 

@@ -1,25 +1,49 @@
 var Datamaps = require('datamaps-all-browserify');
 var _ = require('lodash');
+var colorbrewer = require('colorbrewer')
 var templateHTML = require('./map.jade');
 
+var margin = {
+    top: 20,
+    right: 20,
+    bottom: 20,
+    left: 45
+};
 
 var Map = function(selector, data, images, opts) {
 
+    if(!opts) {
+        opts = {};
+    }
+    
+    this.opts = opts
+   
+    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+    this.selector = selector
+    this.data = this._formatData(data)
+    this.defaultColormap = 'Purples';
+    this._init();
+
+};
+
+module.exports = Map;
+
+Map.prototype._init = function() {
+
+    var width = this.width
+    var height = this.height
+    var data = this.data
+    var selector = this.selector
+    
+    var regions = data.regions
+    var values = data.values
+
+    var self = this
+
     var $el = $(selector).first();
     $el.append(templateHTML());
-
-
-
-
-    // expect data to be key value pairs:
-    //
-    // either 
-    //  location -> color,
-    //  location -> scalar value
-    //  location -> label
-    //
-    //
-
+    
     var dataObj = {}; 
     var fills = {
         defaultFill: '#ddd'
@@ -27,49 +51,51 @@ var Map = function(selector, data, images, opts) {
 
     // if the data keys are of length 3, this
     // should be treated as a world map
-    var isWorld = _.every(_.keys(data), function(v) {
+    var isWorld = _.every(regions, function(v) {
         return v.length === 3;
     });
+    
+    var min = d3.min(values)
+    var max = d3.max(values)
 
+    var cbrewn = 9
+    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
+    var zdomain = d3.range(cbrewn).map(function(d) {return d * (max - min) / (cbrewn - 1) + min})
+    var z = d3.scale.linear().domain(zdomain).range(color);
 
-    if (true) { // assume everything maps to scalar value for now    
-        var color = d3.scale.linear().domain([0,1]).range(['#fff', '#9175f0']);
-        // make fill buckets
-
-        _.each(data, function(val, key) {
-            var c = color(val);
-            fills[c] = c;
-            dataObj[key] = {
-                fillKey: c,
-                value: val
-            };
-        });
-    }
-
-
+    _.each(regions, function(reg, i) {
+        var c = z(values[i]);
+        fills[c] = c;
+        dataObj[reg] = {
+            fillKey: c,
+            value: values[i]
+        };
+    });
 
     var map = new Datamap({
         element: $el.find('#map-container')[0],
-        height: $el.width() * 0.65,
+        height: height,
         scope: (isWorld) ? 'world' : 'usa',
         fills: fills,
         data: dataObj,
         geographyConfig: {        
 
             popupTemplate: function(geography, data) { //this function should just return a string
-                if(data) {
-                    return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong><br/>' + data.value + '</div>';
-                }
-                return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong></div>';
+                //if(data) {
+                //    return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong><br/>' + data.value + '</div>';
+                //}
+                //return '<div class="hoverinfo"><strong>' + geography.properties.name + '</strong></div>';
             },
             highlightBorderColor: '#fff',
-            highlightFillColor: '#68a1e5',
+            highlightFillColor: 'rgb(150,150,150)',
         }
 
     });
-
-
+    
 };
 
+Map.prototype._formatData = function(data) {
 
-module.exports = Map;
+    return data
+
+}

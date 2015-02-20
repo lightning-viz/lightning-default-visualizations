@@ -13,11 +13,11 @@ var margin = {
     left: 45
 };
 
-var nestedExtent = function(arrays, map) {
-    var max = d3.max(arrays, function(arr) {
+var nestedExtent = function(data, map) {
+    var max = d3.max(data, function(arr) {
         return d3.max(_.map(arr, map));
     });
-    var min = d3.min(arrays, function(arr) {
+    var min = d3.min(data, function(arr) {
         return d3.min(_.map(arr, map));
     });
 
@@ -47,26 +47,28 @@ inherits(LineStreaming, Line);
 
 LineStreaming.prototype.appendData = function(data) {
 
-    var newData = this._formatData(data);
 
+    var newData = this._formatData(data);
     var self = this;
 
-    _.each(newData, function(d, i) {
-        if(i < self.data.length) {
-            var l = self.data[i].length;
-            _.each(d, function(point) {
+    _.each(newData.series, function(d, i) {
+
+        if(i < self.data.series.length) {
+            var l = self.data.series[i].d.length;
+            _.each(d.d, function(point) {
                 point.x += l;
             });
-            self.data[i] = self.data[i].concat(d);
+
+            self.data.series[i].d = self.data.series[i].d.concat(d.d);
         }
     });
     
     data = this.data;
 
-    var yDomain = nestedExtent(data, function(d) {
+    var yDomain = nestedExtent(data.series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
-    var xDomain = nestedExtent(data, function(d) {
+    var xDomain = nestedExtent(data.series.map(function(d) {return d.d}), function(d) {
         return d.x;
     });
     
@@ -75,13 +77,38 @@ LineStreaming.prototype.appendData = function(data) {
 
     this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread]);
     this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
-
+    this.zoom.x(this.x).y(this.y);
     this.updateAxis();
-
-    this.svg.selectAll('.line')
-        .data(data)
+    
+    var newdat = this.svg.selectAll('.line')
+        .data(data.series)
+        
+    newdat.exit().transition().style('opacity', 0.0).remove()
+    
+    newdat
+        .attr('class', 'line')
+        .on('mouseover', self.highlight)
+        .on('mouseout', self.highlight) 
         .transition()
-        .attr('d', this.line);
+        .attr('d', function(d) { return self.line(d.d)})   
+        .attr('stroke', function(d) {return d.c})
+        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
+        .style('stroke-opacity', 0.9)
+         
+    
+    newdat.enter()
+        .append('path')
+        .attr('class', 'line') 
+        .attr('d', function(d) { return self.line(d.d)})
+        .attr('stroke', function(d) {return d.c})
+        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
+        .style('stroke-opacity', 0.9)
+        .on('mouseover', self.highlight)
+        .on('mouseout', self.highlight) 
+        .style('opacity', 0.0)
+        .transition()
+        .style('opacity', 1.0)
+
 };
 
 
