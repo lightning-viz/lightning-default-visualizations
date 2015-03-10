@@ -148,7 +148,7 @@ ImgDraw.prototype._init = function() {
             if (d3.event.metaKey | d3.event.shiftKey) {
                 freeDraw.setMode(L.FreeDraw.MODES.VIEW)
             }
-            if (d3.event.keyCode == 37 | d3.event.keyCode == 39) {
+            if (d3.event.shiftKey & (d3.event.keyCode == 37 | d3.event.keyCode == 39)) {
                 d3.event.preventDefault();
                 if (d3.event.keyCode == 37) {
                     cindex = cindex - 1
