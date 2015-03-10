@@ -221,10 +221,8 @@ ImgDraw.prototype._formatData = function(data) {
                 }
             }
         })
-    } else if (data.features) {
-        data.features.forEach(function(d) {
-            polygons.push(d.coordinates)
-        })
+    } else if (data.coordinates) {
+        polygons = data.coordinates
     } else {
         throw "Input data not understood"
     }
