@@ -71,6 +71,66 @@ var Img = function(selector, data, images, opts) {
         // tell leaflet that the map is exactly as big as the image
         map.setMaxBounds(bounds);
 
+        // add free drawing
+        var freeDraw = new L.FreeDraw({
+          mode: L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE | L.FreeDraw.MODES.DELETE
+        });
+
+        freeDraw.options.attemptMerge = false;
+        freeDraw.options.setHullAlgorithm('brian3kb/graham_scan_js');
+        freeDraw.options.setSmoothFactor(0);
+
+        map.addLayer(freeDraw);
+
+        d3.select('body').on('keydown', keydown).on('keyup', keyup);
+
+        function keydown() {
+            if (d3.event.altKey) {
+                freeDraw.setMode(L.FreeDraw.MODES.EDIT)
+            }
+            if (d3.event.metaKey | d3.event.shiftKey) {
+                freeDraw.setMode(L.FreeDraw.MODES.VIEW)
+            }
+        }
+
+        function keyup() {
+            freeDraw.setMode(L.FreeDraw.MODES.CREATE | L.FreeDraw.MODES.DELETE)
+        }
+
+        self.emit('image:loaded');
+
+        self.$el.unbind().click(function() {
+
+            // extract coordinates from regions
+            var n = freeDraw.memory.states.length;
+            var coords = freeDraw.memory.states[n-1].map( function(d) {
+                var points = [];
+                d.forEach(function (p) {
+                    var newpoint = map.project(p, 1);
+                    newpoint.x *= (imw / w);
+                    newpoint.y *= (imh / h);
+                    points.push([newpoint.x, newpoint.y]);
+                });
+                return points;
+            });
+
+            utils.updateSettings(self, {
+                coords: coords
+            }, function(err) {
+                console.log('saved user data');
+                console.log(coords);
+            });
+        });
+
+        utils.getSettings(self, function(err, settings) {
+
+            console.log(settings);
+            if(!err) {
+                coords = settings.coords;
+            }
+            
+        });
+
     }
 
 };
