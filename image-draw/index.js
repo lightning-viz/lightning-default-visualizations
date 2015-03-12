@@ -107,65 +107,82 @@ ImgDraw.prototype._init = function() {
 
 
         // initialize with any polygons from the data
-        var polygons = data.polygons
+        var polygons = data.polygons;
 
         polygons = polygons.map(function (g) {
-            var converted = []
+            var converted = [];
             g.map(function (p) {
-                var newp = new L.point(p[0] / (imw / w), p[1] / (imh / h), false)
-                var newpoint = map.unproject(newp, 1)
-                converted.push(newpoint)
-            })
-            return converted
-        })
-
-        console.log(polygons)
-
+                var newp = new L.point(p[0] / (imw / w), p[1] / (imh / h), false);
+                var newpoint = map.unproject(newp, 1);
+                converted.push(newpoint);
+            });
+            return converted;
+        });
         //freeDraw.createPolygon([new L.LatLng(-120, 175.5), new L.LatLng(-150, 132.5), new L.LatLng(-110.5, 135.5), new L.LatLng(-103.5, 172)])
 
         freeDraw.options.simplifyPolygon = false;
         polygons.forEach(function (g) {
-            freeDraw.createPolygon(g, true)
-        })
+            freeDraw.createPolygon(g, true);
+        });
         freeDraw.options.simplifyPolygon = true;
 
         d3.select('body').on('keydown', keydown).on('keyup', keyup);
 
-        var clist = ["rgb(255,255,255)", "rgb(240,30,110)", "rgb(46,170,275)"]
-        var cindex = 0
+        var COLOR_MODES = ['white', 'bright', 'data-white', 'data-bright'];
+        var colorIndex = 0;
 
         function updateStyles() {
-            var base = d3.hsl(clist[cindex])
-            var fill = d3.hsl(clist[cindex])
-            fill.l = fill.l * 1.3
-            self.$el.find(".image-map g path").css("stroke", base)
-            self.$el.find(".image-map g path").css("fill", fill.toString())
+
+            var c;
+            if(COLOR_MODES[colorIndex].indexOf('white') > -1) {
+                c = d3.hsl('rgb(255,255,255)');
+            } else if (COLOR_MODES[colorIndex].indexOf('bright') > -1) {
+                c = d3.hsl('rgb(240,30,110)');
+            }
+
+            var isData = (data.colors && COLOR_MODES[colorIndex].indexOf('data') > -1);
+
+            d3.select(self.$el[0])
+               .selectAll('.image-map g path')
+               .style('stroke', function(d, i) {
+                if(isData && i < data.colors.length-1) {
+                    return data.colors[i];
+                }
+                return c;
+               })
+               .style('fill', function(d, i) {
+                var fill;
+                if(isData && i < data.colors.length-1) {
+                    fill = d3.hsl(data.colors[i]);
+                } else {
+                    fill = c;
+                }
+                fill.l = fill.l * 1.3;
+                return fill.toString();
+               }); 
+
         }
 
 
-
+        var mod = function(x, n) {
+            return ((x%n)+n)%n;
+        };
         function keydown() {
             if (d3.event.altKey) {
-                freeDraw.setMode(L.FreeDraw.MODES.EDIT)
+                freeDraw.setMode(L.FreeDraw.MODES.EDIT);
             }
             if (d3.event.metaKey | d3.event.shiftKey) {
-                freeDraw.setMode(L.FreeDraw.MODES.VIEW)
+                freeDraw.setMode(L.FreeDraw.MODES.VIEW);
             }
             if (d3.event.shiftKey & (d3.event.keyCode == 37 | d3.event.keyCode == 39)) {
                 d3.event.preventDefault();
                 if (d3.event.keyCode == 37) {
-                    cindex = cindex - 1
-                    if (cindex < 0) {
-                        cindex = clist.length - 1
-                    }
+                    colorIndex = mod(colorIndex - 1, COLOR_MODES.length);
                 }
                 if (d3.event.keyCode == 39) {
-                    cindex = cindex + 1
-                    if (cindex > clist.length - 1) {
-                        cindex = 0
-                    }
+                    colorIndex = mod(colorIndex + 1, COLOR_MODES.length);
                 }
-                updateStyles()
+                updateStyles();
             }
         }
 
