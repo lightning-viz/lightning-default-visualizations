@@ -38,7 +38,7 @@ ImgDraw.prototype._init = function() {
     var self = this;
 
     this.mid = utils.getUniqueId();
-    this.markup = '<link rel="stylesheet" href="https://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="image-map-' + this.mid + '" class="image-map"></div>';
+    this.markup = '<link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="image-map-' + this.mid + '" class="image-map"></div>';
 
     var image = images[0];
     var coords = [];
@@ -105,6 +105,7 @@ ImgDraw.prototype._init = function() {
         // add the free drawing layer
         map.addLayer(freeDraw);
 
+
         // initialize with any polygons from the data
         var polygons = data.polygons
 
@@ -140,6 +141,8 @@ ImgDraw.prototype._init = function() {
             self.$el.find(".image-map g path").css("stroke", base)
             self.$el.find(".image-map g path").css("fill", fill.toString())
         }
+
+
 
         function keydown() {
             if (d3.event.altKey) {
@@ -203,6 +206,9 @@ ImgDraw.prototype._init = function() {
             }
             
         });
+
+
+        freeDraw.on('markers', updateStyles);
 
     }
 
