@@ -3,6 +3,7 @@
 var utils = require('lightning-client-utils');
 var inherits = require('inherits');
 var d3 = require('d3');
+var _ = require('lodash');
 var validator = require("geojson-validation");
 var L = require('leaflet');
 var F = require('leaflet.freedraw-browserify');
@@ -142,20 +143,20 @@ ImgDraw.prototype._init = function() {
                 c = d3.hsl('rgb(240,30,110)');
             }
 
-            var isData = (data.colors && COLOR_MODES[colorIndex].indexOf('data') > -1);
+            var isData = (data.color && COLOR_MODES[colorIndex].indexOf('data') > -1);
 
             d3.select(self.$el[0])
                .selectAll('.image-map g path')
                .style('stroke', function(d, i) {
-                if(isData && i < data.colors.length-1) {
-                    return data.colors[i];
+                if(isData && i < data.color.length-1) {
+                    return data.color[i];
                 }
                 return c;
                })
                .style('fill', function(d, i) {
                 var fill;
-                if(isData && i < data.colors.length-1) {
-                    fill = d3.hsl(data.colors[i]);
+                if(isData && i < data.color.length-1) {
+                    fill = d3.hsl(data.color[i]);
                 } else {
                     fill = c;
                 }
@@ -251,6 +252,18 @@ ImgDraw.prototype._formatData = function(data) {
     } else {
         throw "Input data not understood"
     }
+
+    var retColor = utils.getColorFromData(data);
+    if (retColor.length == 0) {
+        retColor = utils.getColors(polygons.length + 1)
+    } else if (retColor.length == 1) {
+        retColor = _.range(polygons.length + 1).map(function () { return retColor })
+    }
+
+    data.color = retColor
+
+    console.log(data.color.length)
+    console.log(polygons.length)
 
     data.polygons = polygons
     return data
