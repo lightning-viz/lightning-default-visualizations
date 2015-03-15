@@ -10,6 +10,18 @@ var margin = {
     left: 45
 };
 
+var scaleColors = function(values, n, colormap) {
+
+    var min = d3.min(values)
+    var max = d3.max(values)
+    var color = colorbrewer[colormap][n]
+    var zdomain = d3.range(n).map(function(d) {return d * (max - min) / (n - 1) + min})
+    var z = d3.scale.linear().domain(zdomain).range(color);
+
+    return z
+
+}
+
 var Map = function(selector, data, images, opts) {
 
     if(!opts) {
@@ -21,8 +33,8 @@ var Map = function(selector, data, images, opts) {
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
     this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
     this.selector = selector
-    this.data = this._formatData(data)
     this.defaultColormap = 'Purples';
+    this.data = this._formatData(data)
     this._init();
 
 };
@@ -55,13 +67,7 @@ Map.prototype._init = function() {
         return v.length === 3;
     });
     
-    var min = d3.min(values)
-    var max = d3.max(values)
-
-    var cbrewn = 9
-    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
-    var zdomain = d3.range(cbrewn).map(function(d) {return d * (max - min) / (cbrewn - 1) + min})
-    var z = d3.scale.linear().domain(zdomain).range(color);
+    var z = scaleColors(values, 9, data.colormap)
 
     _.each(regions, function(reg, i) {
         var c = z(values[i]);
@@ -93,12 +99,12 @@ Map.prototype._init = function() {
     });
 
     this.map = map
-    this.z = z
     
 };
 
 Map.prototype._formatData = function(data) {
 
+    data.colormap = data.colormap ? data.colormap : this.defaultColormap
     return data
 
 }
@@ -110,20 +116,10 @@ Map.prototype.updateData = function(data) {
     var data = self._formatData(data)
     var regions = data.regions
     var values = data.values
-    
-    var min = d3.min(values)
-    var max = d3.max(values)
-    
-    var cbrewn = 9
-    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
-    var zdomain = d3.range(cbrewn).map(function(d) {return d * (max - min) / (cbrewn - 1) + min})
-    var z = d3.scale.linear().domain(zdomain).range(color);
+
+    var z = scaleColors(values, 9, data.colormap)
 
     var dataObj = {}; 
-    var fills = {
-        defaultFill: '#ddd'
-    };
-
     _.each(regions, function(reg, i) {
         var c = z(values[i]);
         dataObj[reg] = c
