@@ -91,11 +91,41 @@ Map.prototype._init = function() {
         }
 
     });
+
+    this.map = map
+    this.z = z
     
 };
 
 Map.prototype._formatData = function(data) {
 
     return data
+
+}
+
+Map.prototype.updateData = function(data) {
+
+    var self = this
+    var map = this.map
+    var z = this.z
+    var data = self._formatData(data)
+    var regions = data.regions
+    var values = data.values
+
+    var dataObj = {}; 
+    var fills = {
+        defaultFill: '#ddd'
+    };
+
+    _.each(regions, function(reg, i) {
+        var c = z(values[i]);
+        fills[c] = c;
+        dataObj[reg] = {
+            fillKey: c,
+            value: values[i]
+        };
+    });
+
+    map.updateChoropleth({})
 
 }
