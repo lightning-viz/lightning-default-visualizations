@@ -128,8 +128,10 @@ ImgDraw.prototype._init = function() {
 
         d3.select('body').on('keydown', keydown).on('keyup', keyup);
 
-        var COLOR_MODES = ['white', 'bright', 'data-white', 'data-bright'];
-        var colorIndex = 0;
+        var COLOR_MODES = ['white', 'bright', 'data-white'];
+        var colorIndex = 2;
+
+        updateStyles();
 
         function updateStyles() {
 
