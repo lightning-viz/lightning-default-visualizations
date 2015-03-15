@@ -107,10 +107,17 @@ Map.prototype.updateData = function(data) {
 
     var self = this
     var map = this.map
-    var z = this.z
     var data = self._formatData(data)
     var regions = data.regions
     var values = data.values
+    
+    var min = d3.min(values)
+    var max = d3.max(values)
+    
+    var cbrewn = 9
+    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
+    var zdomain = d3.range(cbrewn).map(function(d) {return d * (max - min) / (cbrewn - 1) + min})
+    var z = d3.scale.linear().domain(zdomain).range(color);
 
     var dataObj = {}; 
     var fills = {
@@ -119,13 +126,9 @@ Map.prototype.updateData = function(data) {
 
     _.each(regions, function(reg, i) {
         var c = z(values[i]);
-        fills[c] = c;
-        dataObj[reg] = {
-            fillKey: c,
-            value: values[i]
-        };
+        dataObj[reg] = c
     });
-
-    map.updateChoropleth({})
+    
+    map.updateChoropleth(dataObj)
 
 }
