@@ -28,8 +28,6 @@ var ImgDraw = function(selector, data, images, opts) {
 
 inherits(ImgDraw, require('events').EventEmitter);
 
-module.exports = ImgDraw;
-
 ImgDraw.prototype._init = function() {
 
     var opts = this.opts;
@@ -236,14 +234,18 @@ ImgDraw.prototype._init = function() {
             }
             
         });
-
-
+        
         freeDraw.on('markers', updateStyles);
-
+        
+        self.map = map
+        self.bounds = bounds
+        self.overlay = overlay
+        
     }
 
 };
 
+module.exports = ImgDraw;
 
 ImgDraw.prototype._formatData = function(data) {
 
@@ -289,14 +291,17 @@ ImgDraw.prototype.setImage = function(image) {
 
 
 ImgDraw.prototype.updateData = function(image) {
-
+    
     var map = this.map
     var overlay = this.overlay
     var bounds = this.bounds
-    map.removeLayer(overlay);
-    this.img = new Image();
-    var img = this.img;
+
+    // get the new image
+    var img = new Image();
     img.src = (window.lightning && window.lightning.host) ? window.lightning.host + image : image;
+
+    // replace the overlay and make sure it's behind other graphics
+    map.removeLayer(overlay);
     overlay = new L.ImageOverlay(img.src, bounds).addTo(map);
     overlay.bringToBack()
     
