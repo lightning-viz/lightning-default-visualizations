@@ -27,7 +27,7 @@ var LineStreaming = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {
-            maxTick: 25
+            maxTick: 300
         };
     }
 
@@ -41,7 +41,7 @@ var LineStreaming = function(selector, data, images, opts) {
     this._init();
 
     // code for testing streaming functionality
-    
+
     // var self = this
 
     // setInterval(function()  {
