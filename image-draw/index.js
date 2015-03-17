@@ -295,16 +295,17 @@ ImgDraw.prototype.updateData = function(image) {
     var map = this.map
     var overlay = this.overlay
     var bounds = this.bounds
+    var self = this
 
     // get the new image
     var img = new Image();
     img.src = (window.lightning && window.lightning.host) ? window.lightning.host + image : image;
-
-    // replace the overlay and make sure it's behind other graphics
-    map.removeLayer(overlay);
-    overlay = new L.ImageOverlay(img.src, bounds).addTo(map);
-    overlay.bringToBack()
-    
-    this.overlay = overlay
-    
+    img.onload = function() {
+        // replace the overlay and make sure it's behind other graphics
+        map.removeLayer(overlay);
+        overlay = new L.ImageOverlay(img.src, bounds).addTo(map);
+        overlay.bringToBack()
+        self.overlay = overlay
+    }
+   
 };
