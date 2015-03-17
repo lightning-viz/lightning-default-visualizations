@@ -40,16 +40,18 @@ var LineStreaming = function(selector, data, images, opts) {
     this.selector = selector;
     this._init();
 
-    var self = this
+    // code for testing streaming functionality
+    
+    // var self = this
 
-    setInterval(function()  {
+    // setInterval(function()  {
 
-        var random = d3.random.normal(0, .2)
-        var newdata = {
-            series: [[random(),random(),random(),random()], [random(),random(),random(),random()], [random(),random(),random(),random()], [random(),random(),random(),random()]]}
-        self.appendData(newdata)
+    //     var random = d3.random.normal(0, .2)
+    //     var newdata = {
+    //         series: [[random(),random(),random(),random()], [random(),random(),random(),random()], [random(),random(),random(),random()], [random(),random(),random(),random()]]}
+    //     self.appendData(newdata)
 
-    }, 500)
+    // }, 500)
 
 };
 
