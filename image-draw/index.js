@@ -108,28 +108,39 @@ ImgDraw.prototype._init = function() {
         map.addLayer(freeDraw);
 
         // initialize with any polygons from the data
-        var polygons = data.polygons;
+        if (data) {
 
-        polygons = polygons.map(function (g) {
-            var converted = [];
-            g.map(function (p) {
-                var newp = new L.point(p[0] / (imw / w), p[1] / (imh / h), false);
-                var newpoint = map.unproject(newp, 1);
-                converted.push(newpoint);
+            console.log("we got here")
+
+            var polygons = data.polygons;
+
+            polygons = polygons.map(function (g) {
+                var converted = [];
+                g.map(function (p) {
+                    var newp = new L.point(p[0] / (imw / w), p[1] / (imh / h), false);
+                    var newpoint = map.unproject(newp, 1);
+                    converted.push(newpoint);
+                });
+                return converted;
             });
-            return converted;
-        });
 
-        freeDraw.options.simplifyPolygon = false;
-        polygons.forEach(function (g) {
-            freeDraw.createPolygon(g, true);
-        });
-        freeDraw.options.simplifyPolygon = true;
+            freeDraw.options.simplifyPolygon = false;
+            polygons.forEach(function (g) {
+                freeDraw.createPolygon(g, true);
+            });
+            freeDraw.options.simplifyPolygon = true;
+
+            var COLOR_MODES = ['white', 'bright', 'data-white'];
+            var colorIndex = 2;
+
+        } else {
+
+            var COLOR_MODES = ['white', 'bright'];
+            var colorIndex = 0;
+
+        }
 
         d3.select('body').on('keydown', keydown).on('keyup', keyup);
-
-        var COLOR_MODES = ['white', 'bright', 'data-white'];
-        var colorIndex = 2;
 
         updateStyles();
 
@@ -236,35 +247,38 @@ ImgDraw.prototype._init = function() {
 
 ImgDraw.prototype._formatData = function(data) {
 
-    var polygons = []
+    if (data) {
 
-    if (validator.isFeatureCollection(data)) {
-        data.features.forEach(function(d) {
-            if (validator.isFeature(d)) {
-                if (validator.isPolygon(d.geometry)) {
-                    polygons.push(d.geometry.coordinates[0])
+        var polygons = []
+
+        if (validator.isFeatureCollection(data)) {
+            data.features.forEach(function(d) {
+                if (validator.isFeature(d)) {
+                    if (validator.isPolygon(d.geometry)) {
+                        polygons.push(d.geometry.coordinates[0])
+                    }
                 }
-            }
-        })
-    } else if (data.coordinates) {
-        polygons = data.coordinates
-    } else {
-        throw "Input data not understood"
+            })
+        } else if (data.coordinates) {
+            polygons = data.coordinates
+        } else {
+            throw "Input data not understood"
+        }
+
+        var retColor = utils.getColorFromData(data);
+        if (retColor.length == 0) {
+            retColor = utils.getColors(polygons.length + 1)
+        } else if (retColor.length == 1) {
+            retColor = _.range(polygons.length + 1).map(function () { return retColor })
+        }
+
+        data.color = retColor
+
+        console.log(data.color.length)
+        console.log(polygons.length)
+
+        data.polygons = polygons
     }
-
-    var retColor = utils.getColorFromData(data);
-    if (retColor.length == 0) {
-        retColor = utils.getColors(polygons.length + 1)
-    } else if (retColor.length == 1) {
-        retColor = _.range(polygons.length + 1).map(function () { return retColor })
-    }
-
-    data.color = retColor
-
-    console.log(data.color.length)
-    console.log(polygons.length)
-
-    data.polygons = polygons
     return data
 }
 
