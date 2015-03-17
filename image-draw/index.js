@@ -31,7 +31,7 @@ inherits(ImgDraw, require('events').EventEmitter);
 ImgDraw.prototype._init = function() {
 
     var opts = this.opts;
-    var data = this.data | {};
+    var data = this.data ? this.data : {};
     var images = this.images;
     var selector = this.selector;
     var self = this;
