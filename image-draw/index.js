@@ -108,7 +108,7 @@ ImgDraw.prototype._init = function() {
         map.addLayer(freeDraw);
 
         // initialize with any polygons from the data
-        if (data) {
+        if (!_.isEmpty(data)) {
 
             console.log("we got here")
 
@@ -247,8 +247,8 @@ ImgDraw.prototype._init = function() {
 
 ImgDraw.prototype._formatData = function(data) {
 
-    if (data) {
-
+    if (!_.isEmpty(data)) {
+        
         var polygons = []
 
         if (validator.isFeatureCollection(data)) {
