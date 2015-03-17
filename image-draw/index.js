@@ -88,7 +88,8 @@ ImgDraw.prototype._init = function() {
         var bounds = new L.LatLngBounds(southWest, northEast);
          
         // add the image overlay to cover the map
-        L.imageOverlay(img.src, bounds).addTo(map);
+        var overlay = L.imageOverlay(img.src, bounds);
+        map.addLayer(overlay)
          
         // tell leaflet that the map is exactly as big as the image
         map.setMaxBounds(bounds);
@@ -106,7 +107,6 @@ ImgDraw.prototype._init = function() {
         // add the free drawing layer
         map.addLayer(freeDraw);
 
-
         // initialize with any polygons from the data
         var polygons = data.polygons;
 
@@ -119,7 +119,6 @@ ImgDraw.prototype._init = function() {
             });
             return converted;
         });
-        //freeDraw.createPolygon([new L.LatLng(-120, 175.5), new L.LatLng(-150, 132.5), new L.LatLng(-110.5, 135.5), new L.LatLng(-103.5, 172)])
 
         freeDraw.options.simplifyPolygon = false;
         polygons.forEach(function (g) {
@@ -276,6 +275,17 @@ ImgDraw.prototype.setImage = function(image) {
 
 
 ImgDraw.prototype.updateData = function(image) {
-    // in this case data should just be an image
-    this.setImage(image);
+
+    var map = this.map
+    var overlay = this.overlay
+    var bounds = this.bounds
+    map.removeLayer(overlay);
+    this.img = new Image();
+    var img = this.img;
+    img.src = (window.lightning && window.lightning.host) ? window.lightning.host + image : image;
+    overlay = new L.ImageOverlay(img.src, bounds).addTo(map);
+    overlay.bringToBack()
+    
+    this.overlay = overlay
+    
 };
