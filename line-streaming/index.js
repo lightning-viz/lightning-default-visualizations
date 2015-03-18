@@ -27,7 +27,7 @@ var LineStreaming = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {
-            maxTick: 50
+            maxTick: 300
         };
     }
 
@@ -348,7 +348,6 @@ LineStreaming.prototype.appendData = function(data) {
     var newdat = self._formatData(data).series
 
     this.xTick = xTick + newlength
-    var lastShift = 0
     var shift = 0
 
 
@@ -400,8 +399,6 @@ LineStreaming.prototype.appendData = function(data) {
         self.updateAxis();
     } else {
 
-
-        console.log('yo');
         self.x.domain([Math.max(xTick - maxTick, xDomain[0]), xTick]);
         self.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
         self.zoom.x(self.x).y(self.y);
@@ -433,7 +430,6 @@ LineStreaming.prototype.appendData = function(data) {
         .ease("linear")
 
     this.path = newdat
-    lastShift = shift
 
 };
 
