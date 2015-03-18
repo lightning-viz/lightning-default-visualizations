@@ -27,7 +27,7 @@ var LineStreaming = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {
-            maxTick: 300
+            maxTick: 50
         };
     }
 
@@ -252,13 +252,15 @@ LineStreaming.prototype._init = function() {
 
     function updateAxis() {
 
-        self.svg.select('.x.axis').call(self.xAxis);
-        self.svg.select('.y.axis').call(self.yAxis);
+        self.svg.select('.x.axis').transition().duration(500).ease('linear').call(self.xAxis);
+        self.svg.select('.y.axis').transition().duration(500).ease('linear').call(self.yAxis);
         self.svg.select('.x.grid')
+            .transition().duration(500).ease('linear')
             .call(makeXAxis()
                 .tickSize(-height, 0, 0)
                 .tickFormat(''));
         self.svg.select('.y.grid')
+            .transition().duration(500).ease('linear')
             .call(makeYAxis()
                     .tickSize(-width, 0, 0)
                     .tickFormat(''));
@@ -332,7 +334,6 @@ LineStreaming.prototype._formatData = function(data) {
     return data;
 };
 
-
 LineStreaming.prototype.appendData = function(data) {
 
     var self = this
@@ -347,6 +348,9 @@ LineStreaming.prototype.appendData = function(data) {
     var newdat = self._formatData(data).series
 
     this.xTick = xTick + newlength
+    var lastShift = 0
+    var shift = 0
+
 
     _.forEach(newdat, function(d, i) {
         var match = _.findIndex(series, function(s) {return s.i == d.i})
@@ -354,7 +358,10 @@ LineStreaming.prototype.appendData = function(data) {
             _.forEach(d.d, function (e) {
                 series[match].d.push(e)
                 if (series[match].d.length > maxTick) {
-                     series[match].d.shift()
+                    shift++;
+                }
+                if (series[match].d.length > maxTick+newlength) {
+                    series[match].d.shift()
                 }
             })
         } else {
@@ -372,18 +379,43 @@ LineStreaming.prototype.appendData = function(data) {
     
     var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
 
-    self.x.domain([Math.max(xTick - maxTick, xDomain[0]), xTick]);
-    self.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
-    self.zoom.x(self.x).y(self.y);
-    self.updateAxis();
-
     var newdat = path.data(series)
 
-    newdat
-        .attr("d", function(d) { return self.line(d.d)})
-    .transition()
-        .duration(500)
-        .ease("linear")
+    var self = this;
+    
+    if(shift) {
+        self.x.domain(self.savedXDomain);
+        self.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+        self.zoom.x(self.x).y(self.y);
+
+        newdat
+            .attr("d", function(d) { return self.line(d.d)})
+            .transition()
+            .duration(500)
+            .ease("linear")
+            .attr("transform", "translate(" + self.x(Math.min(0, maxTick - self.xTick)) + ")");
+        
+
+        self.x.domain([Math.max(xTick - maxTick, xDomain[0]), xTick]);
+        self.updateAxis();
+    } else {
+
+
+        console.log('yo');
+        self.x.domain([Math.max(xTick - maxTick, xDomain[0]), xTick]);
+        self.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
+        self.zoom.x(self.x).y(self.y);
+        self.updateAxis();
+        newdat
+            .transition()
+            .duration(500)
+            .ease("linear")
+            .attr("d", function(d) { return self.line(d.d)})
+
+        self.savedXDomain = [Math.max(xTick - maxTick, xDomain[0]), xTick];
+    }
+
+
 
     newdat
         .enter()
@@ -401,6 +433,7 @@ LineStreaming.prototype.appendData = function(data) {
         .ease("linear")
 
     this.path = newdat
+    lastShift = shift
 
 };
 
