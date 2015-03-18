@@ -48,7 +48,8 @@ var LineStreaming = function(selector, data, images, opts) {
 
     //     var random = d3.random.normal(0, .2)
     //     var newdata = {
-    //         series: [[random(),random(),random(),random()], [random(),random(),random(),random()], [random(),random(),random(),random()], [random(),random(),random(),random()]]}
+    //         series: [[random(),random(),random(),random()], [random(),random(),random(),random()],
+    // [random(),random(),random(),random()], [random(),random(),random(),random()]]}
     //     self.appendData(newdata)
 
     // }, 500)
@@ -78,7 +79,9 @@ LineStreaming.prototype._init = function() {
             });
     }
 
-    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 3);
+    var defaultSize = 6;
+
+    this.size = data.size ? data.size : _.fill(_.range(series.length), defaultSize)
 
     var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.y;
@@ -118,7 +121,6 @@ LineStreaming.prototype._init = function() {
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(this.zoom)
 
     if(this.opts.tooltips) {
         svg.call(tip);
@@ -217,26 +219,6 @@ LineStreaming.prototype._init = function() {
             .text(txt);
     }
 
-    function highlight(d, i) {
-
-        if (toggleOpacity === 0) {
-            //var d = d3.select(this)[0][0].__data__
-            svg.selectAll('.line').transition().duration(100).ease('linear').delay(100).style("opacity", function (o, j) {
-                return i == j ? 0.9 : 0.2;
-            });
-            toggleOpacity = 1;
-
-            if(self.opts.tooltips) {
-                tip.show(d, i);
-            }
-        } else {
-            svg.selectAll('.line').transition().duration(100).ease('linear').style('opacity', 0.9)
-            toggleOpacity = 0;
-            if(self.opts.tooltips) {
-                tip.hide(d, i);
-            }
-        }
-    }
 
     var path = chartBody.selectAll('.line')
         .data(series)
@@ -247,8 +229,6 @@ LineStreaming.prototype._init = function() {
         .style('stroke-width', function(d) {return d.s ? d.s : defaultSize})
         .style('stroke-opacity', 0.9)
         .attr('d', function(d) { return self.line(d.d)})
-        .on('mouseover', highlight)
-        .on('mouseout', highlight)
 
     function updateAxis() {
 
@@ -275,7 +255,6 @@ LineStreaming.prototype._init = function() {
     }
 
     this.defaultSize = defaultSize;
-    this.highlight = highlight;
     this.svg = svg;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
@@ -344,6 +323,7 @@ LineStreaming.prototype.appendData = function(data) {
 
     var newlength = data.series[0].length
     data.index = _.range(0, newlength).map( function(d) {return d + xTick})
+    data.size = this.size
 
     var newdat = self._formatData(data).series
 
@@ -422,8 +402,6 @@ LineStreaming.prototype.appendData = function(data) {
         .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
         .style('stroke-opacity', 0.9)
         .attr('d', function(d) { return self.line(d.d)})
-        .on('mouseover', self.highlight)
-        .on('mouseout', self.highlight)
         .attr("d", function(d) { return self.line(d.d)})
     .transition()
         .duration(500)
