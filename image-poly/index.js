@@ -11,7 +11,7 @@ F(L);
 
 // code adopted from http://kempe.net/blog/2014/06/14/leaflet-pan-zoom-image.html
 
-var ImgDraw = function(selector, data, images, opts) {
+var ImgPoly = function(selector, data, images, opts) {
 
     if(!opts) {
         opts = {};
@@ -26,9 +26,9 @@ var ImgDraw = function(selector, data, images, opts) {
     this._init();
 }
 
-inherits(ImgDraw, require('events').EventEmitter);
+inherits(ImgPoly, require('events').EventEmitter);
 
-ImgDraw.prototype._init = function() {
+ImgPoly.prototype._init = function() {
 
     var opts = this.opts;
     var data = this.data ? this.data : {};
@@ -107,8 +107,6 @@ ImgDraw.prototype._init = function() {
 
         // initialize with any polygons from the data
         if (!_.isEmpty(data)) {
-
-            console.log("we got here")
 
             var polygons = data.polygons;
 
@@ -245,9 +243,9 @@ ImgDraw.prototype._init = function() {
 
 };
 
-module.exports = ImgDraw;
+module.exports = ImgPoly;
 
-ImgDraw.prototype._formatData = function(data) {
+ImgPoly.prototype._formatData = function(data) {
 
     if (!_.isEmpty(data)) {
         
@@ -285,12 +283,12 @@ ImgDraw.prototype._formatData = function(data) {
 }
 
 
-ImgDraw.prototype.setImage = function(image) {
+ImgPoly.prototype.setImage = function(image) {
     this.img.src = image;
 };
 
 
-ImgDraw.prototype.updateData = function(image) {
+ImgPoly.prototype.updateData = function(image) {
     
     var map = this.map
     var overlay = this.overlay
