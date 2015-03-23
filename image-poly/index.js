@@ -50,7 +50,7 @@ ImgPoly.prototype._init = function() {
     // create an image so we can get aspect ratio
     this.img = new Image();
     var img = this.img;
-    img.src = (window.lightning && window.lightning.host) ? window.lightning.host + image : image;
+    img.src = utils.cleanImageURL(image);
 
     img.onload = function() {
 
