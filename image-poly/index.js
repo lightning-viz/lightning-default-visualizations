@@ -136,7 +136,7 @@ ImgPoly.prototype._init = function() {
 
         }
 
-        d3.select('body').on('keydown', keydown).on('keyup', keyup);
+        d3.select(self.$el[0]).on('keydown', keydown).on('keyup', keyup);
 
         updateStyles();
 
