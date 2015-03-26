@@ -37,7 +37,7 @@ ImgPoly.prototype._init = function() {
     var self = this;
 
     this.mid = utils.getUniqueId();
-    this.markup = '<link rel="stylesheet" href="//cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/><div id="image-map-' + this.mid + '" class="image-map"></div>';
+    this.markup = '<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css"/><div id="image-map-' + this.mid + '" class="image-map"></div>';
 
     var image = images[0];
     var coords = [];
