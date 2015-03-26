@@ -125,7 +125,7 @@ Force.prototype._init = function() {
         } else {
             // restore properties
             node.style('opacity', 1);
-            link.style('opacity', linkStrokeOpacity);
+            link.style('opacity', 1);
             toggleOpacity = 0;
         }
     }
