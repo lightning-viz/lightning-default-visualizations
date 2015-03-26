@@ -82,7 +82,7 @@ Graph.prototype._init = function() {
     
     var x = d3.scale.linear()
         .domain(xDomain)
-        .range([width - 10, 0 + 10]);
+        .range([0 + 10, width - 10]);
 
     var y = d3.scale.linear()
         .domain(yDomain)
