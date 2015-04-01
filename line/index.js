@@ -46,7 +46,7 @@ var Line = function(selector, data, images, opts) {
     }
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+    this.height = Math.min(($(selector).height() || Infinity), (opts.height || (this.width * 0.6))) - margin.top - margin.bottom;
 
     
     this.selector = selector;
