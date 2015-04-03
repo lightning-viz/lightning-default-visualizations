@@ -141,6 +141,8 @@ ImgPoly.prototype._init = function() {
         updateStyles();
 
         function updateStyles() {
+            console.log('updating styles');
+            console.log(data.color);
 
             var c;
             if(COLOR_MODES[colorIndex].indexOf('white') > -1) {
@@ -234,6 +236,13 @@ ImgPoly.prototype._init = function() {
         });
         
         freeDraw.on('markers', updateStyles);
+        freeDraw.on('destroy', function(d) {
+            var i = d.index;
+            
+            if(data.color && _.isArray(data.color)) {
+                data.color.splice(i, 1);    
+            }
+        })
         
         self.map = map
         self.bounds = bounds
