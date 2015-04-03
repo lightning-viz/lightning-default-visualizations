@@ -51,6 +51,7 @@ ImgPoly.prototype._init = function() {
     this.img = new Image();
     var img = this.img;
     img.src = utils.cleanImageURL(image);
+    var COLOR_MODES;
 
     img.onload = function() {
 
@@ -126,12 +127,12 @@ ImgPoly.prototype._init = function() {
             });
             freeDraw.options.simplifyPolygon = true;
 
-            var COLOR_MODES = ['white', 'bright', 'data-white'];
+            COLOR_MODES = ['white', 'bright', 'data-white'];
             var colorIndex = 2;
 
         } else {
 
-            var COLOR_MODES = ['white', 'bright'];
+            COLOR_MODES = ['white', 'bright'];
             var colorIndex = 0;
 
         }
@@ -152,16 +153,16 @@ ImgPoly.prototype._init = function() {
             var isData = (data.color && COLOR_MODES[colorIndex].indexOf('data') > -1);
 
             d3.select(self.$el[0])
-               .selectAll('.image-map g path')
+               .selectAll('.image-map g path.leaflet-freedraw-polygon')
                .style('stroke', function(d, i) {
-                if(isData && i < data.color.length-1) {
+                if(isData && i < data.color.length) {
                     return data.color[i];
                 }
                 return c;
                })
                .style('fill', function(d, i) {
                 var fill;
-                if(isData && i < data.color.length-1) {
+                if(isData && i < data.color.length) {
                     fill = d3.hsl(data.color[i]);
                 } else {
                     fill = c;
@@ -240,6 +241,10 @@ ImgPoly.prototype._init = function() {
             
             if(data.color && _.isArray(data.color)) {
                 data.color.splice(i, 1);    
+
+                if(data.color.length === 0) {
+                    COLOR_MODES = ['white', 'bright'];
+                }
             }
         })
         
@@ -275,9 +280,9 @@ ImgPoly.prototype._formatData = function(data) {
 
         var retColor = utils.getColorFromData(data);
         if (retColor.length == 0) {
-            retColor = utils.getColors(polygons.length + 1)
+            retColor = utils.getColors(polygons.length)
         } else if (retColor.length == 1) {
-            retColor = _.range(polygons.length + 1).map(function () { return retColor })
+            retColor = _.range(polygons.length).map(function () { return retColor })
         }
 
         data.color = retColor
