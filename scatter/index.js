@@ -25,10 +25,18 @@ var Scatter = function(selector, data, images, opts) {
 
     this.opts = opts
 
-    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
-
     this.data = this._formatData(data)
+
+    if(_.has(this.data, 'xaxis')) {
+        margin.bottom = 57;
+    }
+    if(_.has(this.data, 'yaxis')) {
+        margin.left = 70;
+    }
+
+    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    this.height = Math.min(($(selector).height() || Infinity), (opts.height || (this.width * 0.6))) - margin.top - margin.bottom;
+
     this.selector = selector;
     this.defaultFill = '#deebfa'
     this.defaultStroke = '#68a1e5'
@@ -225,6 +233,33 @@ Scatter.prototype._init = function() {
             .attr('transform', function(d) {
                 return 'translate(' + self.x(d.x) + ',' + self.y(d.y) + ')';
             });
+    }
+
+    if(_.has(this.data, 'xaxis')) {
+        var txt = this.data.xaxis;
+        if(_.isArray(txt)) {
+            txt = txt[0];
+        }
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 5)
+            .text(txt);
+    }
+    if(_.has(this.data, 'yaxis')) {
+        var txt = this.data.yaxis;
+        if(_.isArray(txt)) {
+            txt = txt[0];
+        }
+
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .attr("x", - height / 2)
+            .attr("y", -50)
+            .text(txt);
     }
     
     this.brighten = brighten;
