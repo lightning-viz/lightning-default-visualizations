@@ -7,15 +7,14 @@ var TooltipPlugin = require('d3-tip');
 TooltipPlugin(d3);
 
 
-var margin = {
-    top: 0,
-    right: 0,
-    bottom: 20,
-    left: 45
-};
-
 
 var Scatter = function(selector, data, images, opts) {
+    var margin = {
+        top: 0,
+        right: 0,
+        bottom: 20,
+        left: 45
+    };
 
     var defaults = {
         tooltips: false
@@ -42,6 +41,7 @@ var Scatter = function(selector, data, images, opts) {
     this.defaultStroke = '#68a1e5'
     this.defaultSize = 8
     this.defaultAlpha = 0.9
+    this.margin = margin
     this._init();
 
 };
@@ -68,6 +68,7 @@ Scatter.prototype._init = function() {
     var width = this.width
     var opts = this.opts
     var selector = this.selector
+    var margin = this.margin
     var self = this
 
     var points = data.points

@@ -5,15 +5,15 @@ var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 var _ = require('lodash');
 
-var margin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 45
-};
 
 var ScatterStreaming = function(selector, data, images, opts) {
 
+    var margin = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 45
+    };
     if(!opts) {
         opts = {};
     }
@@ -38,6 +38,7 @@ var ScatterStreaming = function(selector, data, images, opts) {
     this.defaultStroke = '#68a1e5'
     this.defaultSize = 8
     this.defaultAlpha = 0.9
+    this.margin = margin
     this._init();
 
 };
