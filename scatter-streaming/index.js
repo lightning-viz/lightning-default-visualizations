@@ -19,10 +19,19 @@ var ScatterStreaming = function(selector, data, images, opts) {
 
     this.opts = opts
 
-    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
-
     this.data = this._formatData(data)
+
+    if(_.has(this.data, 'xaxis')) {
+        margin.bottom = 57;
+    }
+    if(_.has(this.data, 'yaxis')) {
+        margin.left = 70;
+    }
+
+    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    this.height = Math.min(($(selector).height() || Infinity), (opts.height || (this.width * 0.6))) - margin.top - margin.bottom;
+
+
     this.selector = selector;
     this.defaultFill = '#deebfa'
     this.defaultStroke = '#68a1e5'
