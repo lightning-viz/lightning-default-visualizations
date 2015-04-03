@@ -247,6 +247,7 @@ ImgPoly.prototype._init = function() {
                 data.color.splice(i, 1);    
 
                 if(data.color.length === 0) {
+                    colorIndex = 0;
                     COLOR_MODES = ['white', 'bright'];
                 }
             }
