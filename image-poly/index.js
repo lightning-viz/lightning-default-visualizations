@@ -130,6 +130,8 @@ ImgPoly.prototype._init = function() {
             COLOR_MODES = ['white', 'bright', 'data-white'];
             var colorIndex = 2;
 
+            getUserData()
+
         } else {
 
             COLOR_MODES = ['white', 'bright'];
@@ -202,8 +204,7 @@ ImgPoly.prototype._init = function() {
 
         self.emit('image:loaded');
 
-        self.$el.unbind().click(function() {
-
+        function getUserData() {
             // extract coordinates from regions
             var n = freeDraw.memory.states.length;
             var coords = freeDraw.memory.states[n-1].map( function(d) {
@@ -225,18 +226,21 @@ ImgPoly.prototype._init = function() {
                     console.log(err);
                 }
             });
+        }
+
+        self.$el.unbind().click(function() {
+            getUserData()
         });
 
         utils.getSettings(self, function(err, settings) {
-
             if(!err) {
                 coords = settings.coords;
             }
-            
         });
         
         freeDraw.on('markers', updateStyles);
         freeDraw.on('destroy', function(d) {
+
             var i = d.index;
             
             if(data.color && _.isArray(data.color)) {
@@ -246,6 +250,8 @@ ImgPoly.prototype._init = function() {
                     COLOR_MODES = ['white', 'bright'];
                 }
             }
+
+            getUserData()
         })
         
         self.map = map
