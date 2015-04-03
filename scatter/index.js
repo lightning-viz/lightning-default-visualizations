@@ -73,11 +73,11 @@ Scatter.prototype._init = function() {
 
     this.x = d3.scale.linear()
         .domain([xDomain[0] - 1, xDomain[1] + 1])
-        .range([0, width]);
+        .range([0 + 25, width - 25]);
 
     this.y = d3.scale.linear()
         .domain([yDomain[0] - 1, yDomain[1] + 1])
-        .range([height, 0]);
+        .range([height - 25, 0 + 25]);
 
     var zoom = d3.behavior.zoom()
         .x(this.x)
