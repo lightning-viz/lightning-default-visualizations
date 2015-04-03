@@ -5,12 +5,11 @@ var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 var _ = require('lodash');
 
-
 var ScatterStreaming = function(selector, data, images, opts) {
 
     var margin = {
-        top: 20,
-        right: 20,
+        top: 0,
+        right: 0,
         bottom: 20,
         left: 45
     };
