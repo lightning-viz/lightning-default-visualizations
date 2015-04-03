@@ -39,10 +39,10 @@ var Line = function(selector, data, images, opts) {
     this.data = this._formatData(data);
     
     if(_.has(this.data, 'xaxis')) {
-        margin.bottom = 50;
+        margin.bottom = 57;
     }
     if(_.has(this.data, 'yaxis')) {
-        margin.left = 60;
+        margin.left = 70;
     }
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
@@ -198,7 +198,7 @@ Line.prototype._init = function() {
             .attr("class", "x label")
             .attr("text-anchor", "middle")
             .attr("x", width / 2)
-            .attr("y", height + margin.bottom - 10)
+            .attr("y", height + margin.bottom - 5)
             .text(txt);
     }
     if(_.has(this.data, 'yaxis')) {
@@ -212,7 +212,7 @@ Line.prototype._init = function() {
             .attr("text-anchor", "middle")
             .attr("transform", "rotate(-90)")
             .attr("x", - height / 2)
-            .attr("y", -40)
+            .attr("y", -50)
             .text(txt);
     }
 
