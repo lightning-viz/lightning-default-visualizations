@@ -3,6 +3,7 @@ var d3 = require('d3');
 var Scatter = require('../viz/scatter');
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
+var _ = require('lodash');
 
 var margin = {
     top: 20,
