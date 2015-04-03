@@ -6,8 +6,8 @@ var utils = require('lightning-client-utils');
 var _ = require('lodash');
 
 var margin = {
-    top: 20,
-    right: 20,
+    top: 0,
+    right: 0,
     bottom: 20,
     left: 45
 };
