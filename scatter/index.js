@@ -76,9 +76,9 @@ Scatter.prototype._init = function() {
         });
 
     if (sizeMax) {
-        padding = sizeMax / 2
+        var padding = sizeMax / 2
     } else {
-        padding = 0
+        var padding = 0
     }
 
     this.x = d3.scale.linear()

@@ -62,6 +62,16 @@ Graph.prototype._init = function() {
         return d.y;
     });
 
+    var sizeMax = d3.max(nodes, function(d) {
+            return d.s;
+        });
+
+    if (sizeMax) {
+        var padding = sizeMax
+    } else {
+        var padding = 0
+    }
+
     var imageCount = images.length;
 
     var ratio = 0;
@@ -82,11 +92,11 @@ Graph.prototype._init = function() {
     
     var x = d3.scale.linear()
         .domain(xDomain)
-        .range([0 + 10, width - 10]);
+        .range([0 + padding, width - padding]);
 
     var y = d3.scale.linear()
         .domain(yDomain)
-        .range([height - 10, 0 + 10]);
+        .range([height - padding, 0 + padding]);
 
     var zoom = d3.behavior.zoom()
         .x(x)
