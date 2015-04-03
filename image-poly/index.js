@@ -141,8 +141,6 @@ ImgPoly.prototype._init = function() {
         updateStyles();
 
         function updateStyles() {
-            console.log('updating styles');
-            console.log(data.color);
 
             var c;
             if(COLOR_MODES[colorIndex].indexOf('white') > -1) {
@@ -221,14 +219,15 @@ ImgPoly.prototype._init = function() {
             utils.updateSettings(self, {
                 coords: coords
             }, function(err) {
-                console.log('saved user data');
-                console.log(coords);
+                if(err) {
+                    console.log('err saving user data');
+                    console.log(err);
+                }
             });
         });
 
         utils.getSettings(self, function(err, settings) {
 
-            console.log(settings);
             if(!err) {
                 coords = settings.coords;
             }
@@ -282,9 +281,6 @@ ImgPoly.prototype._formatData = function(data) {
         }
 
         data.color = retColor
-
-        console.log(data.color.length)
-        console.log(polygons.length)
 
         data.polygons = polygons
     }
