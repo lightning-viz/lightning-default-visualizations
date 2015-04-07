@@ -253,6 +253,7 @@ ImgPoly.prototype._init = function() {
             }
 
             getUserData()
+            updateStyles()
         })
         
         self.map = map
