@@ -31,7 +31,9 @@ var LineStreaming = function(selector, data, images, opts) {
         };
     }
 
-    this.opts = opts;
+    this.opts = _.opts(opts || {}, {
+        maxTick: 300
+    });
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
     this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
@@ -402,7 +404,6 @@ LineStreaming.prototype.appendData = function(data) {
         .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
         .style('stroke-opacity', 0.9)
         .attr('d', function(d) { return self.line(d.d)})
-        .attr("d", function(d) { return self.line(d.d)})
     .transition()
         .duration(500)
         .ease("linear")
