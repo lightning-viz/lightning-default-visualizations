@@ -25,9 +25,11 @@ var nestedExtent = function(data, map) {
 
 var LineStreaming = function(selector, data, images, opts) {
 
-    this.opts = _.defaults(opts || {}, {
+    opts = _.defaults(opts || {}, {
         maxTick: 300
     });
+    
+    this.opts = opts
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
     this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
