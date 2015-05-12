@@ -25,7 +25,7 @@ var nestedExtent = function(data, map) {
 
 var LineStreaming = function(selector, data, images, opts) {
 
-    this.opts = _.opts(opts || {}, {
+    this.opts = _.defaults(opts || {}, {
         maxTick: 300
     });
 
