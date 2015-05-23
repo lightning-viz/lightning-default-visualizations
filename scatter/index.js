@@ -87,15 +87,18 @@ Scatter.prototype._init = function() {
     if (sizeMax) {
         var padding = sizeMax / 2
     } else {
-        var padding = 0
+        var padding = self.defaultSize / 2
     }
 
+    var xRange = xDomain[1] - xDomain[0]
+    var yRange = yDomain[1] - yDomain[0]
+
     this.x = d3.scale.linear()
-        .domain([xDomain[0] - 1, xDomain[1] + 1])
+        .domain([xDomain[0] - xRange * 0.1, xDomain[1] + xRange * 0.1])
         .range([0 + padding, width - padding]);
 
     this.y = d3.scale.linear()
-        .domain([yDomain[0] - 1, yDomain[1] + 1])
+        .domain([yDomain[0] - yRange * 0.1, yDomain[1] + yRange * 0.1])
         .range([height - padding , 0 + padding]);
 
     var zoom = d3.behavior.zoom()
