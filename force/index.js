@@ -50,12 +50,11 @@ Force.prototype._init = function() {
     // set opacity inversely proportional to number of links
     var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
 
-    var x = d3.scale.linear();
-    var y = d3.scale.linear();
+    var identity = d3.scale.linear();
     var zoom = d3.behavior.zoom()
-        .x(x)
-        .y(y)
-        .scaleExtent([0.1, 20])
+        .x(identity)
+        .y(identity)
+        .scaleExtent([0.2, 7])
         .on('zoom', zoomed)
 
     var svg = d3.select(selector)
@@ -70,14 +69,7 @@ Force.prototype._init = function() {
         .append('svg:g')
 
     function zoomed() {
-        svg.selectAll('.link').attr('x1', function(d) { return x(d.source.x); })
-            .attr('y1', function(d) { return y(d.source.y); })
-            .attr('x2', function(d) { return x(d.target.x); })
-            .attr('y2', function(d) { return y(d.target.y); });
-
-        svg.selectAll('.node')
-            .attr('cx', function(d) { return x(d.x); })
-            .attr('cy', function(d) { return y(d.y); });
+        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
     }
 
     // highlight based on links
@@ -139,9 +131,9 @@ Force.prototype._init = function() {
         .start();
 
     var drag = force.drag()
-      .on('dragstart', function(d) {
-        d3.event.sourceEvent.stopPropagation();
-      });
+        .on('dragstart', function(d) {
+            d3.event.sourceEvent.stopPropagation();
+        });
 
     var link = svg.selectAll('.link')
         .data(links)
@@ -167,13 +159,13 @@ Force.prototype._init = function() {
 
     force.on('tick', function() {
 
-        svg.selectAll('.link').attr('x1', function(d) { return x(d.source.x); })
-            .attr('y1', function(d) { return y(d.source.y); })
-            .attr('x2', function(d) { return x(d.target.x); })
-            .attr('y2', function(d) { return y(d.target.y); });
+        link.attr('x1', function(d) { return d.source.x; })
+            .attr('y1', function(d) { return d.source.y; })
+            .attr('x2', function(d) { return d.target.x; })
+            .attr('y2', function(d) { return d.target.y; });
 
-        svg.selectAll('.node').attr('cx', function(d) { return x(d.x); })
-            .attr('cy', function(d) { return y(d.y); });
+        node.attr('cx', function(d) { return d.x; })
+            .attr('cy', function(d) { return d.y; });
     });
 
 };
