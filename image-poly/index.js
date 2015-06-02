@@ -169,8 +169,7 @@ ImgPoly.prototype._init = function() {
                 } else {
                     fill = c;
                 }
-                fill.l = fill.l * 1.3;
-                return fill.toString();
+                return fill.brighter(1.2).toString();
                }); 
 
         }
