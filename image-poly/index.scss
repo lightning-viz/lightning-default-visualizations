@@ -3,6 +3,10 @@
     image-rendering: pixelated;
 }
 
+.image-map svg.leaflet-zoom-animated {
+    max-width: 200000px;
+}
+
 .image-map .overlay {
     position: absolute;
     top: 0;
