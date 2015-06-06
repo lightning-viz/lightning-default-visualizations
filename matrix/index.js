@@ -188,7 +188,7 @@ Matrix.prototype._formatData = function(data) {
     var entries = []
     _.each(data.matrix, function(d, i) {
         _.each(d, function(e, j) {
-            var p = []
+            var p = {}
             p.x = j
             p.y = i
             p.z = e
