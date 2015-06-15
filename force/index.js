@@ -28,6 +28,7 @@ var Force = function(selector, data, images, opts) {
     this.selector = selector;
     this.defaultSize = 8
     this.defaultFill = '#68a1e5'
+    this.defaultStroke = '#68a1e5'
     this._init();
 
 };
