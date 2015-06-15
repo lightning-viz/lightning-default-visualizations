@@ -27,7 +27,7 @@ var Force = function(selector, data, images, opts) {
     this.data = this._formatData(data)
     this.selector = selector;
     this.defaultSize = 8
-    this.defaultFill = '#68a1e5'
+    this.defaultFill = '#deebfa'
     this.defaultStroke = '#68a1e5'
     this._init();
 
@@ -51,7 +51,7 @@ Force.prototype._init = function() {
     var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
 
     // set opacity inversely proportional to number of links
-    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
+    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.5)
 
     // set circle stroke thickness based on number of nodes
     var strokeWidth = nodes.length > 500 ? 1 : 1.1
