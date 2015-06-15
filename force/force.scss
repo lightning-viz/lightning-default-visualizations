@@ -1,0 +1,28 @@
+.force-plot {
+	position: relative;
+}
+
+.force-plot.svg {
+	position: absolute;
+	pointer-events: none;
+	z-index: -1;
+}
+
+.force-plot.brush-container {
+	pointer-events: none;
+}
+
+.force-plot.canvas {
+    position: absolute;
+    pointer-events: all;
+    z-index: 0;
+}
+
+.brush {
+	pointer-events: none;
+}
+
+.brush .extent {
+	fill-opacity: .075;
+	shape-rendering: crispEdges;
+}
