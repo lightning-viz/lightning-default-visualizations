@@ -1,7 +1,9 @@
 'use strict';
 var d3 = require('d3');
 require('d3-multiaxis-zoom')(d3);
+var _ = require('lodash');
 var inherits = require('inherits');
+var Color = require('color');
 var utils = require('lightning-client-utils');
 
 var margin = {
@@ -25,7 +27,8 @@ var Force = function(selector, data, images, opts) {
     this.data = this._formatData(data)
     this.selector = selector;
     this.defaultSize = 8
-    this.defaultFill = '#68a1e5'
+    this.defaultFill = '#deebfa'
+    this.defaultStroke = '#68a1e5'
     this._init();
 
 };
@@ -40,86 +43,146 @@ Force.prototype._init = function() {
     var height = this.height
     var width = this.width
     var selector = this.selector
-    var self = this
     var links = this.data.links
     var nodes = this.data.nodes
+    var self = this
 
     // if points are colored use gray, otherwise use our default
     var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
 
     // set opacity inversely proportional to number of links
-    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15)
+    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.5)
 
-    var identity = d3.scale.linear();
+    // set circle stroke thickness based on number of nodes
+    var strokeWidth = nodes.length > 500 ? 1 : 1.1
+
+    this.x = d3.scale.linear()
+        .domain([0, width + margin.left + margin.right])
+        .range([0, width + margin.left + margin.right]);
+
+    this.y = d3.scale.linear()
+        .domain([height + margin.top + margin.bottom, 0])
+        .range([height + margin.top + margin.bottom, 0]);
+
     var zoom = d3.behavior.zoom()
-        .x(identity)
-        .y(identity)
+        .x(self.x)
+        .y(self.y)
         .scaleExtent([0.2, 7])
         .on('zoom', zoomed)
 
-    var svg = d3.select(selector)
-        .append('svg:svg')
-        .attr('class', 'line-plot')
+    var container = d3.select(selector)
+        .append('div')
+        .style('width', width + margin.left + margin.right + "px")
+        .style('height', height + margin.top + margin.bottom + "px")
+
+    var canvas = container
+        .append('canvas')
+        .attr('class', 'force-plot canvas')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
-        .attr('pointer-events', 'all')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
         .call(zoom)
-        .on('dblclick.zoom', null)
-        .append('svg:g')
+        .on("click", mouseHandler)
+        .on("dblclick.zoom", null)
+        .node().getContext("2d")
 
-    function zoomed() {
-        svg.attr('transform', 'translate(' + d3.event.translate + ')' + ' scale(' + d3.event.scaleX + ',' + d3.event.scaleY + ')');
+    var loading = container
+        .append('svg:svg')
+        .attr('class', 'force-plot svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("dy", ".35em")
+        .style("text-anchor", "middle")
+        .text("loading...");
+
+    function mouseHandler() {
+        if (d3.event.defaultPrevented) return;
+        var pos = d3.mouse(this)
+        var i = 0, count = 0;
+        var found, dist, n;
+        while (count == 0 & i < nodes.length) {
+            n = nodes[i]
+            dist = Math.sqrt(Math.pow(self.x(n.x) - pos[0], 2) + Math.pow(self.y(n.y) - pos[1], 2))
+            if (dist < 10) {
+                found = n
+                count = 1
+            }
+            i++;
+        }
+        if (found) {
+            selected = []
+            _.forEach(nodes, function(n) {
+                if (neighboring(found, n) | neighboring(n, found)) {
+                    selected.push(n.i)
+                }
+            });
+        } else {
+            selected = []
+        };
+        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        draw();
     }
 
-    // highlight based on links
-    // borrowed from: http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
+    var selected = [];
+    var shiftKey;
 
-    // toggle for highlighting
-    var toggleOpacity = 0;
+    var brush = d3.svg.brush()
+        .x(self.x)
+        .y(self.y)
+        .on("brushstart", function() {
+            selected = []
+        })
+        .on("brush", function() {
+            if (shiftKey) {
+                selected = []
+                var extent = d3.event.target.extent();
+                var x = self.x
+                var y = self.y
+                _.forEach(nodes, function(n) {
+                    var cond1 = (x(n.x) > x(extent[0][0]) & x(n.x) < x(extent[1][0]))
+                    var cond2 = (y(n.y) > y(extent[0][1]) & y(n.y) < y(extent[1][1]))
+                    if (cond1 & cond2) {
+                        selected.push(n.i)
+                    }
+                })
+                canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+                draw();
+            } else {
+              d3.select(this).call(d3.event.target);
+            }
+        })
+        .on("brushend", function() {
+            d3.event.target.clear();
+            d3.select(this).call(d3.event.target);
+        })
+
+    function zoomed() {
+        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        draw();
+    }
+
+    // function for handling opacity
+    var buildRGBA = function(fill, opacity) {
+        var color = Color(fill);
+        color.alpha(opacity);
+        return color.rgbString();
+    };
 
     // array indicating links
     var linkedByIndex = {};
     var i
     for (i = 0; i < nodes.length; i++) {
-        console.log(i)
         linkedByIndex[i + ',' + i] = 1;
     };
     links.forEach(function (d) {
         linkedByIndex[d.source + ',' + d.target] = 1;
     });
 
-    function selectedNodeOpacityIn() {
-        d3.select(this).transition().duration(100).style('stroke', 'rgb(30,30,30)')
-    }
-
-    function selectedNodeOpacityOut() {
-        d3.select(this).transition().duration(50).style('stroke', 'white')
-    }
-
     // look up neighbor pairs
     function neighboring(a, b) {
         return linkedByIndex[a.index + ',' + b.index];
-    }
-
-    function connectedNodesOpacity() {
-        console.log(toggleOpacity);
-        if (toggleOpacity == 0) {
-            // change opacity of all but the neighbouring nodes
-            var d = d3.select(this).node().__data__;
-            node.style('opacity', function (o) {
-                return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
-            });
-            link.style('opacity', function (o) {
-                return d.index==o.source.index | d.index==o.target.index ? 1 : linkStrokeOpacity / 10;
-            });
-            toggleOpacity = 1;
-        } else {
-            // restore properties
-            node.style('opacity', 1);
-            link.style('opacity', 1);
-            toggleOpacity = 0;
-        }
     }
 
     var force = d3.layout.force()
@@ -128,45 +191,92 @@ Force.prototype._init = function() {
         .linkDistance(30)    
         .nodes(nodes)
         .links(links)
-        .start();
 
-    var drag = force.drag()
-        .on('dragstart', function(d) {
-            d3.event.sourceEvent.stopPropagation();
-        });
+    var brushrect = container
+        .append('svg:svg')
+        .attr('class', 'force-plot brush-container')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+    .append("g")
+        .attr('class', 'brush')
+        .call(brush)
 
-    var link = svg.selectAll('.link')
-        .data(links)
-    .enter().append('line')
-        .attr('class', 'link')
-        .style('stroke-width', function(d) { return 1 * Math.sqrt(d.value); })
-        .style('stroke', linkStrokeColor)
-        .style('stroke-opacity', linkStrokeOpacity);
+    d3.selectAll('.brush .background')
+        .style('cursor', 'default')
+    d3.selectAll('.brush')
+        .style('pointer-events', 'none')
 
-    var node = svg.selectAll('.node')
-        .data(nodes)
-    .enter().append('circle')
-        .attr('class', 'node')
-        .attr('r', function(d) { return (d.s ? d.s : self.defaultSize); })
-        .style('fill', function(d) { return (d.c ? d.c : self.defaultFill); })
-        .style('fill-opacity', 0.9)
-        .style('stroke', 'white')
-        .style('stroke-width', 1)
-        .on('dblclick', connectedNodesOpacity)
-        .on('mouseenter', selectedNodeOpacityIn)
-        .on('mouseleave', selectedNodeOpacityOut)
-        .call(drag);
-
-    force.on('tick', function() {
-
-        link.attr('x1', function(d) { return d.source.x; })
-            .attr('y1', function(d) { return d.source.y; })
-            .attr('x2', function(d) { return d.target.x; })
-            .attr('y2', function(d) { return d.target.y; });
-
-        node.attr('cx', function(d) { return d.x; })
-            .attr('cy', function(d) { return d.y; });
+    d3.select(window).on("keydown", function() {
+        shiftKey = d3.event.shiftKey;
+        if (shiftKey) {
+            d3.selectAll('.brush').style('pointer-events', 'all')
+            d3.selectAll('.brush .background').style('cursor', 'crosshair')
+        }
     });
+
+    d3.select(window).on("keyup", function() {
+        if (shiftKey) {
+            d3.selectAll('.brush').style('pointer-events', 'none')
+            d3.selectAll('.brush .background').style('cursor', 'default')
+        }
+    });
+
+    function draw() {
+
+        _.forEach(links, function(l) {
+            var alpha
+            if (selected.length > 0) {
+                if (_.indexOf(selected, l.source.index) > -1 & _.indexOf(selected, l.target.index) > -1) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.05
+                }
+            } else {
+                alpha = linkStrokeOpacity
+            }
+            canvas.strokeStyle = buildRGBA(linkStrokeColor, alpha);
+            canvas.lineWidth = 1 * Math.sqrt(l.value);
+            canvas.lineJoin = 'round';
+            canvas.beginPath();
+            canvas.moveTo(self.x(l.source.x), self.y(l.source.y))
+            canvas.lineTo(self.x(l.target.x), self.y(l.target.y));
+            canvas.stroke()
+
+        })
+
+        _.forEach(nodes, function(n) {
+            var alpha
+            if (selected.length > 0) {
+                if (_.indexOf(selected, n.i) >= 0) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.1
+                }
+            } else {
+                alpha = 0.9
+            }
+            canvas.beginPath();
+            canvas.arc(self.x(n.x), self.y(n.y), n.s ? n.s : self.defaultSize, 0, 2 * Math.PI, false);
+            canvas.fillStyle = buildRGBA(n.c ? n.c : self.defaultFill, alpha)
+            canvas.lineWidth = strokeWidth
+            canvas.strokeStyle = buildRGBA(n.c ? n.c.darker(0.75) : self.defaultStroke, alpha)
+            canvas.fill()
+            canvas.stroke()
+        })
+
+    }
+
+    setTimeout(function() {
+
+        force.start();
+        for (var i = nodes.length * nodes.length; i > 0; --i) force.tick();
+        force.stop();
+
+        draw();
+
+        loading.style('fill', 'white');
+
+    }, 10);
 
 };
 

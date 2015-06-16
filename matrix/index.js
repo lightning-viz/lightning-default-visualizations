@@ -4,7 +4,6 @@ var d3 = require('d3');
 var _ = require('lodash');
 var utils = require('lightning-client-utils')
 var colorbrewer = require('colorbrewer')
-
 var Color = require('color');
 
 var margin = {
@@ -54,17 +53,10 @@ Matrix.prototype._init = function() {
         return d.z
     });
 
-    // function for numerical domain spacing
-    function linspace(a, b, n) {
-      var every = (b-a)/(n-1)
-      var ranged = _.range(a, b, every);
-      return ranged.length == n ? ranged : ranged.concat(b);
-    }
-
     // set up color brewer
     var cbrewn = 9
     var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
-    var zdomain = linspace(zmin, zmax, cbrewn)
+    var zdomain = utils.linspace(zmin, zmax, cbrewn)
     var z = d3.scale.linear().domain(zdomain).range(color);
 
     // set up x and y scales and ranges
@@ -155,7 +147,7 @@ Matrix.prototype._init = function() {
                 }
             }
             var extent = zmax - zmin
-            zdomain = linspace(zmin + extent * scale, zmax - extent * scale, cbrewn)
+            zdomain = utils.linspace(zmin + extent * scale, zmax - extent * scale, cbrewn)
             z.domain(zdomain)
             drawCustom(entries);
         }
