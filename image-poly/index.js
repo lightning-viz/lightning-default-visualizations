@@ -217,6 +217,7 @@ ImgPoly.prototype._init = function() {
                 return points;
             });
 
+            utils.sendCommMessage(self, 'selection', coords);
             utils.updateSettings(self, {
                 coords: coords
             }, function(err) {
