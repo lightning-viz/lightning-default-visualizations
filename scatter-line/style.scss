@@ -1,6 +1,28 @@
 .scatter-line {
 
     .line-plot {
+        position: relative;
+    }
+
+    .line-plot.canvas {
+        position: absolute;
+        pointer-events: all;
+        z-index: 0;
+    }
+
+    .line-plot.svg {
+        position: absolute;
+        z-index: -1;
+        pointer-events: none;
+        -webkit-transform: translate3d(0,0,0);
+    }
+
+    .line-plot.rect {
+        fill: #ffffff;
+        z-index: 100;
+    }
+
+    .line-plot {
 
         .plot {
             fill: #ffffff;
@@ -21,13 +43,19 @@
             display: none;
         }
         .line {
+            cursor: pointer;
             fill: none;
-            stroke-width: 2px;
         }
 
         text {
-            fill: #BEC9CE;
+            fill: #A7A9AC;
             font-family: monospace;
+            font-size: 14px;
+            font-weight: normal;
+
+            &.label {
+                fill: #A7A9AC;
+            }
 
         }
     }
