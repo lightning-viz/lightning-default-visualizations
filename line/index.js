@@ -65,20 +65,8 @@ Line.prototype._init = function() {
 
     var series = data.series;
 
-    var tip;
-
-    if(this.opts.tooltips) {
-        var format = d3.format('.02f');
-        tip = d3.tip()
-            .attr('class', 'd3-tip')
-            .html(function(d, i) {
-                return 'Series: ' + d.i;
-            });
-    }
-
-
-    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 3);
-
+    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 1);
+    
     var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
         return d.y;
     });
@@ -110,24 +98,34 @@ Line.prototype._init = function() {
         .y(this.y)
         .on('zoom', zoomed);
 
-    var svg = d3.select(selector)
+    var container = d3.select(selector)
+        .append('div')
+        .style('width', width + margin.left + margin.right + "px")
+        .style('height', height + margin.top + margin.bottom + "px")
+
+    var canvas = container
+        .append('canvas')
+        .attr('class', 'line-plot canvas')
+        .attr('width', width)
+        .attr('height', height)
+        .style('margin', margin.top + 'px ' + margin.left + 'px')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .call(this.zoom)
+        .node().getContext("2d")
+
+    var svg = container
         .append('svg:svg')
-        .attr('class', 'line-plot')
+        .attr('class', 'line-plot svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
         .call(this.zoom)
 
-    if(this.opts.tooltips) {
-        svg.call(tip);
-    }
-
-    svg.append('svg:rect')
+    svg.append('rect')
         .attr('width', width)
         .attr('height', height)
-        .attr('class', 'plot');
-
+        .attr('class', 'line-plot rect');
 
     var makeXAxis = function () {
         return d3.svg.axis()
@@ -175,20 +173,6 @@ Line.prototype._init = function() {
                 .tickSize(-width, 0, 0)
                 .tickFormat(''));
 
-    var clipId = utils.getUniqueId();
-    var clip = svg.append('svg:clipPath')
-        .attr('id', clipId)
-        .append('svg:rect')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', width)
-        .attr('height', height);
-
-    var chartBody = svg.append('g')
-        .attr('clip-path', 'url(#' + clipId + ')');
-
-    var toggleOpacity = 0;
-
     if(_.has(this.data, 'xaxis')) {
         var txt = this.data.xaxis;
         if(_.isArray(txt)) {
@@ -216,51 +200,17 @@ Line.prototype._init = function() {
             .text(txt);
     }
 
-    
-
-
-    function highlight(d, i) {
-
-        if (toggleOpacity === 0) {
-            //var d = d3.select(this)[0][0].__data__
-            svg.selectAll('.line').transition().duration(100).ease('linear').delay(100).style("opacity", function (o, j) {
-                return i == j ? 0.9 : 0.2;
-            });
-            toggleOpacity = 1;
-
-            if(self.opts.tooltips) {
-                tip.show(d, i);
-            }
-        } else {
-            svg.selectAll('.line').transition().duration(100).ease('linear').style('opacity', 0.9)
-            toggleOpacity = 0;
-            if(self.opts.tooltips) {
-                tip.hide(d, i);
-            }
-        }
-    }
-
-    var line = chartBody.selectAll('.line')
-        .data(series)
-        .enter()
-        .append('path')
-        .attr('class', 'line')
-        .attr('stroke', function(d) {return d.c})
-        .style('stroke-width', function(d) {return d.s ? d.s : defaultSize})
-        .style('stroke-opacity', 0.9)
-        .attr('d', function(d) { return self.line(d.d)})
-        .on('mouseover', highlight)
-        .on('mouseout', highlight)
+    draw();
 
     function updateAxis() {
 
-        self.svg.select('.x.axis').call(self.xAxis);
-        self.svg.select('.y.axis').call(self.yAxis);
-        self.svg.select('.x.grid')
+        svg.select('.x.axis').call(self.xAxis);
+        svg.select('.y.axis').call(self.yAxis);
+        svg.select('.x.grid')
             .call(makeXAxis()
                 .tickSize(-height, 0, 0)
                 .tickFormat(''));
-        self.svg.select('.y.grid')
+        svg.select('.y.grid')
             .call(makeYAxis()
                     .tickSize(-width, 0, 0)
                     .tickFormat(''));
@@ -268,18 +218,36 @@ Line.prototype._init = function() {
 
     function zoomed() {
 
+        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
         updateAxis();
-        self.svg.selectAll('.line')
-            .attr('class', 'line')
-            .attr('d', function(d) { return self.line(d.d)});
+        draw();
+    }
+
+    function draw() {
+
+        canvas.globalAlpha = 0.9;
+
+          _.forEach(series, function(s) {
+            var t = s.d.length, d, i = 0;
+            canvas.strokeStyle = s.c ? s.c : defaultSize;
+            canvas.lineWidth = s.s ? s.s : defaultSize;
+            canvas.lineJoin = 'round';
+            canvas.beginPath();
+            canvas.moveTo(self.x(s.d[0].x), self.y(s.d[0].y))
+            while(++i < t) {
+                canvas.lineTo(self.x(s.d[i].x), self.y(s.d[i].y));
+            }
+            canvas.stroke()
+          })
+
     }
 
     this.defaultSize = defaultSize;
-    this.highlight = highlight;
     this.svg = svg;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
     this.series = series;
+
 };
 
 
