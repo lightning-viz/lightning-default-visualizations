@@ -6,6 +6,7 @@
 	position: absolute;
 	pointer-events: none;
 	z-index: -1;
+	-webkit-transform: translate3d(0,0,0);
 }
 
 .force-plot.brush-container {
