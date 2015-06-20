@@ -198,8 +198,8 @@ Scatter3.prototype._init = function() {
         renderer.setSize( width, height );
         $(selector)[0].appendChild( renderer.domElement );
 
-        $('canvas').css('border','1px solid rgb(200,200,200)')
-        $('canvas').css('outline','-moz-outline-style: none; ')
+        $(selector).children('canvas').css('border','1px solid rgb(200,200,200)')
+        $(selector).children('canvas').css('outline','-moz-outline-style: none; ')
 
         scene.add(headlight);
 
