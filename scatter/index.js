@@ -60,6 +60,8 @@ Scatter.prototype._init = function() {
     var margin = this.margin
     var self = this
 
+    this.$el = $(selector).first();
+
     var points = data.points
 
     var xDomain = d3.extent(points, function(d) {

@@ -47,6 +47,8 @@ Force.prototype._init = function() {
     var nodes = this.data.nodes
     var self = this
 
+    this.$el = $(selector).first();
+
     // if points are colored use gray, otherwise use our default
     var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
 
