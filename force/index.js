@@ -56,6 +56,24 @@ Force.prototype._init = function() {
     // set circle stroke thickness based on number of nodes
     var strokeWidth = nodes.length > 500 ? 1 : 1.1
 
+    function nearestPoint(points, target, xscale, yscale) {
+        // find point in points nearest to target
+        // using scales x and y
+        // point must have attrs x, y, and s
+        var i = 0, count = 0;
+        var found, dist, n, p;
+        while (count == 0 & i < points.length) {
+            p = points[i]
+            dist = Math.sqrt(Math.pow(xscale(p.x) - target[0], 2) + Math.pow(yscale(p.y) - target[1], 2))
+            if (dist <= p.s) {
+                found = p
+                count = 1
+            }
+            i++;
+        }
+        return found
+    }
+
     this.x = d3.scale.linear()
         .domain([0, width + margin.left + margin.right])
         .range([0, width + margin.left + margin.right]);
@@ -100,44 +118,44 @@ Force.prototype._init = function() {
     function mouseHandler() {
         if (d3.event.defaultPrevented) return;
         var pos = d3.mouse(this)
-        var i = 0, count = 0;
-        var found, dist, n;
-        while (count == 0 & i < nodes.length) {
-            n = nodes[i]
-            dist = Math.sqrt(Math.pow(self.x(n.x) - pos[0], 2) + Math.pow(self.y(n.y) - pos[1], 2))
-            if (dist < 10) {
-                found = n
-                count = 1
-            }
-            i++;
-        }
+        var found = nearestPoint(nodes, pos, self.x, self.y)
         if (found) {
-            selected = []
-            _.forEach(nodes, function(n) {
-                if (neighboring(found, n) | neighboring(n, found)) {
-                    selected.push(n.i)
-                }
-            });
+            highlighted = []
+            highlighted.push(found.i)
+            self.emit('hover', found);
         } else {
+            highlighted = []
             selected = []
         };
-        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
-        draw();
+        redraw();
     }
 
     var selected = [];
+    var highlighted = [];
     var shiftKey;
 
     var brush = d3.svg.brush()
         .x(self.x)
         .y(self.y)
         .on("brushstart", function() {
-            selected = []
+            // remove any highlighting
+            highlighted = []
+            // select a point if we click without extent
+            var pos = d3.mouse(this)
+            var found = nearestPoint(nodes, pos, self.x, self.y)
+            if (found) {
+                if (_.indexOf(selected, found.i) == -1) {
+                    selected.push(found.i)
+                } else {
+                    _.remove(selected, function(d) {return d == found.i})
+                }
+                redraw();
+            }
         })
         .on("brush", function() {
-            if (shiftKey) {
+            var extent = d3.event.target.extent();
+            if (Math.abs(extent[0][0] - extent[1][0]) > 0 & Math.abs(extent[0][1] - extent[1][1]) > 0) {
                 selected = []
-                var extent = d3.event.target.extent();
                 var x = self.x
                 var y = self.y
                 _.forEach(nodes, function(n) {
@@ -147,10 +165,7 @@ Force.prototype._init = function() {
                         selected.push(n.i)
                     }
                 })
-                canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
-                draw();
-            } else {
-              d3.select(this).call(d3.event.target);
+                redraw();
             }
         })
         .on("brushend", function() {
@@ -159,8 +174,7 @@ Force.prototype._init = function() {
         })
 
     function zoomed() {
-        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
-        draw();
+        redraw();
     }
 
     // function for handling opacity
@@ -169,6 +183,13 @@ Force.prototype._init = function() {
         color.alpha(opacity);
         return color.rgbString();
     };
+
+    _.map(nodes, function(d) {
+        d.s = d.s ? d.s : self.defaultSize
+        d.cfill = d.c ? d.c : self.defaultFill
+        d.cstroke = d.c ? d.c.darker(0.75) : self.defaultStroke
+        return d
+    })
 
     // array indicating links
     var linkedByIndex = {};
@@ -219,7 +240,13 @@ Force.prototype._init = function() {
             d3.selectAll('.brush').style('pointer-events', 'none')
             d3.selectAll('.brush .background').style('cursor', 'default')
         }
+        shiftKey = false
     });
+
+    function redraw() {
+        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        draw()
+    }
 
     function draw() {
 
@@ -231,7 +258,15 @@ Force.prototype._init = function() {
                 } else {
                     alpha = 0.05
                 }
-            } else {
+            } 
+            if (highlighted.length > 0) {
+                if (_.indexOf(highlighted, l.source.index) > -1 | _.indexOf(highlighted, l.target.index) > -1) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.05
+                }
+            } 
+            if (selected.length == 0 & highlighted.length == 0) {
                 alpha = linkStrokeOpacity
             }
             canvas.strokeStyle = buildRGBA(linkStrokeColor, alpha);
@@ -245,7 +280,7 @@ Force.prototype._init = function() {
         })
 
         _.forEach(nodes, function(n) {
-            var alpha
+            var alpha, stroke;
             if (selected.length > 0) {
                 if (_.indexOf(selected, n.i) >= 0) {
                     alpha = 0.9
@@ -255,11 +290,23 @@ Force.prototype._init = function() {
             } else {
                 alpha = 0.9
             }
+            if (highlighted.length > 0) {
+                if (neighboring(nodes[highlighted[0]], n) | neighboring(n, nodes[highlighted[0]])) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.1
+                }
+            }
+            if (_.indexOf(highlighted, n.i) >= 0) {
+                stroke = "black"
+            } else {
+                stroke = n.cstroke
+            }
             canvas.beginPath();
-            canvas.arc(self.x(n.x), self.y(n.y), n.s ? n.s : self.defaultSize, 0, 2 * Math.PI, false);
-            canvas.fillStyle = buildRGBA(n.c ? n.c : self.defaultFill, alpha)
+            canvas.arc(self.x(n.x), self.y(n.y), n.s, 0, 2 * Math.PI, false);
+            canvas.fillStyle = buildRGBA(n.cfill, alpha)
             canvas.lineWidth = strokeWidth
-            canvas.strokeStyle = buildRGBA(n.c ? n.c.darker(0.75) : self.defaultStroke, alpha)
+            canvas.strokeStyle = buildRGBA(stroke, alpha)
             canvas.fill()
             canvas.stroke()
         })

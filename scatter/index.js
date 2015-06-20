@@ -85,34 +85,63 @@ Scatter.prototype._init = function() {
         .y(this.y)
         .on('zoom', zoomed);
 
+    function nearestPoint(points, target, xscale, yscale) {
+        // find point in points nearest to target
+        // using scales x and y
+        // point must have attrs x, y, and s
+        var i = 0, count = 0;
+        var found, dist, n, p;
+        while (count == 0 & i < points.length) {
+            p = points[i]
+            dist = Math.sqrt(Math.pow(xscale(p.x) - target[0], 2) + Math.pow(yscale(p.y) - target[1], 2))
+            if (dist <= p.s) {
+                found = p
+                count = 1
+            }
+            i++;
+        }
+        return found
+    }
+
     var shiftKey;
 
     var selected = [];
+    var highlighted = [];
 
     var brush = d3.svg.brush()
         .x(this.x)
         .y(this.y)
         .on("brushstart", function() {
-            selected = []
+            // remove any highlighting
+            highlighted = []
+            // select a point if we click without extent
+            var pos = d3.mouse(this)
+            var found = nearestPoint(points, pos, self.x, self.y)
+            if (found) {
+                if (_.indexOf(selected, found.i) == -1) {
+                    selected.push(found.i)
+                } else {
+                    _.remove(selected, function(d) {return d == found.i})
+                }
+                redraw();
+            }
         })
         .on("brush", function() {
-            if (shiftKey) {
+            // select points within extent
+            var extent = d3.event.target.extent();
+            if (Math.abs(extent[0][0] - extent[1][0]) > 0 & Math.abs(extent[0][1] - extent[1][1]) > 0) {
                 selected = []
-                var extent = d3.event.target.extent();
-                console.log(extent)
                 _.forEach(points, function(p) {
-                    var cond1 = (p.x > extent[0][0] & p.x < extent[1][0])
-                    var cond2 = (p.y > extent[0][1] & p.y < extent[1][1])
-                    if (cond1 & cond2) {
-                        selected.push(p.i)
+                    if (_.indexOf(selected, p.i) == -1) {
+                        var cond1 = (p.x > extent[0][0] & p.x < extent[1][0])
+                        var cond2 = (p.y > extent[0][1] & p.y < extent[1][1])
+                        if (cond1 & cond2) {
+                            selected.push(p.i)
+                        }
                     }
                 })
-                console.log(selected)
-                canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
-                draw();
-            } else {
-              d3.select(this).call(d3.event.target);
             }
+            redraw();
         })
         .on("brushend", function() {
             d3.event.target.clear();
@@ -167,9 +196,17 @@ Scatter.prototype._init = function() {
 
     function mouseHandler() {
         if (d3.event.defaultPrevented) return;
+        var pos = d3.mouse(this)
+        var found = nearestPoint(points, pos, self.x, self.y)
+        if (found) {
+            highlighted = []
+            highlighted.push(found.i)
+            self.emit('hover', found);
+        } else {
+            highlighted = []
+        }
         selected = []
-        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
-        draw();
+        redraw();
     }
 
     var makeXAxis = function () {
@@ -227,8 +264,8 @@ Scatter.prototype._init = function() {
 
     _.map(points, function(p) {
         p.s = p.s ? p.s : self.defaultSize
-        p.cfill = buildRGBA(p.c ? p.c : self.defaultFill, p.a ? p.a : self.defaultAlpha)
-        p.cstroke = buildRGBA(p.c ? p.c.darker(0.75) : self.defaultStroke, p.a ? p.a : self.defaultAlpha)
+        p.cfill = p.c ? p.c : self.defaultFill
+        p.cstroke = p.c ? p.c.darker(0.75) : self.defaultStroke
         return p
     })
 
@@ -237,16 +274,19 @@ Scatter.prototype._init = function() {
 
     draw();
 
+    function redraw() {
+        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        draw()
+    }
+
     function draw() {
 
         var cx, cy, s;
 
         _.forEach(points, function(p) {
-            var alpha
+            var alpha, stroke, fill;
             if (selected.length > 0) {
                 if (_.indexOf(selected, p.i) >= 0) {
-                    console.log(p.i)
-                    console.log('point is selected')
                     alpha = 0.9
                 } else {
                     alpha = 0.1
@@ -254,13 +294,18 @@ Scatter.prototype._init = function() {
             } else {
                 alpha = p.a ? p.a : self.defaultAlpha
             }
+            if (_.indexOf(highlighted, p.i) >= 0) {
+                fill = d3.rgb(d3.hsl(p.cfill).darker(0.75))
+            } else {
+                fill = p.cfill
+            }
             cx = self.x(p.x);
             cy = self.y(p.y);
             canvas.beginPath();
             canvas.arc(cx, cy, p.s, 0, 2 * Math.PI, false);
-            canvas.fillStyle = buildRGBA(p.c ? p.c : self.defaultFill, alpha)
+            canvas.fillStyle = buildRGBA(fill, alpha)
             canvas.lineWidth = lineWidth
-            canvas.strokeStyle = buildRGBA(p.c ? p.c.darker(0.75) : self.defaultStroke, alpha)
+            canvas.strokeStyle = buildRGBA(p.cstroke, alpha)
             canvas.fill()
             canvas.stroke()
         })
@@ -319,7 +364,6 @@ Scatter.prototype._init = function() {
     d3.select(window).on("keydown", function() {
         shiftKey = d3.event.shiftKey;
         if (shiftKey) {
-            console.log('turning on pointer events')
             d3.selectAll('.brush').style('pointer-events', 'all')
             d3.selectAll('.brush .background').style('cursor', 'crosshair')
         }
@@ -330,6 +374,7 @@ Scatter.prototype._init = function() {
             d3.selectAll('.brush').style('pointer-events', 'none')
             d3.selectAll('.brush .background').style('cursor', 'default')
         }
+        shiftKey = false
     });
     
     this.svg = svg;
