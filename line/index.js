@@ -48,7 +48,6 @@ var Line = function(selector, data, images, opts) {
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
     this.height = Math.min(($(selector).height() || Infinity), (opts.height || (this.width * 0.6))) - margin.top - margin.bottom;
 
-    
     this.selector = selector;
     this._init();
 };
@@ -63,27 +62,49 @@ Line.prototype._init = function() {
     var selector = this.selector;
     var self = this;
 
-    var series = data.series;
+    var series = data.series
+    this.series = series;
 
     var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 1);
+
+    function setAxis() {
     
-    var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
-        return d.y;
-    });
-    var xDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
-        return d.x;
-    });
+        var yDomain = nestedExtent(self.series.map(function(d) {return d.d}), function(d) {
+            return d.y;
+        });
+        var xDomain = nestedExtent(self.series.map(function(d) {return d.d}), function(d) {
+            return d.x;
+        });
 
-    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-    var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
+        var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
+        var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
 
-    this.x = d3.scale.linear()
-        .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread])
-        .range([0, width]);
+        self.x = d3.scale.linear()
+            .domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread])
+            .range([0, width]);
 
-    this.y = d3.scale.linear()
-        .domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread])
-        .range([height, 0]);
+        self.y = d3.scale.linear()
+            .domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread])
+            .range([height, 0]);
+
+        self.xAxis = d3.svg.axis()
+            .scale(self.x)
+            .orient('bottom')
+            .ticks(5);
+
+        self.yAxis = d3.svg.axis()
+            .scale(self.y)
+            .orient('left')
+            .ticks(5);
+
+        self.zoom = d3.behavior.zoom()
+            .x(self.x)
+            .y(self.y)
+            .on('zoom', zoomed);
+
+    }
+
+    setAxis()
 
     this.line = d3.svg.line()
         .x(function (d) {
@@ -92,11 +113,6 @@ Line.prototype._init = function() {
         .y(function (d) {
             return self.y(d.y);
         })
-
-    this.zoom = d3.behavior.zoom()
-        .x(this.x)
-        .y(this.y)
-        .on('zoom', zoomed);
 
     var container = d3.select(selector)
         .append('div')
@@ -110,7 +126,9 @@ Line.prototype._init = function() {
         .attr('height', height)
         .style('margin', margin.top + 'px ' + margin.left + 'px')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(this.zoom)
+        .call(self.zoom)
+
+    var ctx = canvas
         .node().getContext("2d")
 
     var svg = container
@@ -120,7 +138,7 @@ Line.prototype._init = function() {
         .attr('height', height + margin.top + margin.bottom)
         .append('svg:g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .call(this.zoom)
+        .call(self.zoom)
 
     svg.append('rect')
         .attr('width', width)
@@ -141,20 +159,10 @@ Line.prototype._init = function() {
             .ticks(5);
     };
 
-    this.xAxis = d3.svg.axis()
-        .scale(this.x)
-        .orient('bottom')
-        .ticks(5);
-
     svg.append('svg:g')
         .attr('class', 'x axis')
         .attr('transform', 'translate(0, ' + height + ')')
         .call(this.xAxis);
-
-    this.yAxis = d3.svg.axis()
-        .scale(this.y)
-        .orient('left')
-        .ticks(5);
 
     svg.append('g')
         .attr('class', 'y axis')
@@ -217,36 +225,42 @@ Line.prototype._init = function() {
     }
 
     function zoomed() {
-
-        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        redraw();
         updateAxis();
-        draw();
+    }
+
+    function redraw() {
+        ctx.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        draw()
     }
 
     function draw() {
 
-        canvas.globalAlpha = 0.9;
+        ctx.globalAlpha = 0.9;
 
-          _.forEach(series, function(s) {
+        _.forEach(self.series, function(s) {
             var t = s.d.length, d, i = 0;
-            canvas.strokeStyle = s.c ? s.c : defaultSize;
-            canvas.lineWidth = s.s ? s.s : defaultSize;
-            canvas.lineJoin = 'round';
-            canvas.beginPath();
-            canvas.moveTo(self.x(s.d[0].x), self.y(s.d[0].y))
+            ctx.strokeStyle = s.c ? s.c : defaultSize;
+            ctx.lineWidth = s.s ? s.s : defaultSize;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(self.x(s.d[0].x), self.y(s.d[0].y))
             while(++i < t) {
-                canvas.lineTo(self.x(s.d[i].x), self.y(s.d[i].y));
+                ctx.lineTo(self.x(s.d[i].x), self.y(s.d[i].y));
             }
-            canvas.stroke()
-          })
+            ctx.stroke()
+        })
 
     }
 
     this.defaultSize = defaultSize;
     this.svg = svg;
+    this.canvas = canvas;
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
+    this.setAxis = setAxis;
     this.series = series;
+    this.redraw = redraw;
 
 };
 
@@ -302,85 +316,11 @@ Line.prototype.updateData = function(data) {
     var self = this
     
     this.data = this._formatData(data);
-    var series = this.data.series;
-
-    var yDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
-        return d.y;
-    });
-    var xDomain = nestedExtent(series.map(function(d) {return d.d}), function(d) {
-        return d.x;
-    });
-    
-    var ySpread = Math.abs(yDomain[1] - yDomain[0]) || 1;
-    var xSpread = Math.abs(xDomain[1] - xDomain[0]) || 1;
-
-    this.x.domain([xDomain[0] - 0.05 * xSpread, xDomain[1] + 0.05 * xSpread]);
-    this.y.domain([yDomain[0] - 0.1 * ySpread, yDomain[1] + 0.1 * ySpread]);
-    this.zoom.x(this.x).y(this.y);
-    this.updateAxis();
-    
-    var newdat = this.svg.selectAll('.line')
-        .data(series)
-        
-    newdat.exit().transition().style('opacity', 0.0).remove()
-    
-    newdat
-        .attr('class', 'line')
-        .on('mouseover', self.highlight)
-        .on('mouseout', self.highlight) 
-        .transition()
-        .attr('d', function(d) { return self.line(d.d)})   
-        .attr('stroke', function(d) {return d.c})
-        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
-        .style('stroke-opacity', 0.9)
-         
-    
-    newdat.enter()
-        .append('path')
-        .attr('class', 'line') 
-        .attr('d', function(d) { return self.line(d.d)})
-        .attr('stroke', function(d) {return d.c})
-        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
-        .style('stroke-opacity', 0.9)
-        .on('mouseover', self.highlight)
-        .on('mouseout', self.highlight) 
-        .style('opacity', 0.0)
-        .transition()
-        .style('opacity', 1.0)
-   
-};
+    this.series = this.data.series;
+    this.setAxis()
+    this.canvas.call(self.zoom)
+    this.updateAxis()
+    this.redraw()
 
 
-Line.prototype.appendData = function(data) {
-
-    // add new lines to existing lines
-    
-    var self = this
-    
-    var toappend = this._formatData(data).series
-    
-    toappend = toappend.map(function (d) {
-        d.i = d.i + self.series.length
-        return d
-    })
-
-    this.series = this.series.concat(toappend)
-    
-    var series = this.series;  
-    
-    var newdat = this.svg.selectAll('.line')
-        .data(series)
-
-    newdat.enter()
-        .append('path')
-        .attr('class', 'line') 
-        .attr('d', function(d) { return self.line(d.d)})
-        .attr('stroke', function(d) {return d.c})
-        .style('stroke-width', function(d) {return d.s ? d.s : self.defaultSize})
-        .style('stroke-opacity', 0.9)
-        .on('mouseover', self.highlight)
-        .on('mouseout', self.highlight) 
-        .style('opacity', 0.0)
-        .transition()
-        .style('opacity', 1.0)
 };
