@@ -11,7 +11,7 @@ var ScatterLine = function(selector, data, images, options) {
 
     var $el = $(selector).first();
 
-    var markup = '<div class="scatter-line" id="scatter-line-' + this.id + '"><div class="scatter"></div><div class="line"></div></div>';
+    var markup = '<div class="scatter-line" id="scatter-line-' + this.id + '"><div class="scatter" style="outline: none"></div><div class="line"></div></div>';
     $el.append(markup);
     this.$el = $el;
 
