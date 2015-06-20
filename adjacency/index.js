@@ -141,8 +141,9 @@ Adjacency.prototype._init = function() {
       })
     }
 
-    // handle key press updates
-    d3.select('body').on('keydown', update)
+    // add keydown events
+    d3.select(selector).attr('tabindex', -1)
+    d3.select(selector).on('keydown', update)
 
     function update() {
         if (d3.event.keyCode == 38 | d3.event.keyCode == 40) {

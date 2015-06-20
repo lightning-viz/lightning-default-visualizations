@@ -6,13 +6,6 @@ var utils = require('lightning-client-utils')
 var colorbrewer = require('colorbrewer')
 var Color = require('color');
 
-var margin = {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0
-};
-
 var Matrix = function(selector, data, images, opts) {
 
     if(!opts) {
@@ -20,8 +13,8 @@ var Matrix = function(selector, data, images, opts) {
     }
 
     this.opts = opts
-    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.5)) - margin.top - margin.bottom;
+    this.width = (opts.width || $(selector).width())
+    this.height = (opts.height || (this.width * 0.5))
 
     this.data = this._formatData(data)
     this.selector = selector;
@@ -55,13 +48,7 @@ Matrix.prototype._init = function() {
 
     // create colormap
     function colormap(name) {
-        var color
-        if (name == "Lightning") {
-            color = ['#A38EF3', '#DBB1F2', '#7ABFEA', '#5BC69F', '#AADA90', '#F0E86B', '#F9B070', '#F19A9A', '#E96B88']
-        } else {
-            color = colorbrewer[name][9]
-        }
-        return color
+        return colorbrewer[name][9]
     }
 
     // set up colormap
@@ -80,23 +67,24 @@ Matrix.prototype._init = function() {
     var y = d3.scale.ordinal().rangeBands([0, (nrow * size)]).domain(d3.range(nrow));
     var x = d3.scale.ordinal().rangeBands([0, (ncol * size)]).domain(d3.range(ncol));
 
-    var maxY = nrow * y.rangeBand();
-    var maxX = ncol * x.rangeBand();
+    height = nrow * y.rangeBand();
+    width = ncol * x.rangeBand();
 
     // set up variables to toggle with keypresses
-    var clist = ['Purples', 'Blues', 'Greens', 'Oranges', 'Reds', 'Greys', 'Lightning']
+    var clist = ['Purples', 'Blues', 'Greens', 'Oranges', 'Reds', 'Greys']
     var cindex = 0
     var scale = 0
 
     // create canvas
     var canvas = d3.select(selector)
         .append('canvas')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
+        .attr('width', width)
+        .attr('height', height)
         .node().getContext("2d")
 
     // add keydown events
-    d3.select('body').on('keydown', update)
+    d3.select(selector).attr('tabindex', -1)
+    d3.select(selector).on('keydown', update)
 
     // create dummy container for data binding
     var detachedContainer = document.createElement("custom");
