@@ -53,10 +53,21 @@ Matrix.prototype._init = function() {
         return d.z
     });
 
-    // set up color brewer
-    var cbrewn = 9
-    var color = data.colormap ? colorbrewer[data.colormap][cbrewn] : colorbrewer[self.defaultColormap][cbrewn]
-    var zdomain = utils.linspace(zmin, zmax, cbrewn)
+    // create colormap
+    function colormap(name) {
+        var color
+        if (name == "Lightning") {
+            color = ['#A38EF3', '#DBB1F2', '#7ABFEA', '#5BC69F', '#AADA90', '#F0E86B', '#F9B070', '#F19A9A', '#E96B88']
+        } else {
+            color = colorbrewer[name][9]
+        }
+        return color
+    }
+
+    // set up colormap
+    var name = data.colormap ? data.colormap : self.defaultColormap
+    var color = colormap(name)
+    var zdomain = utils.linspace(zmin, zmax, 9)
     var z = d3.scale.linear().domain(zdomain).range(color);
 
     // set up x and y scales and ranges
@@ -66,7 +77,7 @@ Matrix.prototype._init = function() {
     var maxX = ncol * x.rangeBand();
 
     // set up variables to toggle with keypresses
-    var clist = ['Purples', 'Blues', 'Greens', 'Oranges', 'Reds', 'Greys']
+    var clist = ['Purples', 'Blues', 'Greens', 'Oranges', 'Reds', 'Greys', 'Lightning']
     var cindex = 0
     var scale = 0
 
@@ -147,7 +158,7 @@ Matrix.prototype._init = function() {
                 }
             }
             var extent = zmax - zmin
-            zdomain = utils.linspace(zmin + extent * scale, zmax - extent * scale, cbrewn)
+            zdomain = utils.linspace(zmin + extent * scale, zmax - extent * scale, 9)
             z.domain(zdomain)
             drawCustom(entries);
         }
@@ -165,7 +176,7 @@ Matrix.prototype._init = function() {
                     cindex = 0
                 }
             }
-            color = colorbrewer[clist[cindex]][cbrewn]
+            color = colormap(clist[cindex])
             z.range(color)
             drawCustom(entries);
         }
