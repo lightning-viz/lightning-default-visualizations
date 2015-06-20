@@ -176,14 +176,7 @@ Force.prototype._init = function() {
     function zoomed() {
         redraw();
     }
-
-    // function for handling opacity
-    var buildRGBA = function(fill, opacity) {
-        var color = Color(fill);
-        color.alpha(opacity);
-        return color.rgbString();
-    };
-
+    
     _.map(nodes, function(d) {
         d.s = d.s ? d.s : self.defaultSize
         d.cfill = d.c ? d.c : self.defaultFill
@@ -269,7 +262,7 @@ Force.prototype._init = function() {
             if (selected.length == 0 & highlighted.length == 0) {
                 alpha = linkStrokeOpacity
             }
-            canvas.strokeStyle = buildRGBA(linkStrokeColor, alpha);
+            canvas.strokeStyle = utils.buildRGBA(linkStrokeColor, alpha);
             canvas.lineWidth = 1 * Math.sqrt(l.value);
             canvas.lineJoin = 'round';
             canvas.beginPath();
@@ -304,9 +297,9 @@ Force.prototype._init = function() {
             }
             canvas.beginPath();
             canvas.arc(self.x(n.x), self.y(n.y), n.s, 0, 2 * Math.PI, false);
-            canvas.fillStyle = buildRGBA(n.cfill, alpha)
+            canvas.fillStyle = utils.buildRGBA(n.cfill, alpha)
             canvas.lineWidth = strokeWidth
-            canvas.strokeStyle = buildRGBA(stroke, alpha)
+            canvas.strokeStyle = utils.buildRGBA(stroke, alpha)
             canvas.fill()
             canvas.stroke()
         })

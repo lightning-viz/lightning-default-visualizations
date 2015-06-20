@@ -255,13 +255,6 @@ Scatter.prototype._init = function() {
                 .tickSize(-width, 0, 0)
                 .tickFormat(''));
 
-    // function for handling opacity
-    var buildRGBA = function(fill, opacity) {
-        var color = Color(fill);
-        color.alpha(opacity);
-        return color.rgbString();
-    };
-
     _.map(points, function(p) {
         p.s = p.s ? p.s : self.defaultSize
         p.cfill = p.c ? p.c : self.defaultFill
@@ -303,9 +296,9 @@ Scatter.prototype._init = function() {
             cy = self.y(p.y);
             canvas.beginPath();
             canvas.arc(cx, cy, p.s, 0, 2 * Math.PI, false);
-            canvas.fillStyle = buildRGBA(fill, alpha)
+            canvas.fillStyle = utils.buildRGBA(fill, alpha)
             canvas.lineWidth = lineWidth
-            canvas.strokeStyle = buildRGBA(p.cstroke, alpha)
+            canvas.strokeStyle = utils.buildRGBA(p.cstroke, alpha)
             canvas.fill()
             canvas.stroke()
         })
