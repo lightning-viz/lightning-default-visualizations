@@ -23,7 +23,7 @@ var Adjacency = function(selector, data, images, opts) {
 
     this.opts = opts
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+    this.height = (opts.height || (this.width * 0.5)) - margin.top - margin.bottom;
 
     this.data = this._formatData(data)
     this.selector = selector;

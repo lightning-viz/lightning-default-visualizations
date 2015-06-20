@@ -21,7 +21,7 @@ var Matrix = function(selector, data, images, opts) {
 
     this.opts = opts
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+    this.height = (opts.height || (this.width * 0.5)) - margin.top - margin.bottom;
 
     this.data = this._formatData(data)
     this.selector = selector;
@@ -71,8 +71,15 @@ Matrix.prototype._init = function() {
     var z = d3.scale.linear().domain(zdomain).range(color);
 
     // set up x and y scales and ranges
-    var y = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]).domain(d3.range(nrow));
-    var x = d3.scale.ordinal().rangeBands([0, Math.min(width, height)]).domain(d3.range(ncol));
+    if (ncol > nrow) {
+        var size = Math.min(height / nrow, width / ncol)
+    } else {
+        var size = height / nrow
+    }
+    
+    var y = d3.scale.ordinal().rangeBands([0, (nrow * size)]).domain(d3.range(nrow));
+    var x = d3.scale.ordinal().rangeBands([0, (ncol * size)]).domain(d3.range(ncol));
+
     var maxY = nrow * y.rangeBand();
     var maxX = ncol * x.rangeBand();
 
