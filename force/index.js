@@ -169,6 +169,7 @@ Force.prototype._init = function() {
             }
         })
         .on("brushend", function() {
+            getUserData()
             d3.event.target.clear();
             d3.select(this).call(d3.event.target);
         })
@@ -176,7 +177,7 @@ Force.prototype._init = function() {
     function zoomed() {
         redraw();
     }
-    
+
     _.map(nodes, function(d) {
         d.s = d.s ? d.s : self.defaultSize
         d.cfill = d.c ? d.c : self.defaultFill
@@ -235,6 +236,18 @@ Force.prototype._init = function() {
         }
         shiftKey = false
     });
+
+    function getUserData() {
+
+        utils.sendCommMessage(self, 'selection', selected);
+        utils.updateSettings(self, {
+            selected: selected
+        }, function(err) {
+            if(err) {
+                console.log('err saving user data');
+            }
+        });
+    }
 
     function redraw() {
         canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);

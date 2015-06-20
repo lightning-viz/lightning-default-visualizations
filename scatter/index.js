@@ -144,6 +144,8 @@ Scatter.prototype._init = function() {
             redraw();
         })
         .on("brushend", function() {
+            console.log("got user data")
+            getUserData()
             d3.event.target.clear();
             d3.select(this).call(d3.event.target);
         })
@@ -369,6 +371,18 @@ Scatter.prototype._init = function() {
         }
         shiftKey = false
     });
+
+    function getUserData() {
+
+        utils.sendCommMessage(self, 'selection', selected);
+        utils.updateSettings(self, {
+            selected: selected
+        }, function(err) {
+            if(err) {
+                console.log('err saving user data');
+            }
+        });
+    }
     
     this.svg = svg;
     this.points = points;
