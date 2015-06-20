@@ -65,7 +65,7 @@ Line.prototype._init = function() {
     var series = data.series
     this.series = series;
 
-    var defaultSize = Math.max(10 - 0.1 * series[0].d.length, 1);
+    this.defaultSize = Math.max(10 - 0.1 * series[0].d.length, 1);
 
     function setAxis() {
     
@@ -240,8 +240,8 @@ Line.prototype._init = function() {
 
         _.forEach(self.series, function(s) {
             var t = s.d.length, d, i = 0;
-            ctx.strokeStyle = s.c ? s.c : defaultSize;
-            ctx.lineWidth = s.s ? s.s : defaultSize;
+            ctx.strokeStyle = s.c ? s.c : self.defaultSize;
+            ctx.lineWidth = s.s ? s.s : self.defaultSize;
             ctx.lineJoin = 'round';
             ctx.beginPath();
             ctx.moveTo(self.x(s.d[0].x), self.y(s.d[0].y))
@@ -253,7 +253,6 @@ Line.prototype._init = function() {
 
     }
 
-    this.defaultSize = defaultSize;
     this.svg = svg;
     this.canvas = canvas;
     this.zoomed = zoomed;
@@ -317,6 +316,7 @@ Line.prototype.updateData = function(data) {
     
     this.data = this._formatData(data);
     this.series = this.data.series;
+    this.defaultSize = Math.max(10 - 0.1 * this.data.series[0].d.length, 1);
     this.setAxis()
     this.canvas.call(self.zoom)
     this.updateAxis()

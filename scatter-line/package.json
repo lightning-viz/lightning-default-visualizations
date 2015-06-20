@@ -1,5 +1,5 @@
 {
     "lightning-viz": {
-        "initialDataFields": ["points", "color", "label", "size", "alpha"]
+        "initialDataFields": ["points", "color", "label", "size", "alpha", "colormap", "value"]
     }
 }
