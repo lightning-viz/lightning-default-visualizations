@@ -16,7 +16,7 @@ var ScatterLine = function(selector, data, images, options) {
     this.$el = $el;
 
     var Scatter = require('../viz/scatter');
-    var scatter = new Scatter(selector + ' #scatter-line-' + this.id + ' .scatter', data, null, {width: $(selector).width(), height: 400});
+    var scatter = new Scatter(selector + ' #scatter-line-' + this.id + ' .scatter', data, null, {width: $(selector).width(), height: 350});
     var Line = require('../viz/line');
     var line;
 
@@ -25,9 +25,9 @@ var ScatterLine = function(selector, data, images, options) {
         if(!err) {
             var series = data
             var newdata = {'series': _.times(series.length, _.constant(0))};
-            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', newdata, null, {width: $(selector).width(), height: 200, zoomAxes: ['x']});
+            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', newdata, null, {width: $(selector).width(), height: 250, zoomAxes: ['x']});
         } else {
-            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', {series: [0]}, null, {width: $(selector).width(), height: 300, zoomAxes: ['x']});
+            line = new Line(selector + ' #scatter-line-' + self.id + ' .line', {series: [0]}, null, {width: $(selector).width(), height: 250, zoomAxes: ['x']});
         }
 
         self.emit('size:updated');
