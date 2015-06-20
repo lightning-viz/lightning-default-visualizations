@@ -65,7 +65,11 @@ Line.prototype._init = function() {
     var series = data.series
     this.series = series;
 
-    this.defaultSize = Math.max(10 - 0.1 * series[0].d.length, 1);
+    function setDefaultSize() {
+        self.defaultSize = Math.max(Math.exp(2.5 - 0.005 * series[0].d.length), 1);
+    }
+    
+    setDefaultSize()
 
     function setAxis() {
     
@@ -258,6 +262,7 @@ Line.prototype._init = function() {
     this.zoomed = zoomed;
     this.updateAxis = updateAxis;
     this.setAxis = setAxis;
+    this.setDefaultSize = setDefaultSize;
     this.series = series;
     this.redraw = redraw;
 
@@ -316,7 +321,7 @@ Line.prototype.updateData = function(data) {
     
     this.data = this._formatData(data);
     this.series = this.data.series;
-    this.defaultSize = Math.max(10 - 0.1 * this.data.series[0].d.length, 1);
+    this.setDefaultSize()
     this.setAxis()
     this.canvas.call(self.zoom)
     this.updateAxis()
