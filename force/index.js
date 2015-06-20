@@ -223,7 +223,9 @@ Force.prototype._init = function() {
     d3.selectAll('.brush')
         .style('pointer-events', 'none')
 
-    d3.select(window).on("keydown", function() {
+    d3.select(selector).attr("tabindex", -1)
+
+    d3.select(selector).on("keydown", function() {
         shiftKey = d3.event.shiftKey;
         if (shiftKey) {
             d3.selectAll('.brush').style('pointer-events', 'all')
@@ -231,7 +233,7 @@ Force.prototype._init = function() {
         }
     });
 
-    d3.select(window).on("keyup", function() {
+    d3.select(selector).on("keyup", function() {
         if (shiftKey) {
             d3.selectAll('.brush').style('pointer-events', 'none')
             d3.selectAll('.brush .background').style('cursor', 'default')
