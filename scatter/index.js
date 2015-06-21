@@ -379,8 +379,12 @@ Scatter.prototype._init = function() {
     function getUserData() {
 
         utils.sendCommMessage(self, 'selection', selected);
+        var x = _.map(selected, function(d) {return points[d].x});
+        var y = _.map(selected, function(d) {return points[d].y});
         utils.updateSettings(self, {
-            selected: selected
+            selected: selected,
+            x: x,
+            y: y
         }, function(err) {
             if(err) {
                 console.log('err saving user data');
