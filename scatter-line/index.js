@@ -28,7 +28,7 @@ var ScatterLine = function(selector, data, images, options) {
     utils.fetchData(this, ['series', 0], function(err, data) {
         if(!err) {
             var series = data
-            var newdata = {'series': _.times(series.length, _.constant(0))};
+            var newdata = {'series': [0]};
             line = new Line(selector + ' #scatter-line-' + self.id + ' .line', newdata, null, {width: $(selector).width(), height: lineHeight, zoomAxes: ['x']});
         } else {
             line = new Line(selector + ' #scatter-line-' + self.id + ' .line', {series: [0]}, null, {width: $(selector).width(), height: lineHeight, zoomAxes: ['x']});
