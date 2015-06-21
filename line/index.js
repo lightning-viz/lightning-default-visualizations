@@ -66,7 +66,7 @@ Line.prototype._init = function() {
     this.series = series;
 
     function setDefaultSize() {
-        self.defaultSize = Math.max(Math.exp(2.5 - 0.005 * series[0].d.length), 1);
+        self.defaultSize = Math.max(Math.exp(2 - 0.003 * series[0].d.length), 1);
     }
     
     setDefaultSize()
