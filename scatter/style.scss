@@ -5,12 +5,12 @@
 .scatter-plot.canvas {
     position: absolute;
     pointer-events: all;
-    z-index: 0;
+    z-index: 1;
 }
 
 .scatter-plot.svg {
     position: absolute;
-    z-index: -1;
+    z-index: 0;
     pointer-events: none;
     -webkit-transform: translate3d(0,0,0);
 }
@@ -21,7 +21,7 @@
 }
 
 .scatter-plot.brush-container {
-    z-index : 0;
+    z-index : 1;
     pointer-events: none;
 }
 
