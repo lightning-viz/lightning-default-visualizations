@@ -27,7 +27,7 @@ var Graph = function(selector, data, images, opts) {
     this.data = this._formatData(data);
     this.images = images || [];
     this.selector = selector;
-    this.defaultFill = '#74A4E4';
+    this.defaultFill = '#68a1e5';
     this.defaultStroke = 'white';
     this.defaultSize = 8;
     this._init();
