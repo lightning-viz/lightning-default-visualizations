@@ -77,6 +77,14 @@ Graph.prototype._init = function() {
         var padding = 8 * 2 + 10
     }
 
+    var xRng = Math.abs(xDomain[1] - xDomain[0])
+    var yRng = Math.abs(yDomain[1] - yDomain[0])
+
+    xDomain[0] -= xRng * 0.025
+    xDomain[1] += xRng * 0.025
+    yDomain[0] -= yRng * 0.025
+    yDomain[1] += yRng * 0.025
+
     this.x = d3.scale.linear()
         .domain(xDomain)
         .range([0, width]);
