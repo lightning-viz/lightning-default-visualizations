@@ -1,0 +1,30 @@
+.graph-plot {
+	position: relative;
+}
+
+.graph-plot.svg {
+	position: absolute;
+	pointer-events: none;
+	z-index: 0;
+	-webkit-transform: translate3d(0,0,0);
+}
+
+.graph-plot.brush-container {
+	z-index: 1;
+	pointer-events: none;
+}
+
+.graph-plot.canvas {
+    position: absolute;
+    pointer-events: all;
+    z-index: 1;
+}
+
+.brush {
+	pointer-events: none;
+}
+
+.brush .extent {
+	fill-opacity: .085;
+	shape-rendering: crispEdges;
+}

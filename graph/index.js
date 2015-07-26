@@ -22,11 +22,13 @@ var Graph = function(selector, data, images, opts) {
     this.opts = opts;
 
     this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
+    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
 
     this.data = this._formatData(data);
     this.images = images || [];
     this.selector = selector;
-    this.defaultFill = '#68a1e5';
+    this.defaultFill = '#74A4E4';
+    this.defaultStroke = 'white';
     this.defaultSize = 8;
     this._init();
 
@@ -39,8 +41,8 @@ module.exports = Graph;
 Graph.prototype._init = function() {
 
     var data = this.data;
-    var images = this.images;
     var width = this.width;
+    var height = this.height;
     var opts = this.opts;
     var selector = this.selector;
     var self = this;
@@ -52,7 +54,10 @@ Graph.prototype._init = function() {
     var linkStrokeColor = nodes[0].c ? '#999' : '#A38EF3';
 
     // set opacity inversely proportional to number of links
-    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.15);
+    var linkStrokeOpacity = Math.max(1 - 0.0005 * links.length, 0.5);
+
+    // set circle stroke thickness based on number of nodes
+    var strokeWidth = nodes.length > 500 ? 1 : 1.1
 
     var xDomain = d3.extent(nodes, function(d) {
         return d.x;
@@ -67,158 +72,231 @@ Graph.prototype._init = function() {
         });
 
     if (sizeMax) {
-        var padding = sizeMax
+        var padding = sizeMax * 2
     } else {
-        var padding = 0
+        var padding = 8 * 2 + 10
     }
 
-    var imageCount = images.length;
-
-    var ratio = 0;
-
-    if (imageCount > 0) {
-        var imwidth = (opts.imwidth || xDomain[1]);
-        var imheight = (opts.imheight || yDomain[1]);
-        ratio = imwidth / imheight;
-        self.defaultFill = 'white';
-        linkStrokeColor = 'white';
-        xDomain = [0, imwidth];
-        yDomain = [0, imheight];
-    } else {
-        ratio = Math.sqrt(2);
-    }
-
-    var height = width / ratio;
-    
-    var x = d3.scale.linear()
+    this.x = d3.scale.linear()
         .domain(xDomain)
-        .range([0 + padding, width - padding]);
+        .range([0, width]);
 
-    var y = d3.scale.linear()
+    this.y = d3.scale.linear()
         .domain(yDomain)
-        .range([height - padding, 0 + padding]);
+        .range([height, 0]);
 
     var zoom = d3.behavior.zoom()
-        .x(x)
-        .y(y)
+        .x(self.x)
+        .y(self.y)
         .on('zoom', zoomed);
 
-    var svg = d3.select(selector)
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .call(zoom)
-        .on('dblclick.zoom', null)
-        .append('g');
+    var container = d3.select(selector)
+        .append('div')
+        .style('width', width + "px")
+        .style('height', height + "px")
 
-    svg.append('rect')
-        .attr('class', 'overlay')
-        .style('fill', 'none')
-        .style('pointer-events', 'all')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
+    var canvas = container
+        .append('canvas')
+        .attr('class', 'graph-plot canvas')
+        .attr('width', width)
+        .attr('height', height)
+        .call(zoom)
+        .on("click", mouseHandler)
+        .on("dblclick.zoom", null)
+        .node().getContext("2d")
+
+    function mouseHandler() {
+        if (d3.event.defaultPrevented) return;
+        var pos = d3.mouse(this)
+        var found = utils.nearestPoint(nodes, pos, self.x, self.y)
+
+        if (found) {
+            highlighted = []
+            highlighted.push(found.i)
+            self.emit('hover', found);
+        } else {
+            highlighted = []
+            selected = []
+        };
+        redraw();
+    }
+
+    var selected = [];
+    var highlighted = [];
+    var shiftKey;
+
+    var brush = d3.svg.brush()
+        .x(self.x)
+        .y(self.y)
+        .on("brushstart", function() {
+            // remove any highlighting
+            highlighted = []
+            // select a point if we click without extent
+            var pos = d3.mouse(this)
+            var found = utils.nearestPoint(nodes, pos, self.x, self.y)
+            if (found) {
+                if (_.indexOf(selected, found.i) == -1) {
+                    selected.push(found.i)
+                } else {
+                    _.remove(selected, function(d) {return d == found.i})
+                }
+                redraw();
+            }
+        })
+        .on("brush", function() {
+            var extent = d3.event.target.extent();
+            if (Math.abs(extent[0][0] - extent[1][0]) > 0 & Math.abs(extent[0][1] - extent[1][1]) > 0) {
+                selected = []
+                var x = self.x
+                var y = self.y
+                _.forEach(nodes, function(n) {
+                    var cond1 = (n.x > extent[0][0] & n.x < extent[1][0])
+                    var cond2 = (n.y > extent[0][1] & n.y < extent[1][1])
+                    if (cond1 & cond2) {
+                        selected.push(n.i)
+                    }
+                })
+                redraw();
+            }
+        })
+        .on("brushend", function() {
+            d3.event.target.clear();
+            d3.select(this).call(d3.event.target);
+        })
 
 
     function zoomed() {
-        svg.selectAll('.link')
-            .attr('d', function(d) { return line([nodes[d.source], nodes[d.target]]); });
-
-        svg.selectAll('.node')
-           .attr('cx', function(d){ return x(d.x);})
-           .attr('cy', function(d){ return y(d.y);});
+        redraw();
     }
-
-
-    if (imageCount > 0) {
-        svg.append('svg:image')
-            .attr('width', width)
-            .attr('height', height);
-        
-        svg.select('image')
-            .attr('xlink:href', utils.getThumbnail(images));
-    }
-
-    var line = d3.svg.line()
-        .x(function(d){return x(d.x);})
-        .y(function(d){return y(d.y);})
-        .interpolate('linear');
-
-    var link = svg.selectAll('.link')
-        .data(links)
-        .enter().append('path')
-        .attr('class', 'link')
-        .attr('d', function(d) { return line([nodes[d.source], nodes[d.target]]); })
-        .style('stroke-width', function(d) { return 1 * Math.sqrt(d.value); })
-        .style('stroke', linkStrokeColor)
-        .style('fill', 'none')
-        .style('opacity', linkStrokeOpacity);
-
-    // highlight based on links
-    // borrowed from: http://www.coppelia.io/2014/07/an-a-to-z-of-extra-features-for-the-d3-force-layout/
-
-    // toggle for highlighting
-    var toggleOpacity = 0;
 
     // array indicating links
     var linkedByIndex = {};
-
-    for (var i = 0; i < nodes.length; i++) {
+    var i
+    for (i = 0; i < nodes.length; i++) {
         linkedByIndex[i + ',' + i] = 1;
-    }
+    };
     links.forEach(function (d) {
         linkedByIndex[d.source + ',' + d.target] = 1;
     });
 
     // look up neighbor pairs
     function neighboring(a, b) {
-        return linkedByIndex[a.i + ',' + b.i];
+        return linkedByIndex[a + ',' + b];
     }
 
-    function selectedNodeOpacityIn() {
-        d3.select(this).transition().duration(100).style('stroke', 'rgb(30,30,30)');
-    }
+    var brushrect = container
+        .append('svg:svg')
+        .attr('class', 'graph-plot brush-container')
+        .attr('width', width)
+        .attr('height', height)
+    .append("g")
+        .attr('class', 'brush')
+        .call(brush)
 
-    function selectedNodeOpacityOut() {
-        d3.select(this).transition().duration(50).style('stroke', 'white');
-    }
+    d3.selectAll('.brush .background')
+        .style('cursor', 'default')
+    d3.selectAll('.brush')
+        .style('pointer-events', 'none')
 
-    function connectedNodesOpacity() {
+    d3.select(selector).attr("tabindex", -1)
 
-        if (toggleOpacity == 0) {
-            // change opacity of all but the neighbouring nodes
-            var d = d3.select(this).node().__data__;
-            node.style('opacity', function (o) {
-                return neighboring(d, o) | neighboring(o, d) ? 1 : 0.2;
-            });
-            link.style('opacity', function (o) {
-                 return d.i==o.source | d.i==o.target ? 0.9 : linkStrokeOpacity / 10;
-            });
-            toggleOpacity = 1;
-        } else {
-            // restore properties
-            node.style('opacity', 1);
-            link.style('opacity', linkStrokeOpacity);
-            toggleOpacity = 0;
+    d3.select(selector).on("keydown", function() {
+        shiftKey = d3.event.shiftKey;
+        if (shiftKey) {
+            d3.selectAll('.brush').style('pointer-events', 'all')
+            d3.selectAll('.brush .background').style('cursor', 'crosshair')
         }
+    });
+
+    d3.select(selector).on("keyup", function() {
+        if (shiftKey) {
+            d3.selectAll('.brush').style('pointer-events', 'none')
+            d3.selectAll('.brush .background').style('cursor', 'default')
+        }
+        shiftKey = false
+    });
+
+    _.map(nodes, function(d) {
+        d.cfill = d.c ? d.c : self.defaultFill
+        d.cstroke = d.c ? d.c.darker(0.75) : self.defaultStroke
+        return d
+    })
+
+    function redraw() {
+        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        draw()
     }
 
-    //draw nodes
-    var node = svg.selectAll('.node')
-       .data(nodes)
-      .enter()
-       .append('circle')
-       .classed('node', true)
-       .attr('r', function(d) { return (d.s ? d.s : self.defaultSize); })
-       .style('fill', function(d) { return (d.c ? d.c : self.defaultFill); })
-       .attr('fill-opacity',0.9)
-       .attr('stroke', 'white')
-       .attr('stroke-width', 1)
-       .attr('cx', function(d){ return x(d.x);})
-       .attr('cy', function(d){ return y(d.y);})
-       .on('click', connectedNodesOpacity)
-       .on('mouseenter', selectedNodeOpacityIn)
-       .on('mouseleave', selectedNodeOpacityOut);
+    function draw() {
+
+        _.forEach(links, function(l) {
+            var alpha
+            if (selected.length > 0) {
+                if (_.indexOf(selected, l.source) > -1 & _.indexOf(selected, l.target) > -1) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.05
+                }
+            } 
+            if (highlighted.length > 0) {
+                if (_.indexOf(highlighted, l.source) > -1 | _.indexOf(highlighted, l.target) > -1) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.05
+                }
+            } 
+            if (selected.length == 0 & highlighted.length == 0) {
+                alpha = linkStrokeOpacity
+            }
+
+            var source = nodes[l.source]
+            var target = nodes[l.target]
+            canvas.strokeStyle = utils.buildRGBA(linkStrokeColor, alpha);
+            canvas.lineWidth = 1 * Math.sqrt(l.value);
+            canvas.lineJoin = 'round';
+            canvas.beginPath();
+            canvas.moveTo(self.x(source.x), self.y(source.y))
+            canvas.lineTo(self.x(target.x), self.y(target.y));
+            canvas.stroke()
+
+        })
+
+        _.forEach(nodes, function(n) {
+            var alpha, stroke;
+            if (selected.length > 0) {
+                if (_.indexOf(selected, n.i) >= 0) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.1
+                }
+            } else {
+                alpha = 0.9
+            }
+            if (highlighted.length > 0) {
+                if (neighboring(nodes[highlighted[0]].i, n.i) | neighboring(n.i, nodes[highlighted[0]].i)) {
+                    alpha = 0.9
+                } else {
+                    alpha = 0.1
+                }
+            }
+            if (_.indexOf(highlighted, n.i) >= 0) {
+                stroke = "black"
+            } else {
+                stroke = n.cstroke
+            }
+
+            canvas.beginPath();
+            canvas.arc(self.x(n.x), self.y(n.y), n.s, 0, 2 * Math.PI, false);
+            canvas.fillStyle = utils.buildRGBA(n.cfill, alpha)
+            canvas.lineWidth = strokeWidth
+            canvas.strokeStyle = utils.buildRGBA(stroke, alpha)
+            canvas.fill()
+            canvas.stroke()
+        })
+
+    }
+
+    draw();
 
 };
 
