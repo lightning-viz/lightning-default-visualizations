@@ -12,7 +12,6 @@ var margin = {
     left: 45
 };
 
-
 var Graph = function(selector, data, images, opts) {
 
     if(!opts) {
@@ -116,7 +115,7 @@ Graph.prototype._init = function() {
     function mouseHandler() {
         if (d3.event.defaultPrevented) return;
         var pos = d3.mouse(this)
-        var found = utils.nearestPoint(nodes, pos, self.x, self.y)
+        var found = nearestPoint(nodes, pos, self.x, self.y)
 
         if (found) {
             highlighted = []
@@ -127,6 +126,24 @@ Graph.prototype._init = function() {
             selected = []
         };
         redraw();
+    }
+
+    function nearestPoint(points, target, xscale, yscale) {
+        // find point in points nearest to target
+        // using scales x and y
+        // point must have attrs x, y, and s
+        var i = 0, count = 0;
+        var found, dist, n, p;
+        while (count == 0 & i < points.length) {
+            p = points[i]
+            dist = Math.sqrt(Math.pow(xscale(p.x) - target[0], 2) + Math.pow(yscale(p.y) - target[1], 2))
+            if (dist <= p.s) {
+                found = p
+                count = 1
+            }
+            i++;
+        }
+        return found
     }
 
     var selected = [];
@@ -141,7 +158,7 @@ Graph.prototype._init = function() {
             highlighted = []
             // select a point if we click without extent
             var pos = d3.mouse(this)
-            var found = utils.nearestPoint(nodes, pos, self.x, self.y)
+            var found = nearestPoint(nodes, pos, self.x, self.y)
             if (found) {
                 if (_.indexOf(selected, found.i) == -1) {
                     selected.push(found.i)
