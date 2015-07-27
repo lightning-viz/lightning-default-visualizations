@@ -5,13 +5,6 @@ var _ = require('lodash');
 var inherits = require('inherits');
 var utils = require('lightning-client-utils');
 
-var margin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 45
-};
-
 var Graph = function(selector, data, images, opts) {
 
     if(!opts) {
@@ -20,15 +13,15 @@ var Graph = function(selector, data, images, opts) {
 
     this.opts = opts;
 
-    this.width = (opts.width || $(selector).width()) - margin.left - margin.right;
-    this.height = (opts.height || (this.width * 0.6)) - margin.top - margin.bottom;
+    this.width = (opts.width || $(selector).width())
+    this.height = (opts.height || (this.width * 0.6))
 
     this.data = this._formatData(data);
     this.images = images || [];
     this.selector = selector;
     this.defaultFill = '#68a1e5';
     this.defaultStroke = 'white';
-    this.defaultSize = 8;
+    this.defaultSize = 6;
     this._init();
 
 };
@@ -248,7 +241,7 @@ Graph.prototype._init = function() {
     })
 
     function redraw() {
-        canvas.clearRect(0, 0, width + margin.left + margin.right, height + margin.top + margin.bottom);
+        canvas.clearRect(0, 0, width, height);
         draw()
     }
 
@@ -310,8 +303,10 @@ Graph.prototype._init = function() {
                 stroke = n.cstroke
             }
 
+            var size = n.s ? n.s : self.defaultSize
+
             canvas.beginPath();
-            canvas.arc(self.x(n.x), self.y(n.y), n.s, 0, 2 * Math.PI, false);
+            canvas.arc(self.x(n.x), self.y(n.y), size, 0, 2 * Math.PI, false);
             canvas.fillStyle = utils.buildRGBA(n.cfill, alpha)
             canvas.lineWidth = strokeWidth
             canvas.strokeStyle = utils.buildRGBA(stroke, alpha)
